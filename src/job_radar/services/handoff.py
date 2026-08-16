@@ -16,16 +16,16 @@ from job_radar.db.models.candidate import CandidateJob
 logger = logging.getLogger(__name__)
 
 class JobOpsClient:
-    """Client for forwarding candidate jobs to Job Ops endpoint."""
+    """Client for forwarding candidate jobs to Job Ops intake API (/api/manual-jobs/import)."""
 
     def __init__(self, endpoint: Optional[str] = None, username: Optional[str] = None, password: Optional[str] = None):
-        self.endpoint = endpoint or settings.JOBOPS_ENDPOINT
+        self.endpoint = endpoint or settings.JOBOPS_ENDPOINT or "http://127.0.0.1:8000/api/manual-jobs/import"
         self.username = username or settings.JOBOPS_USERNAME
         self.password = password or settings.JOBOPS_PASSWORD
 
     async def push_candidate(self, candidate_data: Dict[str, Any]) -> bool:
-        if not self.endpoint:
-            logger.info("JobOps endpoint not configured. Simulating successful handoff.")
+        if not settings.HANDOFF_ENABLED and not settings.JOBOPS_ENDPOINT:
+            logger.info("JobOps endpoint not configured. Simulating successful handoff outbox dispatch.")
             return True
 
         auth = None
@@ -92,27 +92,21 @@ class HandoffProcessor:
                     cand_res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == record.candidate_id))
                     cand = cand_res.scalar_one_or_none()
 
-                    salary_obj = None
-                    if cand and cand.salary_raw:
-                        salary_obj = {
-                            "raw": cand.salary_raw,
-                            "min": cand.salary_min,
-                            "max": cand.salary_max,
-                            "currency": cand.salary_currency or "INR"
-                        }
-
                     payload = {
-                        "idempotency_reference": f"jr:{cand.candidate_id if cand else 'cand'}:policy-11",
-                        "title": cand.title if cand else "Unknown Position",
-                        "company_name": cand.company if cand else "Unknown Company",
-                        "location": cand.location if cand else "India",
-                        "apply_url": cand.public_apply_url if cand else "",
-                        "description": cand.description if (cand and cand.description) else f"Position for {cand.title if cand else 'Role'} at {cand.company if cand else 'Company'}.",
-                        "salary": salary_obj,
-                        "employment_type": cand.employment_type if (cand and cand.employment_type) else "Full-time",
-                        "department": cand.department if (cand and cand.department) else "Engineering",
-                        "posting_date": cand.first_seen_at.strftime("%Y-%m-%d") if (cand and cand.first_seen_at) else "2026-08-16",
-                        "source_board": cand.board_id if cand else "unknown_board"
+                        "skipTailoring": False,
+                        "job": {
+                            "source": cand.board_id if cand else "job_radar",
+                            "sourceJobId": cand.candidate_id if cand else "unknown",
+                            "title": cand.title if cand else "Unknown Position",
+                            "employer": cand.company if cand else "Unknown Company",
+                            "jobUrl": cand.public_apply_url if cand else "",
+                            "applicationLink": cand.public_apply_url if cand else "",
+                            "location": cand.location if cand else "India",
+                            "salary": cand.salary_raw if (cand and cand.salary_raw) else "Competitive / Not specified",
+                            "jobDescription": cand.description if (cand and cand.description) else f"Full position details and responsibilities for {cand.title if cand else 'Role'} at {cand.company if cand else 'Company'}.",
+                            "jobType": cand.employment_type if (cand and cand.employment_type) else "Full-time",
+                            "jobFunction": cand.department if (cand and cand.department) else "Engineering"
+                        }
                     }
 
                     await self.client.push_candidate(payload)

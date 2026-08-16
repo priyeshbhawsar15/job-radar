@@ -1,12 +1,58 @@
 import hashlib
 import json
+import re
 from typing import List, Dict, Any, Optional
 from job_radar.adapters.base import BaseAdapter, ExtractedCandidate
 
 def generate_fingerprint(company: str, title: str, location: Optional[str] = None) -> str:
-    """Generate deterministic sha256 fingerprint for deduplication."""
     raw = f"{company.strip().lower()}|{title.strip().lower()}|{(location or '').strip().lower()}"
     return hashlib.sha256(raw.encode('utf-8')).hexdigest()
+
+def extract_html_job_links(html: str, board_name: str, target_url: str) -> List[ExtractedCandidate]:
+    results = []
+    seen_urls = set()
+    hrefs = re.findall(r'href=["\']([^"\']+)["\']', html)
+    job_keywords = ['/job/', '/jobs/', '/careers/', 'gh_jid=', '/posting/', '/opportunities/', 'jobid=', '/resilinc/', '/weave/', '/aspora/', '/plane/', '/cognite/', '/open-roles/', '/search-jobs/']
+
+    lever_uuids = re.findall(r'href=["\'](https?://jobs\.lever\.co/[^/]+/[a-f0-9\-]{36})["\']', html)
+    hrefs.extend(lever_uuids)
+    ashby_uuids = re.findall(r'href=["\'](https?://jobs\.ashbyhq\.com/[^/]+/[a-f0-9\-]{36})["\']', html)
+    hrefs.extend(ashby_uuids)
+
+    for href in hrefs:
+        href_lower = href.lower()
+        if any(k in href_lower for k in job_keywords) or re.search(r'[a-f0-9]{8}-[a-f0-9]{4}', href_lower):
+            if href.startswith('/'):
+                from urllib.parse import urlparse
+                parsed = urlparse(target_url)
+                full_url = f"{parsed.scheme}://{parsed.netloc}{href}"
+            elif href.startswith('http'):
+                full_url = href
+            else:
+                continue
+
+            if full_url in seen_urls or full_url.rstrip('/') == target_url.rstrip('/'):
+                continue
+            seen_urls.add(full_url)
+
+            slug = full_url.rstrip('/').split('/')[-1].replace('-', ' ').replace('_', ' ').capitalize()
+            title = slug if len(slug) > 3 else f"Position at {board_name}"
+
+            fp = generate_fingerprint(board_name, title, "India")
+            results.append(
+                ExtractedCandidate(
+                    title=title,
+                    company=board_name,
+                    location="India",
+                    department=None,
+                    employment_type="Full-time",
+                    raw_url=full_url,
+                    fingerprint=fp,
+                    extra_payload={"source_html": True}
+                )
+            )
+
+    return results
 
 class GreenhouseAdapter(BaseAdapter):
     @property
@@ -61,11 +107,10 @@ class GreenhouseAdapter(BaseAdapter):
                         extra_payload={"greenhouse_id": item.get("id")}
                     )
                 )
-        except Exception as e:
-            raise ValueError(f"Greenhouse json parse failure: {str(e)}")
+        except Exception:
+            return extract_html_job_links(payload, board_name, target_url)
 
         return results
-
 
 class LeverAdapter(BaseAdapter):
     @property
@@ -104,7 +149,6 @@ class LeverAdapter(BaseAdapter):
                 raw_url = item.get("hostedUrl") or item.get("applyUrl") or target_url
                 item_country = item.get("country") or categories.get("country")
 
-                # Filter by country if specified in config (e.g. country == "IN")
                 if country_filter:
                     match_country = item_country and (item_country.upper() == country_filter.upper())
                     match_loc = location_str and (country_filter.lower() in location_str.lower())
@@ -127,11 +171,10 @@ class LeverAdapter(BaseAdapter):
                         extra_payload={"lever_id": item.get("id"), "country": item_country}
                     )
                 )
-        except Exception as e:
-            raise ValueError(f"Lever json parse failure: {str(e)}")
+        except Exception:
+            return extract_html_job_links(payload, board_name, target_url)
 
         return results
-
 
 class AshbyAdapter(BaseAdapter):
     @property
@@ -181,11 +224,10 @@ class AshbyAdapter(BaseAdapter):
                         extra_payload={"ashby_id": item.get("id")}
                     )
                 )
-        except Exception as e:
-            raise ValueError(f"Ashby json parse failure: {str(e)}")
+        except Exception:
+            return extract_html_job_links(payload, board_name, target_url)
 
         return results
-
 
 class WorkdayAdapter(BaseAdapter):
     @property
@@ -231,7 +273,32 @@ class WorkdayAdapter(BaseAdapter):
                         extra_payload={"bulletFields": item.get("bulletFields", [])}
                     )
                 )
-        except Exception as e:
-            raise ValueError(f"Workday json parse failure: {str(e)}")
+        except Exception:
+            return extract_html_job_links(payload, board_name, target_url)
 
         return results
+
+class GenericAdapter(BaseAdapter):
+    def __init__(self, family_name: str):
+        self._family_name = family_name
+
+    @property
+    def family(self) -> str:
+        return self._family_name
+
+    def parse_raw_payload(
+        self,
+        payload: str | bytes,
+        board_name: str,
+        target_url: str,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        if isinstance(payload, bytes):
+            payload = payload.decode('utf-8')
+        try:
+            data = json.loads(payload)
+            if isinstance(data, dict) and "jobs" in data:
+                return extract_html_job_links(json.dumps(data), board_name, target_url)
+        except Exception:
+            pass
+        return extract_html_job_links(payload, board_name, target_url)

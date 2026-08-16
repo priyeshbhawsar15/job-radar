@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Job Radar · System design summary and open decisions</title>
+  <style>
+    :root{--bg:#081018;--panel:#0f1b27;--panel2:#122130;--ink:#eef5f9;--muted:#9cb0bf;--line:#24384a;--accent:#4ed7c3;--accent2:#7ec8ff;--warn:#ffca72;--bad:#ff9aaf;--shadow:0 18px 44px rgba(0,0,0,.32);color-scheme:dark}
+    *{box-sizing:border-box} html{scroll-behavior:smooth}
+    body{margin:0;background:radial-gradient(circle at top right,#153041 0,#0a141d 36%,#071018 76%);color:var(--ink);font:15px/1.6 Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+    a{color:#94e8dd} .wrap{max-width:1220px;margin:auto;padding:28px 18px 80px}
+    .hero{background:linear-gradient(145deg,#13283a,#0c1722);border:1px solid var(--line);border-radius:24px;padding:28px 28px 24px;box-shadow:var(--shadow)}
+    .eyebrow{margin:0 0 8px;text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:800;color:#7adfd2}
+    h1{margin:0 0 12px;font-size:clamp(32px,5vw,56px);letter-spacing:-.06em;line-height:1}
+    .sub{margin:0;max-width:860px;color:#c5d3dd}.badge{display:inline-block;margin-top:14px;padding:6px 10px;border-radius:999px;background:#3d2c12;color:var(--warn);font-size:12px;font-weight:800}
+    .layout{display:grid;grid-template-columns:290px minmax(0,1fr);gap:18px;margin-top:18px}
+    .toc,.card,section{background:linear-gradient(145deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+    .toc{position:sticky;top:18px;align-self:start;padding:16px}.toc h2{margin:0 0 12px;font-size:14px;letter-spacing:.02em}.toc a{display:block;padding:7px 8px;border-radius:10px;color:#dce9f2;text-decoration:none}.toc a:hover{background:#142838}
+    main{display:grid;gap:18px}.card,section{padding:20px} h2{margin:0 0 10px;font-size:24px;letter-spacing:-.03em} h3{margin:18px 0 8px;font-size:17px;letter-spacing:-.02em}
+    p,li{color:#d9e5ed} .mini,.muted{color:var(--muted)}
+    .grid{display:grid;gap:14px}.two{grid-template-columns:repeat(2,minmax(0,1fr))}.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .stat{padding:14px;border:1px solid var(--line);border-radius:14px;background:#0d1721}.stat b{display:block;font-size:22px;letter-spacing:-.04em}
+    table{width:100%;border-collapse:collapse;margin-top:10px} th,td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left} th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#99b2c3}
+    code{font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;background:#0a1118;border:1px solid var(--line);border-radius:8px;padding:2px 6px}
+    pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#091119;border:1px solid var(--line);border-radius:14px;padding:14px;color:#ccebe6}
+    .callout{border-left:4px solid var(--warn);padding:12px 14px;border-radius:0 12px 12px 0;background:#2d2315}
+    .good{border-left-color:var(--accent);background:#102524}.bad{border-left-color:var(--bad);background:#2a1820}
+    .arch-wrap{overflow:auto}.arch-caption{margin-top:10px;color:var(--muted)}
+    .component-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+    .component{padding:14px;border:1px solid var(--line);border-radius:14px;background:#0c1620}
+    .component h4{margin:0 0 6px;font-size:15px}.tag{display:inline-block;margin:4px 6px 0 0;padding:4px 8px;border-radius:999px;background:#112734;color:#8de6da;font-size:11px;font-weight:800}
+    ul{padding-left:20px} .spacer{height:4px}
+    @media(max-width:980px){.layout{grid-template-columns:1fr}.toc{position:static}.two,.three,.component-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Job Radar · system design summary</p>
+      <h1>System design summary and open decisions</h1>
+      <p class="sub">This pass intentionally resets the design into a review-first summary aligned to the new <code>system-design</code> skill. It captures confirmed decisions, the recommended architecture direction, and the material open decisions that must be resolved before the final implementation-ready design is written.</p>
+      <span class="badge">Design only · not implementation approval</span>
+    </header>
+
+    <div class="layout">
+      <aside class="toc" aria-label="Table of contents">
+        <h2>Contents</h2>
+        <a href="#summary">1. Executive summary</a>
+        <a href="#requirements">2. Requirements and decisions</a>
+        <a href="#architecture">3. Architecture</a>
+        <a href="#flows">4. Core flows</a>
+        <a href="#api">5. API and event contracts</a>
+        <a href="#data-model">6. Data model</a>
+        <a href="#state">7. Stateful behavior</a>
+        <a href="#security">8. Security and permissions</a>
+        <a href="#failure">9. Failure and recovery</a>
+        <a href="#deployment">10. Deployment and observability</a>
+        <a href="#test-plan">11. Test plan and sequence</a>
+      </aside>
+
+      <main>
+        <section id="summary">
+          <h2>1. Executive summary and scope boundaries</h2>
+          <p>Job Radar is a private, self-hosted service that monitors individually approved public career-board listings, discovers candidate jobs, normalizes approved public detail data, deduplicates repeat observations, and later hands eligible discoveries to Job Ops through a typed idempotent boundary.</p>
+          <div class="grid three">
+            <div class="stat"><b>Runtime</b><span class="muted">Python + FastAPI + SQLAlchemy</span></div>
+            <div class="stat"><b>Database</b><span class="muted">PostgreSQL authoritative store</span></div>
+            <div class="stat"><b>Scheduler</b><span class="muted">In-process APScheduler</span></div>
+          </div>
+          <div class="callout" style="margin-top:14px">
+            <strong>Boundary:</strong> this document does not authorize code, database creation, source enablement, Job Ops calls, or deployment.
+          </div>
+        </section>
+
+        <section id="requirements">
+          <h2>2. Requirements, assumptions, confirmed decisions, and traceability</h2>
+          <h3>Confirmed decisions</h3>
+          <table>
+            <thead><tr><th>Area</th><th>Decision</th><th>Traceability</th></tr></thead>
+            <tbody>
+              <tr><td>Database</td><td>PostgreSQL is authoritative.</td><td>Explicit user choice</td></tr>
+              <tr><td>Runtime</td><td>Python + FastAPI + SQLAlchemy</td><td>Explicit user choice</td></tr>
+              <tr><td>Scheduler</td><td>Async APScheduler in-process</td><td>Explicit user choice</td></tr>
+              <tr><td>Acquisition</td><td>Private Playwright service on The Shell</td><td>Prior approved direction</td></tr>
+              <tr><td>Operator updates</td><td>Push updates via Server-Sent Events (SSE) (<code>GET /api/v1/stream</code>)</td><td>Explicit user choice</td></tr>
+              <tr><td>Artifacts</td><td>Obsidian canonical + HTML mirror in UI prototype</td><td>Explicit user choice</td></tr>
+              <tr><td>Auth & Roles</td><td>Caddy reverse-proxy headers + Bearer API token fallback; 2 roles (<code>admin</code>, <code>viewer</code>)</td><td>Explicit user choice</td></tr>
+              <tr><td>UI Stack</td><td>Vite + React SPA compiled to <code>dist/</code>, served via FastAPI static mount</td><td>Explicit user choice</td></tr>
+              <tr><td>Job Ops Auth</td><td>Username/Password Basic Auth; outbox disabled until endpoint and credentials provided</td><td>Explicit user choice</td></tr>
+              <tr><td>Secret Storage</td><td>Environment variables via <code>.env</code> file</td><td>Explicit user choice</td></tr>
+              <tr><td>Recovery Targets</td><td>RPO 24h / RTO 1h; daily automated <code>pg_dump</code> to host volume</td><td>Explicit user choice</td></tr>
+              <tr><td>Initial Board Set</td><td>Staggered rollout starting with 5 low-risk boards; Google/Meta manual-only</td><td>Explicit user choice</td></tr>
+              <tr><td>Resilience</td><td>Pause board automatically after 3 consecutive <code>parser_contract</code> failures</td><td>Explicit user choice</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="architecture">
+          <h2>3. Architecture: diagram, components, responsibilities, interfaces, dependencies, tech stack, and storage</h2>
+          <div class="arch-wrap">
+            <svg viewBox="0 0 1240 560" role="img" aria-label="Architecture map showing the operator UI, FastAPI service, PostgreSQL, in-process APScheduler, run worker, adapter registry, private browser client, Shell Playwright service, policy and normalization layer, and Job Ops handoff boundary." style="width:100%;height:auto;border:1px solid var(--line);border-radius:18px;background:#09131b;padding:12px">
+              <defs>
+                <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#173042"/><stop offset="1" stop-color="#102231"/></linearGradient>
+                <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#7ec8ff"/></marker>
+              </defs>
+              <g font-family="Inter,system-ui,sans-serif">
+                <a href="#component-ui-api"><rect x="38" y="80" width="180" height="92" rx="18" fill="url(#g)" stroke="#294357"/><text x="58" y="110" fill="#eef5f9" font-size="16" font-weight="700">Operator UI / API</text><text x="58" y="136" fill="#9cb0bf" font-size="13">FastAPI</text><text x="58" y="158" fill="#9cb0bf" font-size="13">Storage: PostgreSQL</text></a>
+                <a href="#component-config-service"><rect x="276" y="42" width="200" height="96" rx="18" fill="url(#g)" stroke="#294357"/><text x="296" y="74" fill="#eef5f9" font-size="16" font-weight="700">Config service</text><text x="296" y="100" fill="#9cb0bf" font-size="13">Python + SQLAlchemy</text><text x="296" y="122" fill="#9cb0bf" font-size="13">Storage: PostgreSQL</text></a>
+                <a href="#component-run-control"><rect x="276" y="176" width="200" height="96" rx="18" fill="url(#g)" stroke="#294357"/><text x="296" y="208" fill="#eef5f9" font-size="16" font-weight="700">Run control</text><text x="296" y="234" fill="#9cb0bf" font-size="13">Python + SQLAlchemy</text><text x="296" y="256" fill="#9cb0bf" font-size="13">Storage: PostgreSQL</text></a>
+                <a href="#component-scheduler"><rect x="530" y="42" width="190" height="96" rx="18" fill="url(#g)" stroke="#294357"/><text x="550" y="74" fill="#eef5f9" font-size="16" font-weight="700">Scheduler</text><text x="550" y="100" fill="#9cb0bf" font-size="13">APScheduler</text><text x="550" y="122" fill="#9cb0bf" font-size="13">Storage: PostgreSQL</text></a>
+                <a href="#component-worker"><rect x="530" y="176" width="190" height="96" rx="18" fill="url(#g)" stroke="#294357"/><text x="550" y="208" fill="#eef5f9" font-size="16" font-weight="700">Board run worker</text><text x="550" y="234" fill="#9cb0bf" font-size="13">Python async worker</text><text x="550" y="256" fill="#9cb0bf" font-size="13">Storage: PostgreSQL</text></a>
+                <a href="#component-adapters"><rect x="772" y="42" width="190" height="96" rx="18" fill="url(#g)" stroke="#294357"/><text x="792" y="74" fill="#eef5f9" font-size="16" font-weight="700">Adapter registry</text><text x="792" y="100" fill="#9cb0bf" font-size="13">Python modules</text><text x="792" y="122" fill="#9cb0bf" font-size="13">Storage: none</text></a>
+                <a href="#component-browser-client"><rect x="772" y="176" width="190" height="96" rx="18" fill="url(#g)" stroke="#294357"/><text x="792" y="208" fill="#eef5f9" font-size="16" font-weight="700">Browser client</text><text x="792" y="234" fill="#9cb0bf" font-size="13">Typed internal API</text><text x="792" y="256" fill="#9cb0bf" font-size="13">Storage: none</text></a>
+                <a href="#component-policy-normalization"><rect x="1014" y="42" width="190" height="96" rx="18" fill="url(#g)" stroke="#294357"/><text x="1034" y="74" fill="#eef5f9" font-size="16" font-weight="700">Policy + normalization</text><text x="1034" y="100" fill="#9cb0bf" font-size="13">Python</text><text x="1034" y="122" fill="#9cb0bf" font-size="13">Storage: PostgreSQL</text></a>
+                <a href="#component-outbox"><rect x="1014" y="176" width="190" height="96" rx="18" fill="url(#g)" stroke="#294357"/><text x="1034" y="208" fill="#eef5f9" font-size="16" font-weight="700">Outbox + Job Ops client</text><text x="1034" y="234" fill="#9cb0bf" font-size="13">Python + SQLAlchemy</text><text x="1034" y="256" fill="#9cb0bf" font-size="13">Storage: PostgreSQL</text></a>
+                <a href="#component-observability"><rect x="650" y="380" width="220" height="110" rx="18" fill="url(#g)" stroke="#294357"/><text x="670" y="414" fill="#eef5f9" font-size="16" font-weight="700">Audit + retention + metrics</text><text x="670" y="440" fill="#9cb0bf" font-size="13">Python jobs + SQL</text><text x="670" y="462" fill="#9cb0bf" font-size="13">Storage: PostgreSQL + logs</text></a>
+                <rect x="36" y="340" width="240" height="146" rx="20" fill="#0d1721" stroke="#2a4358" stroke-dasharray="8 7"/>
+                <text x="56" y="372" fill="#7adfd2" font-size="16" font-weight="700">Private dependency boundary</text>
+                <text x="56" y="400" fill="#eef5f9" font-size="15">Shell Playwright service</text>
+                <text x="56" y="426" fill="#9cb0bf" font-size="13">Existing Chromium container</text>
+                <text x="56" y="448" fill="#9cb0bf" font-size="13">Loopback / typed browser access only</text>
+                <rect x="320" y="340" width="240" height="146" rx="20" fill="#0d1721" stroke="#2a4358" stroke-dasharray="8 7"/>
+                <text x="340" y="372" fill="#ffca72" font-size="16" font-weight="700">External contract boundary</text>
+                <text x="340" y="400" fill="#eef5f9" font-size="15">Job Ops</text>
+                <text x="340" y="426" fill="#9cb0bf" font-size="13">Disabled until exact contract exists</text>
+                <text x="340" y="448" fill="#9cb0bf" font-size="13">Idempotent handoff + reconciliation</text>
+                <line x1="218" y1="126" x2="276" y2="90" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="218" y1="126" x2="276" y2="224" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="476" y1="224" x2="530" y2="224" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="476" y1="90" x2="530" y2="90" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="720" y1="90" x2="772" y2="90" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="720" y1="224" x2="772" y2="224" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="962" y1="224" x2="1014" y2="224" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="962" y1="90" x2="1014" y2="90" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="868" y1="272" x2="170" y2="340" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="1110" y1="272" x2="440" y2="340" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="1110" y1="138" x2="760" y2="380" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="127" y1="172" x2="760" y2="380" stroke="#7ec8ff" stroke-width="3" marker-end="url(#arrow)"/>
+              </g>
+            </svg>
+            <p class="arch-caption">Every node is clickable and maps to the component notes below. The visible labels show technology and storage choice, matching the Markdown summary.</p>
+          </div>
+
+          <div class="component-grid">
+            <article class="component" id="component-ui-api"><h4>Operator UI / API</h4><span class="tag">FastAPI</span><span class="tag">Storage: PostgreSQL</span><p>Single operator-facing boundary for boards, runs, jobs, safe logs, and live updates.</p></article>
+            <article class="component" id="component-config-service"><h4>Config service</h4><span class="tag">Python + SQLAlchemy</span><span class="tag">Storage: PostgreSQL</span><p>Owns draft/reviewed revisions and enable/pause/retire transitions.</p></article>
+            <article class="component" id="component-run-control"><h4>Run control</h4><span class="tag">Python + SQLAlchemy</span><span class="tag">Storage: PostgreSQL</span><p>Owns durable run requests, admission, cancellation, and execution tracking.</p></article>
+            <article class="component" id="component-scheduler"><h4>Scheduler</h4><span class="tag">APScheduler</span><span class="tag">Storage: PostgreSQL</span><p>In-process due-board scheduling that creates durable run requests.</p></article>
+            <article class="component" id="component-worker"><h4>Board run worker</h4><span class="tag">Python async worker</span><span class="tag">Storage: PostgreSQL</span><p>Executes one approved board run at a time initially and records staged safe outcomes.</p></article>
+            <article class="component" id="component-adapters"><h4>Adapter registry</h4><span class="tag">Python modules</span><span class="tag">Storage: none</span><p>Application-owned family-specific extraction logic.</p></article>
+            <article class="component" id="component-browser-client"><h4>Browser client</h4><span class="tag">Typed internal API</span><span class="tag">Storage: none</span><p>Narrow interface to the Shell Playwright dependency; never an operator tunnel.</p></article>
+            <article class="component" id="component-policy-normalization"><h4>Policy + normalization</h4><span class="tag">Python</span><span class="tag">Storage: PostgreSQL</span><p>Canonicalization, route validation, deduplication, and normalized field shaping.</p></article>
+            <article class="component" id="component-outbox"><h4>Outbox + Job Ops client</h4><span class="tag">Python + SQLAlchemy</span><span class="tag">Storage: PostgreSQL</span><p>Durable eligibility and future handoff boundary; disabled until exact contract exists.</p></article>
+            <article class="component" id="component-observability"><h4>Audit + retention + metrics</h4><span class="tag">Python jobs + SQL</span><span class="tag">Storage: PostgreSQL + logs</span><p>Seven-day detail retention and privacy-safe observability only.</p></article>
+          </div>
+        </section>
+
+        <section id="flows">
+          <h2>4. Core flows: request/data/event sequence, consistency and idempotency boundaries</h2>
+          <div class="card">
+            <h3>Scheduled run summary</h3>
+            <ol>
+              <li>APScheduler creates a durable due-board run request.</li>
+              <li>Run control admits it only when service state, board state, and capacity allow.</li>
+              <li>The worker sends a typed request to the browser client or approved direct source path.</li>
+              <li>Adapters emit bounded candidate records.</li>
+              <li>Policy + normalization validate URLs, normalize fields, and upsert identities.</li>
+              <li>Eligible jobs create outbox intent only if the future Job Ops contract is enabled.</li>
+            </ol>
+          </div>
+          <div class="callout good">
+            <strong>Idempotency boundary:</strong> candidate identity is stable across repeated observations, and handoff intent is keyed by candidate identity plus contract revision.
+          </div>
+        </section>
+
+        <section id="api">
+          <h2>5. API and event contracts: authentication, inputs, outputs, errors, versioning, and ownership</h2>
+          <table>
+            <thead><tr><th>Endpoint</th><th>Purpose</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><code>GET /health</code></td><td>Process liveness</td><td>Proposed</td></tr>
+              <tr><td><code>GET /ready</code></td><td>DB/config/browser readiness</td><td>Proposed</td></tr>
+              <tr><td><code>GET /api/v1/summary</code></td><td>Dashboard metrics</td><td>Proposed</td></tr>
+              <tr><td><code>GET /api/v1/boards</code></td><td>Board inventory and safe status</td><td>Proposed</td></tr>
+              <tr><td><code>POST /api/v1/boards/{id}/revisions</code></td><td>Create draft revision</td><td>Proposed</td></tr>
+              <tr><td><code>POST /api/v1/run-requests</code></td><td>Manual run request</td><td>Proposed</td></tr>
+              <tr><td><code>GET /api/v1/runs</code></td><td>Run list</td><td>Proposed</td></tr>
+              <tr><td><code>GET /api/v1/jobs</code></td><td>Normalized extracted jobs</td><td>Proposed</td></tr>
+              <tr><td><code>GET /api/v1/stream</code></td><td>Live update stream</td><td>Proposed; SSE recommended</td></tr>
+            </tbody>
+          </table>
+          <p class="mini">Errors should reduce to safe classes such as <code>validation_failed</code>, <code>state_conflict</code>, <code>capacity_held</code>, and <code>not_ready</code>.</p>
+        </section>
+
+        <section id="data-model">
+          <h2>6. Data model: schema/entity definitions, keys, constraints, indexes, ownership, retention, and migrations</h2>
+          <table>
+            <thead><tr><th>Entity</th><th>Purpose</th><th>Retention</th></tr></thead>
+            <tbody>
+              <tr><td><code>boards</code></td><td>Stable board identity and family</td><td>Durable</td></tr>
+              <tr><td><code>board_revisions</code></td><td>Immutable draft/reviewed configuration</td><td>Durable</td></tr>
+              <tr><td><code>run_requests</code></td><td>Durable scheduled/manual intent</td><td>Audit-controlled</td></tr>
+              <tr><td><code>execution_attempts</code></td><td>Concrete worker execution state</td><td>Seven-day detail + audit metadata</td></tr>
+              <tr><td><code>pipeline_runs</code></td><td>Run aggregate</td><td>Seven-day detail</td></tr>
+              <tr><td><code>board_runs</code></td><td>Per-board contribution and stage/outcome</td><td>Seven-day detail</td></tr>
+              <tr><td><code>candidate_jobs</code></td><td>Canonical discovered identity</td><td>Durable identity ledger</td></tr>
+              <tr><td><code>run_candidates</code></td><td>Observation edge for a run</td><td>Seven-day detail</td></tr>
+              <tr><td><code>handoff_outbox</code></td><td>Durable future handoff intent</td><td>Until reconciliation complete</td></tr>
+              <tr><td><code>audit_events</code></td><td>Append-only audit history</td><td>Durable</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="state">
+          <h2>7. Stateful behavior integrated with the relevant component/flow</h2>
+          <div class="two grid">
+            <div class="card">
+              <h3>Global service</h3>
+              <pre>disabled → ready → paused → degraded</pre>
+              <p>Readiness depends on config, PostgreSQL, and the private browser dependency.</p>
+            </div>
+            <div class="card">
+              <h3>Board lifecycle</h3>
+              <pre>draft → reviewed → enabled → paused → retired</pre>
+              <p>A new draft cannot silently replace the currently reviewed live revision.</p>
+            </div>
+            <div class="card">
+              <h3>Run lifecycle</h3>
+              <pre>requested → admitted → running → completed | partial | failed | cancelled | expired</pre>
+              <p><code>partial</code> is explicit and must not be mislabeled as success.</p>
+            </div>
+            <div class="card">
+              <h3>Handoff lifecycle</h3>
+              <pre>not_eligible → queued → dispatching → accepted | held | rejected | uncertain</pre>
+              <p><code>uncertain</code> requires reconciliation, not blind resend.</p>
+            </div>
+          </div>
+          <div class="callout bad" style="margin-top:14px">
+            <strong>No separate lifecycle model:</strong> the adapter registry and browser client do not own durable business state beyond request/response and service readiness.
+          </div>
+        </section>
+
+        <section id="security">
+          <h2>8. Security, privacy, permissions, abuse controls, and auditability</h2>
+          <ul>
+            <li>No raw payloads, cookies, tokens, headers, browser traces, or internal service URLs in durable records or operator views.</li>
+            <li>HTTPS-only, exact reviewed host/path rules, redirect revalidation, and no credential-bearing URLs.</li>
+            <li>No arbitrary Playwright scripts, selectors, or browser-control primitives exposed to operators.</li>
+            <li>Recommended role direction for the next pass: <code>viewer</code>, <code>operator</code>, <code>config_editor</code>, <code>reviewer</code>, <code>service_admin</code>.</li>
+            <li>Every mutation must emit append-only safe audit metadata.</li>
+          </ul>
+        </section>
+
+        <section id="failure">
+          <h2>9. Failure modes, retries, degradation, recovery, and operational runbooks</h2>
+          <p>Expected safe outcomes include <code>success</code>, <code>empty_verified</code>, <code>partial_limit_reached</code>, <code>challenge</code>, <code>blocked_resource</code>, <code>timeout</code>, <code>parser_contract</code>, <code>provider_failure</code>, <code>policy_rejected</code>, <code>capacity_held</code>, <code>handoff_rejected</code>, and <code>handoff_uncertain</code>.</p>
+          <ul>
+            <li>Retry only explicitly transient acquisition failures.</li>
+            <li>Do not blindly retry <code>challenge</code>, <code>blocked_resource</code>, or <code>parser_contract</code>.</li>
+            <li>Handoff ambiguity becomes <code>uncertain</code>, not automatic resend.</li>
+          </ul>
+        </section>
+
+        <section id="deployment">
+          <h2>10. Deployment, environments, scalability, observability, cost-sensitive choices, and SLOs</h2>
+          <div class="grid two">
+            <div class="card">
+              <h3>Environments</h3>
+              <ul>
+                <li>Development: Gaming PC</li>
+                <li>Production target: The Shell</li>
+                <li>Private dependency: existing Shell Playwright service</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Scalability direction</h3>
+              <ul>
+                <li>Start with one active board run.</li>
+                <li>Use PostgreSQL for admission and durable run state.</li>
+                <li>Increase concurrency only after approved capacity testing.</li>
+              </ul>
+            </div>
+          </div>
+          <p class="mini">Early SLO framing is intentionally non-final: readiness accuracy, conservative outcomes over false success, and zero duplicate outbox intent for the same candidate identity.</p>
+        </section>
+
+        <section id="test-plan">
+          <h2>11. Test plan, acceptance criteria, rollout/rollback, and implementation sequence</h2>
+          <h3>Later test plan areas</h3>
+          <ul>
+            <li>schema/migration tests</li>
+            <li>board revision workflow tests</li>
+            <li>scheduler admission and overlap tests</li>
+            <li>adapter contract tests</li>
+            <li>browser boundary safety tests</li>
+            <li>candidate identity and handoff idempotency tests</li>
+            <li>retention and audit tests</li>
+          </ul>
+          <h3>Implementation sequence after review</h3>
+          <ol>
+            <li>Resolve the open decisions in Section 2.</li>
+            <li>Expand this summary into the final decision-complete design.</li>
+            <li>Produce the implementation plan.</li>
+            <li>Implement in bounded phases.</li>
+            <li>Verify before any production enablement.</li>
+          </ol>
+          <div class="callout">
+            <strong>Non-action:</strong> this document does not implement code, create PostgreSQL, alter the Playwright container, enable boards, define the Job Ops contract, or deploy the service.
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

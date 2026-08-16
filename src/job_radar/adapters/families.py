@@ -12,43 +12,23 @@ def generate_fingerprint(company: str, title: str, location: Optional[str] = Non
 def extract_html_job_links(html: str, board_name: str, target_url: str) -> List[ExtractedCandidate]:
     results = []
     seen_urls = set()
-    hrefs = re.findall(r'href=["\']([^"\']+)["\']', html)
-    job_keywords = ['/job/', '/jobs/', '/careers/', 'gh_jid=', '/posting/', '/opportunities/', 'jobid=', '/resilinc/', '/weave/', '/aspora/', '/plane/', '/cognite/', '/open-roles/', '/search-jobs/', '/job_details/']
+    parsed_target = urlparse(target_url)
 
-    lever_uuids = re.findall(r'href=["\'](https?://jobs\.lever\.co/[^/]+/[a-f0-9\-]{36})["\']', html)
-    hrefs.extend(lever_uuids)
-    ashby_uuids = re.findall(r'href=["\'](https?://jobs\.ashbyhq\.com/[^/]+/[a-f0-9\-]{36})["\']', html)
-    hrefs.extend(ashby_uuids)
+    job_path_keywords = [
+        '/job/', '/jobs/', '/careers/job/', 'gh_jid=', '/posting/', '/opportunities/',
+        '/job_details/', '/job-detail/', '/careers-list/', '/open-roles/', 'R-'
+    ]
 
-    google_jobs = re.findall(r'href=["\'](\./jobs/results/[a-zA-Z0-9_\-]+)["\']', html)
-    hrefs.extend(google_jobs)
-    meta_jobs = re.findall(r'href=["\'](/profile/job_details/[0-9]+)["\']', html)
-    hrefs.extend(meta_jobs)
-
-    for href in hrefs:
-        href_lower = href.lower()
-        if any(k in href_lower for k in job_keywords) or re.search(r'[a-f0-9]{8}-[a-f0-9]{4}|job_details', href_lower):
-            if href.startswith('/'):
-                parsed = urlparse(target_url)
-                full_url = f"{parsed.scheme}://{parsed.netloc}{href}"
-            elif href.startswith('./'):
-                parsed = urlparse(target_url)
-                full_url = f"{parsed.scheme}://{parsed.netloc}/about/careers/applications/{href.lstrip('./')}"
-            elif href.startswith('http'):
-                full_url = href
-            else:
+    # Specific Google Careers link pattern matching
+    if 'google' in board_name.lower() or 'google.com' in parsed_target.netloc:
+        google_matches = re.findall(r'href=["\'](\./jobs/results/[0-9]+[a-zA-Z0-9_\-]+)["\']', html)
+        for g_href in google_matches:
+            full_url = f"https://www.google.com/about/careers/applications/{g_href.lstrip('./')}"
+            if full_url in seen_urls or full_url.rstrip('/') == 'https://www.google.com/about/careers/applications/jobs/results':
                 continue
-
-            if full_url in seen_urls or full_url.rstrip('/') == target_url.rstrip('/'):
-                continue
-            if any(x in full_url.lower() for x in ['search', 'privacy', 'terms', 'login', 'signin', 'cookie', 'gstatic']):
-                continue
-
             seen_urls.add(full_url)
-
-            slug = full_url.rstrip('/').split('/')[-1].replace('-', ' ').replace('_', ' ').capitalize()
-            title = slug if len(slug) > 3 else f"Position at {board_name}"
-
+            slug = full_url.split('/')[-1]
+            title = re.sub(r'^[0-9]+-', '', slug).replace('-', ' ').title()
             fp = generate_fingerprint(board_name, title, "India")
             results.append(
                 ExtractedCandidate(
@@ -62,6 +42,65 @@ def extract_html_job_links(html: str, board_name: str, target_url: str) -> List[
                     extra_payload={"source_html": True}
                 )
             )
+
+    matches = re.findall(r'<a\s+[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', html, re.DOTALL | re.IGNORECASE)
+
+    for href, inner in matches:
+        href_lower = href.lower()
+        is_job = any(k in href_lower for k in job_path_keywords) or bool(re.search(r'R-\d+|_R\d+|/job_details/\d+|/details/\d+|/jobs/[0-9a-f\-]{10,}', href_lower))
+        if not is_job:
+            continue
+
+        if any(x in href_lower for x in ['/privacy', '/terms', '/login', '/signin', '/cookie', 'gstatic', 'facebook.com', 'twitter.com', 'linkedin.com', 'recommendations', 'saved', 'alerts', '.pdf']):
+            continue
+
+        if href.startswith('/'):
+            full_url = f"{parsed_target.scheme}://{parsed_target.netloc}{href}"
+        elif href.startswith('./'):
+            full_url = f"{parsed_target.scheme}://{parsed_target.netloc}/about/careers/applications/{href.lstrip('./')}"
+        elif href.startswith('http'):
+            full_url = href
+        else:
+            continue
+
+        clean_url = full_url.split('?')[0] if '?' in full_url and not any(k in full_url for k in ['gh_jid=', 'jobId=', 'team=']) else full_url
+
+        if clean_url in seen_urls or clean_url.rstrip('/') == target_url.rstrip('/'):
+            continue
+        if clean_url.rstrip('/') == 'https://www.google.com/about/careers/applications/jobs/results':
+            continue
+
+        seen_urls.add(clean_url)
+
+        clean_text = re.sub(r'<[^>]+>', ' ', inner).strip()
+        clean_text = ' '.join(clean_text.split())
+
+        if 'highradius' in board_name.lower() or 'gh_jid=' in clean_url:
+            match_hr = re.search(r'(?:[A-Z][a-z]+\s+\d{4}|United States|India|State)\s+([A-Za-z0-9\s\-\/\,]+?)(?:<h3|&lt;h3|Summary|Job Description|$)', clean_text)
+            if match_hr and len(match_hr.group(1).strip()) > 3:
+                title = match_hr.group(1).strip()
+            else:
+                title = clean_text.split('Summary')[0].strip()
+        elif clean_text and len(clean_text) > 3 and not any(x in clean_text.lower() for x in ['apply', 'view', 'read more', 'learn more', 'details', 'work_outline', 'results']):
+            title = clean_text.split(' ⋅ ')[0].split(' Bangalore')[0].split(' India')[0].strip()
+        else:
+            slug = clean_url.rstrip('/').split('/')[-1]
+            slug_clean = re.sub(r'^[0-9a-f\-]+[-_]', '', slug).replace('-', ' ').replace('_', ' ').title()
+            title = slug_clean if len(slug_clean) > 3 else f"Position at {board_name}"
+
+        fp = generate_fingerprint(board_name, title, "India")
+        results.append(
+            ExtractedCandidate(
+                title=title,
+                company=board_name,
+                location="India",
+                department=None,
+                employment_type="Full-time",
+                raw_url=clean_url,
+                fingerprint=fp,
+                extra_payload={"source_html": True}
+            )
+        )
 
     return results
 
@@ -289,44 +328,7 @@ class WorkdayAdapter(BaseAdapter):
         except Exception:
             pass
 
-        seen_urls = set()
-        hrefs = re.findall(r'href=["\']([^"\']+)["\']', payload)
-        parsed_target = urlparse(target_url)
-
-        for href in hrefs:
-            href_lower = href.lower()
-            if any(k in href_lower for k in ['/job/', '/details/', '/en-us/']) or re.search(r'R-\d+|_R\d+|\bjob\b', href_lower):
-                if href.startswith('/'):
-                    full_url = f"{parsed_target.scheme}://{parsed_target.netloc}{href}"
-                elif href.startswith('http'):
-                    full_url = href
-                else:
-                    continue
-
-                if full_url in seen_urls or full_url.rstrip('/') == target_url.rstrip('/'):
-                    continue
-                if any(x in full_url.lower() for x in ['search', 'privacy', 'terms', 'login', 'signin', 'cookie']):
-                    continue
-
-                seen_urls.add(full_url)
-                slug = full_url.rstrip('/').split('/')[-1].replace('-', ' ').replace('_', ' ').capitalize()
-                title = slug if len(slug) > 3 else f"Position at {board_name}"
-
-                fp = generate_fingerprint(board_name, title, "India")
-                results.append(
-                    ExtractedCandidate(
-                        title=title,
-                        company=board_name,
-                        location="India",
-                        department=None,
-                        employment_type="Full-time",
-                        raw_url=full_url,
-                        fingerprint=fp,
-                        extra_payload={"source_workday_dom": True}
-                    )
-                )
-
-        return results
+        return extract_html_job_links(payload, board_name, target_url)
 
 class GenericAdapter(BaseAdapter):
     def __init__(self, family_name: str):

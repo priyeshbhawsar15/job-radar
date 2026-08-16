@@ -4,64 +4,64 @@
     "name": "Oracle",
     "family": "oracle",
     "status": "success",
-    "extracted": 3,
-    "notes": "Extracted 3 candidates"
+    "extracted": 14,
+    "notes": "Extracted 14 candidates"
   },
   {
     "board_id": "board-walmart",
     "name": "Walmart",
     "family": "workday",
     "status": "success",
-    "extracted": 21,
-    "notes": "Extracted 21 candidates"
+    "extracted": 20,
+    "notes": "Extracted 20 candidates"
   },
   {
     "board_id": "board-amex",
     "name": "AMEX",
     "family": "oracle",
     "status": "success",
-    "extracted": 15,
-    "notes": "Extracted 15 candidates"
+    "extracted": 7,
+    "notes": "Extracted 7 candidates"
   },
   {
     "board_id": "board-solera",
     "name": "Solera",
     "family": "workday",
     "status": "success",
-    "extracted": 16,
-    "notes": "Extracted 16 candidates"
+    "extracted": 15,
+    "notes": "Extracted 15 candidates"
   },
   {
     "board_id": "board-google",
     "name": "Google",
     "family": "google_careers",
-    "status": "success",
-    "extracted": 10,
-    "notes": "Extracted 10 candidates"
+    "status": "issue",
+    "extracted": 0,
+    "notes": "Outcome: success, extracted: 0, error: None"
   },
   {
     "board_id": "board-jpmc",
     "name": "JPMC",
     "family": "oracle",
     "status": "success",
-    "extracted": 28,
-    "notes": "Extracted 28 candidates"
+    "extracted": 25,
+    "notes": "Extracted 25 candidates"
   },
   {
     "board_id": "board-qualcomm",
     "name": "Qualcomm",
     "family": "eightfold",
     "status": "success",
-    "extracted": 26,
-    "notes": "Extracted 26 candidates"
+    "extracted": 19,
+    "notes": "Extracted 19 candidates"
   },
   {
     "board_id": "board-microsoft",
     "name": "Microsoft",
     "family": "eightfold",
     "status": "success",
-    "extracted": 22,
-    "notes": "Extracted 22 candidates"
+    "extracted": 17,
+    "notes": "Extracted 17 candidates"
   },
   {
     "board_id": "board-amazon",
@@ -75,9 +75,9 @@
     "board_id": "board-tesco",
     "name": "Tesco",
     "family": "avature",
-    "status": "success",
-    "extracted": 25,
-    "notes": "Extracted 25 candidates"
+    "status": "issue",
+    "extracted": 0,
+    "notes": "Outcome: success, extracted: 0, error: None"
   },
   {
     "board_id": "board-rbctech",
@@ -100,8 +100,8 @@
     "name": "Cisco",
     "family": "workday",
     "status": "success",
-    "extracted": 21,
-    "notes": "Extracted 21 candidates"
+    "extracted": 20,
+    "notes": "Extracted 20 candidates"
   },
   {
     "board_id": "board-cognite",
@@ -115,73 +115,73 @@
     "board_id": "board-weave",
     "name": "Weave",
     "family": "ashby",
-    "status": "success",
-    "extracted": 7,
-    "notes": "Extracted 7 candidates"
+    "status": "issue",
+    "extracted": 0,
+    "notes": "Outcome: success, extracted: 0, error: None"
   },
   {
     "board_id": "board-resilinc",
     "name": "Resilinc",
     "family": "lever",
-    "status": "success",
-    "extracted": 1,
-    "notes": "Extracted 1 candidates"
+    "status": "issue",
+    "extracted": 0,
+    "notes": "Outcome: success, extracted: 0, error: None"
   },
   {
     "board_id": "board-thomsonreuters",
     "name": "Thomson Reuters",
     "family": "workday",
     "status": "success",
-    "extracted": 22,
-    "notes": "Extracted 22 candidates"
+    "extracted": 20,
+    "notes": "Extracted 20 candidates"
   },
   {
     "board_id": "board-aspora",
     "name": "Aspora",
     "family": "ashby",
-    "status": "success",
-    "extracted": 4,
-    "notes": "Extracted 4 candidates"
+    "status": "issue",
+    "extracted": 0,
+    "notes": "Outcome: success, extracted: 0, error: None"
   },
   {
     "board_id": "board-wynploy",
     "name": "Wynploy",
     "family": "zoho",
     "status": "success",
-    "extracted": 23,
-    "notes": "Extracted 23 candidates"
+    "extracted": 24,
+    "notes": "Extracted 24 candidates"
   },
   {
     "board_id": "board-tp",
     "name": "TP",
     "family": "workday",
     "status": "success",
-    "extracted": 21,
-    "notes": "Extracted 21 candidates"
+    "extracted": 20,
+    "notes": "Extracted 20 candidates"
   },
   {
     "board_id": "board-eisneramper",
     "name": "EisnerAmper",
     "family": "workday",
     "status": "success",
-    "extracted": 4,
-    "notes": "Extracted 4 candidates"
+    "extracted": 3,
+    "notes": "Extracted 3 candidates"
   },
   {
     "board_id": "board-abnormalai",
     "name": "Abnormal AI",
     "family": "custom",
-    "status": "success",
-    "extracted": 1,
-    "notes": "Extracted 1 candidates"
+    "status": "issue",
+    "extracted": 0,
+    "notes": "Outcome: success, extracted: 0, error: None"
   },
   {
     "board_id": "board-plane",
     "name": "Plane",
     "family": "ashby",
-    "status": "success",
-    "extracted": 6,
-    "notes": "Extracted 6 candidates"
+    "status": "issue",
+    "extracted": 0,
+    "notes": "Outcome: success, extracted: 0, error: None"
   },
   {
     "board_id": "board-ameriprise",
@@ -195,9 +195,9 @@
     "board_id": "board-celonis",
     "name": "Celonis",
     "family": "custom",
-    "status": "success",
-    "extracted": 254,
-    "notes": "Extracted 254 candidates"
+    "status": "issue",
+    "extracted": 0,
+    "notes": "Outcome: success, extracted: 0, error: None"
   },
   {
     "board_id": "board-highradius",
@@ -212,8 +212,8 @@
     "name": "HP",
     "family": "eightfold",
     "status": "success",
-    "extracted": 21,
-    "notes": "Extracted 21 candidates"
+    "extracted": 18,
+    "notes": "Extracted 18 candidates"
   },
   {
     "board_id": "board-coupa",
@@ -228,16 +228,16 @@
     "name": "Philips",
     "family": "phenom",
     "status": "success",
-    "extracted": 15,
-    "notes": "Extracted 15 candidates"
+    "extracted": 10,
+    "notes": "Extracted 10 candidates"
   },
   {
     "board_id": "board-novartis",
     "name": "Novartis",
     "family": "custom",
     "status": "success",
-    "extracted": 2,
-    "notes": "Extracted 2 candidates"
+    "extracted": 1,
+    "notes": "Extracted 1 candidates"
   },
   {
     "board_id": "board-adobe",
@@ -276,16 +276,16 @@
     "name": "Mattel",
     "family": "custom",
     "status": "success",
-    "extracted": 16,
-    "notes": "Extracted 16 candidates"
+    "extracted": 15,
+    "notes": "Extracted 15 candidates"
   },
   {
     "board_id": "board-apple",
     "name": "Apple",
     "family": "apple_jobs",
     "status": "success",
-    "extracted": 31,
-    "notes": "Extracted 31 candidates"
+    "extracted": 22,
+    "notes": "Extracted 22 candidates"
   },
   {
     "board_id": "board-meta",

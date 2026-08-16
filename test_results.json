@@ -4,8 +4,8 @@
     "name": "Oracle",
     "family": "oracle",
     "status": "success",
-    "extracted": 18,
-    "notes": "Extracted 18 candidates"
+    "extracted": 3,
+    "notes": "Extracted 3 candidates"
   },
   {
     "board_id": "board-walmart",
@@ -20,8 +20,8 @@
     "name": "AMEX",
     "family": "oracle",
     "status": "success",
-    "extracted": 16,
-    "notes": "Extracted 16 candidates"
+    "extracted": 15,
+    "notes": "Extracted 15 candidates"
   },
   {
     "board_id": "board-solera",
@@ -35,9 +35,9 @@
     "board_id": "board-google",
     "name": "Google",
     "family": "google_careers",
-    "status": "skipped_manual_policy",
-    "extracted": 0,
-    "notes": "Manual-only policy (robots/public access constraint)"
+    "status": "success",
+    "extracted": 10,
+    "notes": "Extracted 10 candidates"
   },
   {
     "board_id": "board-jpmc",
@@ -52,8 +52,8 @@
     "name": "Qualcomm",
     "family": "eightfold",
     "status": "success",
-    "extracted": 27,
-    "notes": "Extracted 27 candidates"
+    "extracted": 26,
+    "notes": "Extracted 26 candidates"
   },
   {
     "board_id": "board-microsoft",
@@ -76,8 +76,8 @@
     "name": "Tesco",
     "family": "avature",
     "status": "success",
-    "extracted": 39,
-    "notes": "Extracted 39 candidates"
+    "extracted": 25,
+    "notes": "Extracted 25 candidates"
   },
   {
     "board_id": "board-rbctech",
@@ -148,8 +148,8 @@
     "name": "Wynploy",
     "family": "zoho",
     "status": "success",
-    "extracted": 24,
-    "notes": "Extracted 24 candidates"
+    "extracted": 23,
+    "notes": "Extracted 23 candidates"
   },
   {
     "board_id": "board-tp",
@@ -187,9 +187,9 @@
     "board_id": "board-ameriprise",
     "name": "Ameriprise",
     "family": "phenom",
-    "status": "success",
-    "extracted": 22,
-    "notes": "Extracted 22 candidates"
+    "status": "issue",
+    "extracted": 0,
+    "notes": "Outcome: success, extracted: 0, error: None"
   },
   {
     "board_id": "board-celonis",
@@ -228,16 +228,16 @@
     "name": "Philips",
     "family": "phenom",
     "status": "success",
-    "extracted": 16,
-    "notes": "Extracted 16 candidates"
+    "extracted": 15,
+    "notes": "Extracted 15 candidates"
   },
   {
     "board_id": "board-novartis",
     "name": "Novartis",
     "family": "custom",
     "status": "success",
-    "extracted": 15,
-    "notes": "Extracted 15 candidates"
+    "extracted": 2,
+    "notes": "Extracted 2 candidates"
   },
   {
     "board_id": "board-adobe",
@@ -276,23 +276,23 @@
     "name": "Mattel",
     "family": "custom",
     "status": "success",
-    "extracted": 19,
-    "notes": "Extracted 19 candidates"
+    "extracted": 16,
+    "notes": "Extracted 16 candidates"
   },
   {
     "board_id": "board-apple",
     "name": "Apple",
     "family": "apple_jobs",
     "status": "success",
-    "extracted": 32,
-    "notes": "Extracted 32 candidates"
+    "extracted": 31,
+    "notes": "Extracted 31 candidates"
   },
   {
     "board_id": "board-meta",
     "name": "Meta",
     "family": "meta_careers",
-    "status": "skipped_manual_policy",
-    "extracted": 0,
-    "notes": "Manual-only policy (robots/public access constraint)"
+    "status": "success",
+    "extracted": 10,
+    "notes": "Extracted 10 candidates"
   }
 ]

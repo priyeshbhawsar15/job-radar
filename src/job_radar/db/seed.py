@@ -43,7 +43,7 @@ CANONICAL_BOARDS = [
         "name": "Google",
         "family": "google_careers",
         "target_url": "https://www.google.com/about/careers/applications/jobs/results?location=India&q=%22Software%20Engineer%22&target_level=MID&employment_type=FULL_TIME&sort_by=date",
-        "config": {"manual_only": True, "country": "India"}
+        "config": {"country": "India"}
     },
     {
         "board_id": "board-jpmc",
@@ -267,7 +267,7 @@ CANONICAL_BOARDS = [
         "name": "Meta",
         "family": "meta_careers",
         "target_url": "https://www.metacareers.com/jobsearch/?sort_by_new=true&offices[0]=Bangalore%2C%20India&offices[1]=Hyderabad%2C%20India&offices[2]=Mumbai%2C%20India&offices[3]=New%20Delhi%2C%20India&offices[4]=Gurgaon%2C%20India&roles[0]=Full%20time%20employment",
-        "config": {"manual_only": True, "country": "India"}
+        "config": {"country": "India"}
     }
 ]
 

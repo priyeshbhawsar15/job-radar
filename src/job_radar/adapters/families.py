@@ -13,19 +13,27 @@ def extract_html_job_links(html: str, board_name: str, target_url: str) -> List[
     results = []
     seen_urls = set()
     hrefs = re.findall(r'href=["\']([^"\']+)["\']', html)
-    job_keywords = ['/job/', '/jobs/', '/careers/', 'gh_jid=', '/posting/', '/opportunities/', 'jobid=', '/resilinc/', '/weave/', '/aspora/', '/plane/', '/cognite/', '/open-roles/', '/search-jobs/']
+    job_keywords = ['/job/', '/jobs/', '/careers/', 'gh_jid=', '/posting/', '/opportunities/', 'jobid=', '/resilinc/', '/weave/', '/aspora/', '/plane/', '/cognite/', '/open-roles/', '/search-jobs/', '/job_details/']
 
     lever_uuids = re.findall(r'href=["\'](https?://jobs\.lever\.co/[^/]+/[a-f0-9\-]{36})["\']', html)
     hrefs.extend(lever_uuids)
     ashby_uuids = re.findall(r'href=["\'](https?://jobs\.ashbyhq\.com/[^/]+/[a-f0-9\-]{36})["\']', html)
     hrefs.extend(ashby_uuids)
 
+    google_jobs = re.findall(r'href=["\'](\./jobs/results/[a-zA-Z0-9_\-]+)["\']', html)
+    hrefs.extend(google_jobs)
+    meta_jobs = re.findall(r'href=["\'](/profile/job_details/[0-9]+)["\']', html)
+    hrefs.extend(meta_jobs)
+
     for href in hrefs:
         href_lower = href.lower()
-        if any(k in href_lower for k in job_keywords) or re.search(r'[a-f0-9]{8}-[a-f0-9]{4}', href_lower):
+        if any(k in href_lower for k in job_keywords) or re.search(r'[a-f0-9]{8}-[a-f0-9]{4}|job_details', href_lower):
             if href.startswith('/'):
                 parsed = urlparse(target_url)
                 full_url = f"{parsed.scheme}://{parsed.netloc}{href}"
+            elif href.startswith('./'):
+                parsed = urlparse(target_url)
+                full_url = f"{parsed.scheme}://{parsed.netloc}/about/careers/applications/{href.lstrip('./')}"
             elif href.startswith('http'):
                 full_url = href
             else:
@@ -33,6 +41,9 @@ def extract_html_job_links(html: str, board_name: str, target_url: str) -> List[
 
             if full_url in seen_urls or full_url.rstrip('/') == target_url.rstrip('/'):
                 continue
+            if any(x in full_url.lower() for x in ['search', 'privacy', 'terms', 'login', 'signin', 'cookie', 'gstatic']):
+                continue
+
             seen_urls.add(full_url)
 
             slug = full_url.rstrip('/').split('/')[-1].replace('-', ' ').replace('_', ' ').capitalize()

@@ -27,7 +27,7 @@ export const Runs: React.FC = () => {
               held: 0,
               boardRuns: [
                 {
-                  boardId: r.board_id || 'oracle',
+                  boardId: r.board_id,
                   state: r.outcome === 'success' ? 'completed' : 'failed',
                   outcome: `${r.extracted_count || 0} extracted`,
                   boardRunId: r.run_id,

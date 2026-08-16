@@ -30,7 +30,7 @@ export const Jobs: React.FC = () => {
               posted: j.first_seen_at ? j.first_seen_at.split('T')[0] : '2026-08-20',
               type: j.employment_type || 'Full-time',
               department: j.department || 'Engineering',
-              board: j.board_id || 'oracle',
+              board: j.board_id,
               source: j.source || `${j.board_id}:${j.candidate_id}`,
               revision: 'rev-01',
               discovered: j.first_seen_at || new Date().toISOString(),

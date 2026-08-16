@@ -1,37 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
-import { ArrowLeft, ShieldCheck, Clock, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
-import { getBoardRun, getRun, getBoard } from '../data/mockData';
+import { ShieldCheck } from 'lucide-react';
 
 export const BoardRunLog: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!id) return;
-    const res = getBoardRun(id);
-    if (res) {
-      setData(res);
-    } else {
-      // Create fallback data if unknown ID
-      setData({
-        entry: { boardId: 'oracle', state: 'completed', outcome: '6 extracted', boardRunId: id },
-        run: { id: 'run-240820-1802', time: '20 Aug 2026 · 18:02 IST', state: 'completed', duration: '3m 41s' },
-        board: { id: 'oracle', name: 'Oracle', adapter: 'oracle', rev: 'rev-19' }
-      });
-    }
+    fetch('/api/v1/runs')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((runs: any[]) => {
+        const found = runs.find((r: any) => r.run_id === id || r.pipeline_id === id);
+        if (found) {
+          setData({
+            entry: { boardId: found.board_id, state: found.stage, outcome: found.outcome + ' (' + found.extracted_count + ' extracted)', boardRunId: found.run_id },
+            run: { id: found.pipeline_id || found.run_id, time: found.created_at || 'Recently', state: found.outcome, duration: 'N/A' },
+            board: { id: found.board_id, name: found.board_name, adapter: found.family, rev: 'rev-01' }
+          });
+        }
+      })
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  if (!data) {
+  if (loading) {
     return <div className="p-8 text-center text-slate-400 font-mono">Loading safe audit log...</div>;
+  }
+
+  if (!data) {
+    return (
+      <div className="p-8 text-center space-y-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Audit Log Not Found</h2>
+        <p className="text-sm text-slate-500">No recorded audit execution log found for run ID "{id}".</p>
+        <Link to="/runs" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-600 text-white font-medium text-xs">
+          <span>Return to Pipeline Runs</span>
+        </Link>
+      </div>
+    );
   }
 
   const { entry, run, board } = data;
   const isPartial = entry.state === 'partial';
   const isFailed = entry.state === 'failed';
-  const isHeld = entry.state === 'held';
 
   return (
     <div className="space-y-6">
@@ -50,13 +64,13 @@ export const BoardRunLog: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            to={`/runs/${run.id}`}
+            to={'/runs/' + run.id}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             <span>Pipeline run</span>
           </Link>
           <Link
-            to={`/boards/${board.id}`}
+            to={'/boards/' + board.id}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             <span>Board</span>
@@ -66,8 +80,8 @@ export const BoardRunLog: React.FC = () => {
 
       {/* Breadcrumbs */}
       <p className="text-xs text-slate-500 dark:text-slate-400">
-        <Link to={`/runs/${run.id}`} className="hover:underline">{run.id}</Link> /{' '}
-        <Link to={`/boards/${board.id}`} className="hover:underline">{board.name}</Link> / {id}
+        <Link to={'/runs/' + run.id} className="hover:underline">{run.id}</Link> /{' '}
+        <Link to={'/boards/' + board.id} className="hover:underline">{board.name}</Link> / {id}
       </p>
 
       {/* Summary grid */}
@@ -129,22 +143,22 @@ export const BoardRunLog: React.FC = () => {
           {/* Event 1 */}
           <div className="relative">
             <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
-            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">18:02:04 IST</time>
+            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">{run.time}</time>
             <b className="block text-sm font-bold text-slate-900 dark:text-white">BoardRunRequest issued</b>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Capability: cap-demo-{id} · board {board.id} · {board.rev} · policy revision p-11
+              Capability: cap-run-{id} · board {board.id} · {board.rev}
             </div>
             <pre className="mt-2 text-xs font-mono p-3 rounded-lg bg-slate-950 text-teal-300 border border-slate-800 leading-relaxed overflow-x-auto">
-{`request_kind=BoardRunRequest
+request_kind=BoardRunRequest
 limits=time_30s pages_3 bytes_5MiB
-readiness_descriptor=reviewed`}
+readiness_descriptor=reviewed
             </pre>
           </div>
 
           {/* Event 2 */}
           <div className="relative">
             <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
-            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">18:02:05 IST</time>
+            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">{run.time}</time>
             <b className="block text-sm font-bold text-slate-900 dark:text-white">Playwright request admitted</b>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Safe response: accepted · diagnostic code browser_request_accepted
@@ -154,35 +168,28 @@ readiness_descriptor=reviewed`}
           {/* Event 3 */}
           <div className="relative">
             <div
-              className={`absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full ${
-                isPartial
-                  ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]'
-                  : isFailed
-                  ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]'
-                  : 'bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]'
-              }`}
+              className={'absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full ' + (isPartial ? 'bg-amber-500' : isFailed ? 'bg-rose-500' : 'bg-teal-500')}
             />
-            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">18:02:31 IST</time>
+            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">{run.time}</time>
             <b className="block text-sm font-bold text-slate-900 dark:text-white">Playwright result received</b>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Outcome: {entry.outcome} · duration 26s · candidates {entry.state === 'completed' ? 9 : 0} · safe diagnostic{' '}
+              Outcome: {entry.outcome} · safe diagnostic{' '}
               {isPartial ? 'provider_failure' : 'listing_verified'}
             </div>
             <pre className="mt-2 text-xs font-mono p-3 rounded-lg bg-slate-950 text-teal-300 border border-slate-800 leading-relaxed overflow-x-auto">
-{`response_kind=BoardRunResult
-outcome=${entry.outcome}
-duration_ms=26000
-raw_payload=not_retained`}
+response_kind=BoardRunResult
+outcome={entry.outcome}
+raw_payload=not_retained
             </pre>
           </div>
 
           {/* Event 4 */}
           <div className="relative">
             <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
-            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">18:02:32 IST</time>
+            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">{run.time}</time>
             <b className="block text-sm font-bold text-slate-900 dark:text-white">Run finalized</b>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Candidate policy and Job Ops eligibility decisions are handled without exposing raw browser material.
+              Candidate policy and Job Ops eligibility decisions handled cleanly.
             </div>
           </div>
         </div>

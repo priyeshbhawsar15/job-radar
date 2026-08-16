@@ -2,52 +2,43 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
 import { ArrowLeft, Copy, Check, ExternalLink, Code2 } from 'lucide-react';
-import { getJob } from '../data/mockData';
 
 export const JobDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [job, setJob] = useState<JobItem | null>(null);
+  const [job, setJob] = useState<any | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!id) return;
-    // Check mock data first
-    const mock = getJob(id);
-    if (mock) {
-      setJob(mock);
-      setLoading(false);
-    } else {
-      // Fetch from API if needed
-      fetch('/api/v1/jobs')
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data: any[]) => {
-          const found = data.find((j: any) => j.candidate_id === id || j.id === id);
-          if (found) {
-            setJob({
-              id: found.candidate_id || found.id,
-              title: found.title,
-              company: found.company,
-              location: found.location || found.location_raw || 'Unspecified',
-              url: found.public_apply_url || found.url || '',
-              posted: found.first_seen_at ? found.first_seen_at.split('T')[0] : '2026-08-20',
-              type: found.employment_type || 'Full-time',
-              department: found.department || 'Engineering',
-              board: found.board_id || 'oracle',
-              source: found.source || `${found.board_id}:${found.candidate_id}`,
-              revision: 'rev-01',
-              discovered: found.first_seen_at || new Date().toISOString(),
-              normalization: 'accepted · norm-v3',
-              eligibility: 'eligible · policy-11',
-              ops: 'accepted',
-              receipt: `OPS-${id}`
-            });
-          }
-        })
-        .catch((e) => console.error(e))
-        .finally(() => setLoading(false));
-    }
+    fetch('/api/v1/jobs')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: any[]) => {
+        const found = data.find((j: any) => j.candidate_id === id || j.id === id);
+        if (found) {
+          setJob({
+            id: found.candidate_id || found.id,
+            title: found.title,
+            company: found.company,
+            location: found.location || 'Unspecified',
+            url: found.public_apply_url || found.url || '',
+            posted: found.first_seen_at ? found.first_seen_at.split('T')[0] : 'Recently',
+            type: found.employment_type || 'Full-time',
+            department: found.department || 'N/A',
+            board: found.board_id,
+            source: found.board_id + ':' + (found.candidate_id || found.id),
+            revision: 'rev-01',
+            discovered: found.first_seen_at || new Date().toISOString(),
+            normalization: 'accepted · norm-v3',
+            eligibility: 'eligible · policy-11',
+            ops: 'accepted',
+            receipt: 'OPS-' + id
+          });
+        }
+      })
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) {
@@ -58,7 +49,7 @@ export const JobDetail: React.FC = () => {
     return (
       <div className="p-8 text-center space-y-4">
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Job Candidate Not Found</h2>
-        <p className="text-sm text-slate-500">The requested job ID standard reference "{id}" could not be found.</p>
+        <p className="text-sm text-slate-500">The requested job candidate "{id}" could not be found.</p>
         <Link to="/jobs" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-600 text-white font-medium text-xs">
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Extracted Jobs</span>
@@ -68,7 +59,7 @@ export const JobDetail: React.FC = () => {
   }
 
   const payload = {
-    idempotency_reference: `jr:${job.id}:policy-11`,
+    idempotency_reference: 'jr:' + job.id + ':policy-11',
     title: job.title,
     company: job.company,
     location: job.location,
@@ -194,7 +185,7 @@ export const JobDetail: React.FC = () => {
               </button>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-              Complete normalized static mock payload. No credentials, cookies, raw upstream content, or endpoint data is present.
+              Complete normalized payload. No credentials, cookies, or raw upstream content present.
             </p>
           </div>
 

@@ -1,6 +1,7 @@
 import hashlib
 import json
 import re
+from urllib.parse import urlparse
 from typing import List, Dict, Any, Optional
 from job_radar.adapters.base import BaseAdapter, ExtractedCandidate
 
@@ -23,7 +24,6 @@ def extract_html_job_links(html: str, board_name: str, target_url: str) -> List[
         href_lower = href.lower()
         if any(k in href_lower for k in job_keywords) or re.search(r'[a-f0-9]{8}-[a-f0-9]{4}', href_lower):
             if href.startswith('/'):
-                from urllib.parse import urlparse
                 parsed = urlparse(target_url)
                 full_url = f"{parsed.scheme}://{parsed.netloc}{href}"
             elif href.startswith('http'):
@@ -245,8 +245,8 @@ class WorkdayAdapter(BaseAdapter):
             payload = payload.decode('utf-8')
 
         location_filter = (selector_config or {}).get("location")
-
         results: List[ExtractedCandidate] = []
+
         try:
             data = json.loads(payload)
             postings = data.get("jobPostings", [])
@@ -273,8 +273,47 @@ class WorkdayAdapter(BaseAdapter):
                         extra_payload={"bulletFields": item.get("bulletFields", [])}
                     )
                 )
+            if results:
+                return results
         except Exception:
-            return extract_html_job_links(payload, board_name, target_url)
+            pass
+
+        seen_urls = set()
+        hrefs = re.findall(r'href=["\']([^"\']+)["\']', payload)
+        parsed_target = urlparse(target_url)
+
+        for href in hrefs:
+            href_lower = href.lower()
+            if any(k in href_lower for k in ['/job/', '/details/', '/en-us/']) or re.search(r'R-\d+|_R\d+|\bjob\b', href_lower):
+                if href.startswith('/'):
+                    full_url = f"{parsed_target.scheme}://{parsed_target.netloc}{href}"
+                elif href.startswith('http'):
+                    full_url = href
+                else:
+                    continue
+
+                if full_url in seen_urls or full_url.rstrip('/') == target_url.rstrip('/'):
+                    continue
+                if any(x in full_url.lower() for x in ['search', 'privacy', 'terms', 'login', 'signin', 'cookie']):
+                    continue
+
+                seen_urls.add(full_url)
+                slug = full_url.rstrip('/').split('/')[-1].replace('-', ' ').replace('_', ' ').capitalize()
+                title = slug if len(slug) > 3 else f"Position at {board_name}"
+
+                fp = generate_fingerprint(board_name, title, "India")
+                results.append(
+                    ExtractedCandidate(
+                        title=title,
+                        company=board_name,
+                        location="India",
+                        department=None,
+                        employment_type="Full-time",
+                        raw_url=full_url,
+                        fingerprint=fp,
+                        extra_payload={"source_workday_dom": True}
+                    )
+                )
 
         return results
 

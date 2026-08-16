@@ -317,3 +317,11 @@ INFO:     192.168.2.90:50680 - "GET /api/v1/jobs HTTP/1.1" 200 OK
 INFO:     192.168.2.90:50682 - "GET /api/v1/boards HTTP/1.1" 200 OK
 INFO:     192.168.2.90:50682 - "GET /api/v1/runs HTTP/1.1" 200 OK
 INFO:     192.168.2.90:50680 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59086 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     Started server process [1874675]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     127.0.0.1:43248 - "GET /api/v1/health HTTP/1.1" 200 OK

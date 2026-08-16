@@ -30,7 +30,7 @@ def validate_target_url(target_url: str, registered_target_url: Optional[str] = 
     return True
 
 class BrowserServiceClient:
-    """Client communicating with private local Playwright microservice boundary."""
+    """Client communicating with private Playwright rendering boundary."""
 
     def __init__(self, service_url: Optional[str] = None):
         self.service_url = (service_url or settings.BROWSER_SERVICE_URL).rstrip("/")
@@ -44,7 +44,8 @@ class BrowserServiceClient:
             "Accept": "application/json, text/html, */*"
         }
 
-        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True, headers=headers) as client:
+        # 1. Try Playwright container microservice
+        async with httpx.AsyncClient(timeout=8.0, follow_redirects=True, headers=headers) as client:
             try:
                 response = await client.post(
                     f"{self.service_url}/render",
@@ -52,9 +53,32 @@ class BrowserServiceClient:
                 )
                 response.raise_for_status()
                 data = response.json()
-                return data.get("content", "")
-            except Exception as e:
-                logger.info(f"Browser service unavailable ({e}), using direct HTTP fetch for {target_url}")
-                resp = await client.get(target_url)
-                resp.raise_for_status()
-                return resp.text
+                content = data.get("content", "")
+                if content and len(content) > 500:
+                    return content
+            except Exception:
+                pass
+
+        # 2. Option B Fix for Type 1 Workday & SPA Boards: Local Headless Playwright Chromium
+        try:
+            from playwright.async_api import async_playwright
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(headless=True)
+                page = await browser.new_page(
+                    viewport={"width": 1440, "height": 1000},
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                )
+                await page.goto(target_url, wait_until="networkidle", timeout=25000)
+                await page.wait_for_timeout(2000)
+                content = await page.content()
+                await browser.close()
+                if content and len(content) > 500:
+                    return content
+        except Exception as e:
+            logger.info(f"Local Playwright fetch error ({e}), falling back to direct HTTP fetch for {target_url}")
+
+        # 3. Fallback: Direct HTTP GET
+        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True, headers=headers) as client:
+            resp = await client.get(target_url)
+            resp.raise_for_status()
+            return resp.text

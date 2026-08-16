@@ -9,6 +9,7 @@ from job_radar.db.session import AsyncSessionLocal
 from job_radar.db.models.candidate import CandidateJob, RunCandidate
 from job_radar.db.models.run import PipelineRun, BoardRun, ExecutionAttempt
 from job_radar.adapters.base import ExtractedCandidate
+from job_radar.services.detail_extractor import detail_extractor
 
 logger = logging.getLogger(__name__)
 
@@ -42,18 +43,25 @@ class NormalizationService:
                 )
                 existing_job = res.scalar_one_or_none()
 
-                extra = item.extra_payload or {}
-                desc = extra.get("description") or f"Full position requirements and responsibilities for {item.title} at {item.company}. Apply directly at original job listing link."
-                salary_raw = extra.get("salary_raw")
-                salary_min = extra.get("salary_min")
-                salary_max = extra.get("salary_max")
-                salary_currency = extra.get("salary_currency")
+                enriched = await detail_extractor.fetch_and_enrich(item.raw_url, item.company, item.title)
+
+                desc = enriched.get("description")
+                loc = enriched.get("location") or (item.location.strip() if item.location else "India")
+                emp_type = enriched.get("employment_type") or (item.employment_type.strip() if item.employment_type else "Full-time")
+                dept = enriched.get("department") or (item.department.strip() if item.department else "Engineering")
+                salary_raw = enriched.get("salary_raw") or "Competitive / Not specified"
 
                 if existing_job:
                     candidate_id = existing_job.candidate_id
                     existing_job.last_seen_at = datetime.now(timezone.utc)
-                    if not existing_job.description:
-                        existing_job.description = desc
+                    existing_job.description = desc
+                    existing_job.location = loc
+                    existing_job.employment_type = emp_type
+                    existing_job.department = dept
+                    existing_job.salary_raw = salary_raw
+                    existing_job.salary_min = enriched.get("salary_min")
+                    existing_job.salary_max = enriched.get("salary_max")
+                    existing_job.salary_currency = enriched.get("salary_currency")
                     outcome = "re_observed"
                 else:
                     new_job = CandidateJob(
@@ -62,15 +70,15 @@ class NormalizationService:
                         canonical_url_hash=url_hash,
                         company=item.company.strip(),
                         title=item.title.strip(),
-                        location=item.location.strip() if item.location else None,
-                        department=item.department.strip() if item.department else None,
-                        employment_type=item.employment_type.strip() if item.employment_type else None,
+                        location=loc,
+                        department=dept,
+                        employment_type=emp_type,
                         public_apply_url=item.raw_url,
                         description=desc,
                         salary_raw=salary_raw,
-                        salary_min=salary_min,
-                        salary_max=salary_max,
-                        salary_currency=salary_currency
+                        salary_min=enriched.get("salary_min"),
+                        salary_max=enriched.get("salary_max"),
+                        salary_currency=enriched.get("salary_currency")
                     )
                     session.add(new_job)
                     await session.flush()

@@ -1,7 +1,7 @@
 from datetime import datetime
 import uuid
 from typing import Optional, List, TYPE_CHECKING
-from sqlalchemy import String, DateTime, ForeignKey, Index, Text, UniqueConstraint
+from sqlalchemy import String, DateTime, ForeignKey, Index, Text, UniqueConstraint, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from job_radar.db.base import Base, utc_now
 
@@ -25,6 +25,11 @@ class CandidateJob(Base):
     posting_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     employment_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     department: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    salary_raw: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    salary_min: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    salary_max: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    salary_currency: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     discovered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
 
@@ -42,7 +47,7 @@ class RunCandidate(Base):
     run_id: Mapped[str] = mapped_column(String(36), ForeignKey("board_runs.board_run_id", ondelete="CASCADE"), primary_key=True)
     candidate_id: Mapped[str] = mapped_column(String(36), ForeignKey("candidate_jobs.candidate_id", ondelete="CASCADE"), primary_key=True)
     board_id: Mapped[str] = mapped_column(String(36), ForeignKey("boards.board_id", ondelete="CASCADE"), nullable=False)
-    observation_outcome: Mapped[str] = mapped_column(String(50), nullable=False, default="discovered")  # discovered, re_observed
+    observation_outcome: Mapped[str] = mapped_column(String(50), nullable=False, default="discovered")
     discovered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     board_run: Mapped["BoardRun"] = relationship("BoardRun", back_populates="run_candidates")

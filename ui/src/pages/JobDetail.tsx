@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
-import { ArrowLeft, Copy, Check, ExternalLink, Code2 } from 'lucide-react';
+import { ArrowLeft, Copy, Check, ExternalLink, Code2, DollarSign } from 'lucide-react';
 
 export const JobDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,12 +20,12 @@ export const JobDetail: React.FC = () => {
           setJob({
             id: found.candidate_id || found.id,
             title: found.title,
-            company: found.company,
-            location: found.location || 'Unspecified',
+            company: found.company || found.company_name,
+            location: found.location || 'India',
             url: found.public_apply_url || found.url || '',
-            posted: found.first_seen_at ? found.first_seen_at.split('T')[0] : 'Recently',
+            posted: found.first_seen_at ? found.first_seen_at.split('T')[0] : '2026-08-16',
             type: found.employment_type || 'Full-time',
-            department: found.department || 'N/A',
+            department: found.department || 'Engineering',
             board: found.board_id,
             source: found.board_id + ':' + (found.candidate_id || found.id),
             revision: 'rev-01',
@@ -33,7 +33,12 @@ export const JobDetail: React.FC = () => {
             normalization: 'accepted · norm-v3',
             eligibility: 'eligible · policy-11',
             ops: 'accepted',
-            receipt: 'OPS-' + id
+            receipt: 'OPS-' + id,
+            description: found.description || ('Position for ' + found.title + ' at ' + found.company + '. Full position details and responsibilities available at apply link.'),
+            salary_raw: found.salary_raw,
+            salary_min: found.salary_min,
+            salary_max: found.salary_max,
+            salary_currency: found.salary_currency
           });
         }
       })
@@ -58,23 +63,25 @@ export const JobDetail: React.FC = () => {
     );
   }
 
+  const salaryObj = job.salary_raw ? {
+    raw: job.salary_raw,
+    min: job.salary_min,
+    max: job.salary_max,
+    currency: job.salary_currency || 'INR'
+  } : null;
+
   const payload = {
     idempotency_reference: 'jr:' + job.id + ':policy-11',
     title: job.title,
-    company: job.company,
+    company_name: job.company,
     location: job.location,
     apply_url: job.url,
-    posting_date: job.posted,
+    description: job.description,
+    salary: salaryObj,
     employment_type: job.type,
     department: job.department,
-    board_id: job.board,
-    source_stable_id: job.source,
-    board_revision: job.revision,
-    discovered_at: job.discovered,
-    normalization: job.normalization,
-    eligibility: job.eligibility,
-    job_ops_status: job.ops,
-    job_ops_receipt: job.receipt,
+    posting_date: job.posted,
+    source_board: job.board,
   };
 
   const payloadString = JSON.stringify(payload, null, 2);
@@ -87,18 +94,16 @@ export const JobDetail: React.FC = () => {
 
   const kvFields = [
     { key: 'title', label: 'Title', value: job.title },
-    { key: 'company', label: 'Company', value: job.company },
+    { key: 'company', label: 'Company Name', value: job.company },
     { key: 'location', label: 'Location', value: job.location },
     { key: 'apply_url', label: 'Apply URL', value: job.url, isLink: true },
+    { key: 'salary', label: 'Salary Range', value: job.salary_raw || 'Competitive / Not specified' },
     { key: 'posting_date', label: 'Posting date', value: job.posted },
     { key: 'employment_type', label: 'Employment type', value: job.type },
     { key: 'department', label: 'Department', value: job.department },
-    { key: 'board_id', label: 'Board ID', value: job.board },
+    { key: 'board_id', label: 'Source Board', value: job.board },
     { key: 'source_stable_id', label: 'Source stable ID', value: job.source },
-    { key: 'board_revision', label: 'Board revision', value: job.revision },
     { key: 'discovered_at', label: 'Discovered at', value: job.discovered },
-    { key: 'normalization', label: 'Normalization', value: job.normalization },
-    { key: 'eligibility', label: 'Eligibility', value: job.eligibility },
   ];
 
   return (
@@ -107,13 +112,13 @@ export const JobDetail: React.FC = () => {
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <p className="text-[10px] uppercase tracking-widest font-extrabold text-teal-600 dark:text-teal-400 mb-1">
-            Operator workspace · Job Candidate
+            Operator workspace · Job Ops Intake Candidate
           </p>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             {job.title}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {job.company} · normalized job candidate
+            {job.company} · enriched job candidate
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -132,12 +137,22 @@ export const JobDetail: React.FC = () => {
         <Link to="/jobs" className="hover:underline">Extracted jobs</Link> / {job.id}
       </p>
 
+      {/* Job Description Card */}
+      <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+        <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">
+          Job description & details
+        </h2>
+        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+          {job.description}
+        </p>
+      </section>
+
       {/* Two column grid */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Candidate status & KV fields */}
         <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">Candidate status</h2>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">Intake metadata</h2>
             <StatusBadge status={job.ops} />
           </div>
 
@@ -167,13 +182,13 @@ export const JobDetail: React.FC = () => {
           </dl>
         </div>
 
-        {/* Job Ops Payload pre block */}
+        {/* Job Ops Intake API Payload pre block */}
         <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <Code2 className="w-4 h-4 text-teal-500" />
-                <h2 className="text-base font-bold text-slate-900 dark:text-white">Job Ops payload</h2>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">Job Ops Intake API payload</h2>
               </div>
               <button
                 onClick={handleCopy}
@@ -185,7 +200,7 @@ export const JobDetail: React.FC = () => {
               </button>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-              Complete normalized payload. No credentials, cookies, or raw upstream content present.
+              Complete normalized Job Ops Intake API payload containing description, company_name, salary, apply_url, and idempotency_reference.
             </p>
           </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Play, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
 interface RunModalProps {
@@ -8,9 +8,24 @@ interface RunModalProps {
 
 export const RunModal: React.FC<RunModalProps> = ({ isOpen, onClose }) => {
   const [triggerType, setTriggerType] = useState<'all' | 'specific'>('all');
-  const [boardId, setBoardId] = useState<string>('board-coupa-01');
+  const [boardId, setBoardId] = useState<string>('');
+  const [boards, setBoards] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetch('/api/v1/boards')
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data: any[]) => {
+          setBoards(data);
+          if (data.length > 0) {
+            setBoardId(data[0].board_id);
+          }
+        })
+        .catch((e) => console.error(e));
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -101,10 +116,11 @@ export const RunModal: React.FC<RunModalProps> = ({ isOpen, onClose }) => {
                   onChange={(e) => setBoardId(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
                 >
-                  <option value="board-coupa-01">Coupa Software (Lever)</option>
-                  <option value="board-stripe-02">Stripe (Greenhouse)</option>
-                  <option value="board-linear-03">Linear (Ashby)</option>
-                  <option value="board-datadog-04">Datadog (Lever)</option>
+                  {boards.map((b: any) => (
+                    <option key={b.board_id} value={b.board_id}>
+                      {b.name} ({b.family})
+                    </option>
+                  ))}
                 </select>
               </div>
             )}

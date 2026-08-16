@@ -14,19 +14,33 @@ export const RunModal: React.FC<RunModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
-    // Simulate run request POST /api/v1/runs/trigger
-    setTimeout(() => {
+    try {
+      const payload = triggerType === 'specific' ? { board_id: boardId } : {};
+      const res = await fetch('/api/v1/runs/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}`);
+      }
+
       setSubmitting(false);
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
         onClose();
       }, 1200);
-    }, 600);
+    } catch (err) {
+      console.error('Trigger run error:', err);
+      setSubmitting(false);
+      alert('Failed to trigger run.');
+    }
   };
 
   return (

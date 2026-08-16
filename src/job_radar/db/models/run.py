@@ -87,6 +87,7 @@ class BoardRun(Base):
     terminal_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     pipeline_run: Mapped["PipelineRun"] = relationship("PipelineRun", back_populates="board_runs")
+    board: Mapped["Board"] = relationship("Board", foreign_keys=[board_id])
     run_candidates: Mapped[List["RunCandidate"]] = relationship("RunCandidate", back_populates="board_run", cascade="all, delete-orphan")
 
     __table_args__ = (

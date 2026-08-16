@@ -1,74 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, Briefcase, ExternalLink, ChevronRight, X, Building2, MapPin } from 'lucide-react';
 
 export const Jobs: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [employmentFilter, setEmploymentFilter] = useState<string>('all');
   const [selectedJob, setSelectedJob] = useState<any | null>(null);
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const jobs = [
-    {
-      id: 'job-001-stripe-sr-backend',
-      title: 'Senior Backend Engineer - Core Payments',
-      company: 'Stripe',
-      location: 'San Francisco, CA (Hybrid)',
-      employmentType: 'full_time',
-      department: 'Engineering',
-      firstSeen: '2026-08-16T09:30:00Z',
-      lastSeen: '2026-08-16T09:30:00Z',
-      rawUrl: 'https://boards.greenhouse.io/stripe/jobs/4820192',
-      fingerprint: 'fp_a8f9c102b38d',
-      status: 'active'
-    },
-    {
-      id: 'job-002-datadog-staff-infra',
-      title: 'Staff Infrastructure Engineer - Telemetry Data',
-      company: 'Datadog',
-      location: 'New York, NY (Remote)',
-      employmentType: 'full_time',
-      department: 'Infrastructure',
-      firstSeen: '2026-08-16T08:45:00Z',
-      lastSeen: '2026-08-16T08:45:00Z',
-      rawUrl: 'https://jobs.lever.co/datadog/918273-infra',
-      fingerprint: 'fp_b7e6d5c4b3a2',
-      status: 'active'
-    },
-    {
-      id: 'job-003-linear-frontend-design',
-      title: 'Product Engineer - Design Systems',
-      company: 'Linear',
-      location: 'San Francisco, CA / Remote',
-      employmentType: 'full_time',
-      department: 'Product',
-      firstSeen: '2026-08-16T07:15:00Z',
-      lastSeen: '2026-08-16T07:15:00Z',
-      rawUrl: 'https://jobs.ashbyhq.com/linear/fe-design',
-      fingerprint: 'fp_c3b2a1098765',
-      status: 'active'
-    },
-    {
-      id: 'job-004-stripe-security-eng',
-      title: 'Security Operations Engineer',
-      company: 'Stripe',
-      location: 'Seattle, WA',
-      employmentType: 'full_time',
-      department: 'Security',
-      firstSeen: '2026-08-15T12:00:00Z',
-      lastSeen: '2026-08-16T09:30:00Z',
-      rawUrl: 'https://boards.greenhouse.io/stripe/jobs/9920124',
-      fingerprint: 'fp_d4e5f67890ab',
-      status: 'active'
-    }
-  ];
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const res = await fetch('/api/v1/jobs');
+        if (res.ok) {
+          const data = await res.json();
+          setJobs(data);
+        }
+      } catch (e) {
+        console.error('Failed to fetch jobs', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJobs();
+  }, []);
 
   const filteredJobs = jobs.filter((job) => {
+    const title = job.title || '';
+    const company = job.company || '';
+    const location = job.location_raw || '';
     const matchesSearch =
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchTerm.toLowerCase());
+      title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      location.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesType =
-      employmentFilter === 'all' || job.employmentType === employmentFilter;
+      employmentFilter === 'all' || job.employment_type === employmentFilter;
 
     return matchesSearch && matchesType;
   });
@@ -121,36 +88,42 @@ export const Jobs: React.FC = () => {
                 <th className="py-3 px-3">Location</th>
                 <th className="py-3 px-3">Department</th>
                 <th className="py-3 px-3">First Seen</th>
-                <th className="py-3 px-3">Fingerprint</th>
                 <th className="py-3 px-3 text-right">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
-              {filteredJobs.map((job) => (
-                <tr
-                  key={job.id}
-                  onClick={() => setSelectedJob(job)}
-                  className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
-                >
-                  <td className="py-3.5 px-3">
-                    <span className="font-semibold text-slate-900 dark:text-white block text-sm">{job.title}</span>
-                    <span className="text-slate-500 font-medium">{job.company}</span>
-                  </td>
-                  <td className="py-3.5 px-3 text-slate-600 dark:text-slate-400">{job.location}</td>
-                  <td className="py-3.5 px-3">
-                    <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-medium">
-                      {job.department}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-3 text-slate-500 font-mono">
-                    {new Date(job.firstSeen).toLocaleDateString()}
-                  </td>
-                  <td className="py-3.5 px-3 font-mono text-slate-400 text-[11px]">{job.fingerprint}</td>
-                  <td className="py-3.5 px-3 text-right">
-                    <ChevronRight className="w-4 h-4 text-slate-400 ml-auto" />
+              {filteredJobs.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-slate-400 font-mono">
+                    {loading ? 'Loading jobs...' : 'No normalized candidate jobs found.'}
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredJobs.map((job) => (
+                  <tr
+                    key={job.candidate_id}
+                    onClick={() => setSelectedJob(job)}
+                    className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
+                  >
+                    <td className="py-3.5 px-3">
+                      <span className="font-semibold text-slate-900 dark:text-white block text-sm">{job.title}</span>
+                      <span className="text-slate-500 font-medium">{job.company}</span>
+                    </td>
+                    <td className="py-3.5 px-3 text-slate-600 dark:text-slate-400">{job.location_raw || 'Unspecified'}</td>
+                    <td className="py-3.5 px-3">
+                      <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-medium">
+                        {job.department || 'General'}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-3 text-slate-500 font-mono">
+                      {job.first_seen_at ? new Date(job.first_seen_at).toLocaleDateString() : '-'}
+                    </td>
+                    <td className="py-3.5 px-3 text-right">
+                      <ChevronRight className="w-4 h-4 text-slate-400 ml-auto" />
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -183,23 +156,23 @@ export const Jobs: React.FC = () => {
                   </span>
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    {selectedJob.location}
+                    {selectedJob.location_raw || 'Unspecified'}
                   </span>
                 </div>
               </div>
 
               <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-2 text-xs font-mono">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Fingerprint:</span>
-                  <span className="text-teal-600 dark:text-teal-400 font-bold">{selectedJob.fingerprint}</span>
+                  <span className="text-slate-400">Candidate ID:</span>
+                  <span className="text-teal-600 dark:text-teal-400 font-bold">{selectedJob.candidate_id}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-400">Department:</span>
-                  <span className="text-slate-700 dark:text-slate-300">{selectedJob.department}</span>
+                  <span className="text-slate-700 dark:text-slate-300">{selectedJob.department || 'N/A'}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-400">Employment Type:</span>
-                  <span className="text-slate-700 dark:text-slate-300 capitalize">{selectedJob.employmentType}</span>
+                  <span className="text-slate-700 dark:text-slate-300 capitalize">{selectedJob.employment_type || 'N/A'}</span>
                 </div>
               </div>
 
@@ -208,12 +181,12 @@ export const Jobs: React.FC = () => {
                   Canonical Job URL
                 </span>
                 <a
-                  href={selectedJob.rawUrl}
+                  href={selectedJob.public_apply_url}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs text-teal-600 dark:text-teal-400 hover:underline break-all font-mono"
                 >
-                  <span>{selectedJob.rawUrl}</span>
+                  <span>{selectedJob.public_apply_url}</span>
                   <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                 </a>
               </div>

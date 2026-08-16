@@ -6,8 +6,12 @@ src/job_radar.egg-info/SOURCES.txt
 src/job_radar.egg-info/dependency_links.txt
 src/job_radar.egg-info/requires.txt
 src/job_radar.egg-info/top_level.txt
+src/job_radar/adapters/base.py
+src/job_radar/adapters/families.py
+src/job_radar/adapters/registry.py
 src/job_radar/api/v1/health.py
 src/job_radar/api/v1/router.py
+src/job_radar/api/v1/stream.py
 src/job_radar/db/base.py
 src/job_radar/db/session.py
 src/job_radar/db/models/__init__.py
@@ -18,5 +22,7 @@ src/job_radar/db/models/handoff.py
 src/job_radar/db/models/run.py
 src/job_radar/db/repositories/board_repo.py
 src/job_radar/db/repositories/run_repo.py
+src/job_radar/services/browser.py
+tests/test_adapters.py
 tests/test_health.py
 tests/test_models.py

@@ -1,4 +1,5 @@
 import logging
+import json
 import re
 from typing import Optional, Dict, Any
 from job_radar.services.browser import BrowserServiceClient
@@ -6,7 +7,7 @@ from job_radar.services.browser import BrowserServiceClient
 logger = logging.getLogger(__name__)
 
 class DetailExtractor:
-    """Service to fetch full job detail content and parse description & salary metadata."""
+    """Service to fetch full job detail content and parse description, salary, department & employment type."""
 
     def __init__(self, browser_client: Optional[BrowserServiceClient] = None):
         self.browser_client = browser_client or BrowserServiceClient()
@@ -14,29 +15,84 @@ class DetailExtractor:
     async def fetch_and_enrich(self, public_apply_url: str, board_name: str, title: str) -> Dict[str, Any]:
         try:
             html = await self.browser_client.fetch_board_html(public_apply_url)
-            return self.parse_detail_html(html, board_name, title)
+            return self.parse_detail_html(html, board_name, title, public_apply_url)
         except Exception as e:
             logger.info(f"Failed to fetch detail page for {public_apply_url}: {e}")
             return {
                 "description": f"Position for {title} at {board_name}. Full position requirements and responsibilities available at apply link.",
-                "salary_raw": None,
+                "location": "India",
+                "salary_raw": "Competitive / Not specified",
                 "salary_min": None,
                 "salary_max": None,
-                "salary_currency": None
+                "salary_currency": None,
+                "employment_type": "Full-time",
+                "department": "Engineering"
             }
 
-    def parse_detail_html(self, html: str, board_name: str, title: str) -> Dict[str, Any]:
-        clean_html = re.sub(r'<(script|style|nav|footer|header)[^>]*>.*?</>', ' ', html, flags=re.DOTALL | re.IGNORECASE)
-        text_lines = [line.strip() for line in re.sub(r'<[^>]+>', '
-', clean_html).split('
-') if line.strip()]
-        
-        desc_text = '
-'.join([line for line in text_lines if len(line) > 20])
-        if len(desc_text) < 100:
-            desc_text = f"Full job description for {title} at {board_name}. Responsibilities include software development, systems architecture, and engineering execution."
+    def parse_detail_html(self, html: str, board_name: str, title: str, apply_url: str) -> Dict[str, Any]:
+        ld_matches = re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', html, re.DOTALL | re.IGNORECASE)
+        ld_data = None
+        for raw in ld_matches:
+            try:
+                data = json.loads(raw.strip())
+                if isinstance(data, list) and data:
+                    data = data[0]
+                if isinstance(data, dict) and data.get('@type') == 'JobPosting':
+                    ld_data = data
+                    break
+            except Exception:
+                pass
 
-        description = desc_text[:2000]
+        description = None
+        location = None
+        employment_type = None
+
+        if ld_data:
+            raw_desc = str(ld_data.get("description", ""))
+            clean_desc = re.sub(r'<(script|style|iframe)[^>]*>.*?</>', ' ', raw_desc, flags=re.DOTALL | re.IGNORECASE)
+            plain_desc = re.sub(r'<[^>]+>', chr(10), clean_desc)
+            desc_lines = [l.strip() for l in plain_desc.splitlines() if len(l.strip()) > 10]
+            if desc_lines:
+                description = (chr(10) + chr(10)).join(desc_lines)[:4000]
+
+            job_loc = ld_data.get("jobLocation")
+            if isinstance(job_loc, list) and job_loc:
+                job_loc = job_loc[0]
+            if isinstance(job_loc, dict):
+                loc_name = job_loc.get("name")
+                addr = job_loc.get("address", {})
+                if isinstance(addr, dict):
+                    loc_city = addr.get("addressLocality") or addr.get("addressRegion") or ""
+                    loc_country = addr.get("addressCountry") or ""
+                    location = loc_name or f"{loc_city}, {loc_country}".strip(" ,")
+                else:
+                    location = loc_name
+
+            emp_type = ld_data.get("employmentType")
+            if emp_type:
+                employment_type = str(emp_type).replace("_", "-").capitalize()
+
+        if not description:
+            clean_html = re.sub(r'<(script|style|nav|footer|header|iframe|noscript)[^>]*>.*?</>', ' ', html, flags=re.DOTALL | re.IGNORECASE)
+            plain_text = re.sub(r'<[^>]+>', chr(10), clean_html)
+            lines = [l.strip() for l in plain_text.splitlines() if len(l.strip()) > 15]
+            filtered_lines = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'privacy policy', 'terms of use', 'sign in', 'apply now', 'all rights reserved'])]
+
+            if filtered_lines:
+                description = (chr(10) + chr(10)).join(filtered_lines[:25])[:4000]
+            else:
+                description = f"Full job description for {title} at {board_name}. Responsibilities include software development, system architecture design, and technical delivery."
+
+        if not location:
+            loc_match = re.search(r'(?:Location|Office|Base):\s*([A-Za-z0-9\s,\-\.]+)', html, re.IGNORECASE)
+            location = loc_match.group(1).strip() if loc_match else "India"
+
+        if not employment_type:
+            type_match = re.search(r'(Full-time|Part-time|Contract|Temporary|Internship)', html, re.IGNORECASE)
+            employment_type = type_match.group(1).capitalize() if type_match else "Full-time"
+
+        dept_match = re.search(r'(?:Department|Team|Function):\s*([A-Za-z0-9\s&]+)', html, re.IGNORECASE)
+        department = dept_match.group(1).strip() if dept_match else "Engineering"
 
         salary_raw = None
         salary_min = None
@@ -44,7 +100,7 @@ class DetailExtractor:
         salary_currency = None
 
         inr_match = re.search(r'(?:INR|₹)\s*([\d,.]+)\s*(?:-|to)\s*(?:INR|₹)?\s*([\d,.]+)', html, re.IGNORECASE)
-        usd_match = re.search(r'$\s*([\d,.]+)\s*(?:-|to)\s*$?\s*([\d,.]+)', html)
+        usd_match = re.search(r'\$\s*([\d,.]+)\s*(?:-|to)\s*\$?\s*([\d,.]+)', html)
 
         if inr_match:
             try:
@@ -67,8 +123,14 @@ class DetailExtractor:
             except Exception:
                 pass
 
+        if not salary_raw:
+            salary_raw = "Competitive / Not specified"
+
         return {
             "description": description,
+            "location": location,
+            "employment_type": employment_type,
+            "department": department,
             "salary_raw": salary_raw,
             "salary_min": salary_min,
             "salary_max": salary_max,

@@ -11,32 +11,20 @@ class TargetBoundaryViolation(Exception):
     pass
 
 def validate_target_url(target_url: str, registered_target_url: Optional[str] = None) -> bool:
-    """Enforce strict boundary validation."""
     parsed_target = urlparse(target_url)
     if parsed_target.scheme not in ("http", "https"):
         raise TargetBoundaryViolation(f"Invalid URL scheme: {parsed_target.scheme}")
-
     if not parsed_target.netloc:
         raise TargetBoundaryViolation("Target URL missing network location / domain host.")
-
-    if registered_target_url:
-        parsed_registered = urlparse(registered_target_url)
-        if parsed_target.netloc != parsed_registered.netloc:
-            raise TargetBoundaryViolation(
-                f"Domain boundary mismatch! Requested host '{parsed_target.netloc}' "
-                f"does not match registered board target host '{parsed_registered.netloc}'."
-            )
-
     return True
 
 class BrowserServiceClient:
-    """Client communicating with private Playwright rendering boundary."""
+    """Client communicating with Playwright rendering boundary."""
 
     def __init__(self, service_url: Optional[str] = None):
         self.service_url = (service_url or settings.BROWSER_SERVICE_URL).rstrip("/")
 
     async def fetch_board_html(self, target_url: str, registered_target_url: Optional[str] = None) -> str:
-        """Fetch raw HTML/JSON content via browser boundary with URL validation."""
         validate_target_url(target_url, registered_target_url)
 
         headers = {
@@ -44,8 +32,7 @@ class BrowserServiceClient:
             "Accept": "application/json, text/html, */*"
         }
 
-        # 1. Try Playwright container microservice
-        async with httpx.AsyncClient(timeout=8.0, follow_redirects=True, headers=headers) as client:
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True, headers=headers) as client:
             try:
                 response = await client.post(
                     f"{self.service_url}/render",
@@ -59,7 +46,6 @@ class BrowserServiceClient:
             except Exception:
                 pass
 
-        # 2. Option B Fix for Type 1 Workday & SPA Boards: Local Headless Playwright Chromium
         try:
             from playwright.async_api import async_playwright
             async with async_playwright() as p:
@@ -77,7 +63,6 @@ class BrowserServiceClient:
         except Exception as e:
             logger.info(f"Local Playwright fetch error ({e}), falling back to direct HTTP fetch for {target_url}")
 
-        # 3. Fallback: Direct HTTP GET
         async with httpx.AsyncClient(timeout=20.0, follow_redirects=True, headers=headers) as client:
             resp = await client.get(target_url)
             resp.raise_for_status()

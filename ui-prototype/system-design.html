@@ -90,7 +90,8 @@
               <tr><td>Secret Storage</td><td>Environment variables via <code>.env</code> file</td><td>Explicit user choice</td></tr>
               <tr><td>Recovery Targets</td><td>RPO 24h / RTO 1h; daily automated <code>pg_dump</code> to host volume</td><td>Explicit user choice</td></tr>
               <tr><td>Initial Board Set</td><td>Staggered rollout starting with 5 low-risk boards; Google/Meta manual-only</td><td>Explicit user choice</td></tr>
-              <tr><td>Resilience</td><td>Pause board automatically after 3 consecutive <code>parser_contract</code> failures</td><td>Explicit user choice</td></tr>
+              <tr><td>Resilience & Auto-Pause</td><td>Pause board automatically after 3 consecutive <code>parser_contract</code> failures; reset counter on new approved revision or successful test</td><td>Explicit user choice</td></tr>
+              <tr><td>Worker Heartbeat</td><td>Worker updates <code>heartbeat_at</code> every 10s; background reaper reclaims leases after 30s timeout</td><td>Explicit user choice</td></tr>
             </tbody>
           </table>
         </section>

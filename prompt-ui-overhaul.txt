@@ -1,0 +1,29 @@
+You are tasked with upgrading the React frontend application in ui/src/ for Job Radar to 100% feature completeness with the original UI prototype (ui-prototype/index.html).
+
+Follow the detailed specification in docs/UI_OVERHAUL_PLAN.md and docs/UI_DESIGN.md.
+
+Priyesh has explicitly approved this implementation plan. You are granted write and test permissions to complete this work.
+
+### Core Requirements:
+1. Restore Full 8-View Hash Routing (ui/src/App.tsx & router):
+   - #/runs — Pipeline Run History with top metrics summary bar & clickable run cards.
+   - #/runs/:id — Dedicated Pipeline Run Detail View (run metrics, board contribution cards, extracted jobs list for that run).
+   - #/boards — Board Inventory Card Grid.
+   - #/boards/:id — Dedicated Board Detail View (board config KV summary, missing mandatory fields alert box, run health stats, recent board runs list).
+   - #/boards/:id/config — Board Config Edit View with breadcrumbs, form, review gate warning, and Required Configuration Status Matrix (6 typed field badges).
+   - #/board-runs/:id — Dedicated Safe Audit Log Page (safe Playwright execution timeline: BoardRunRequest issued, Playwright request admitted, Playwright result received, Run finalized).
+   - #/jobs — Extracted Jobs Explorer (Search input, Date Sort dropdown newest/oldest, Board filter, Job Ops status filter all/accepted/held, clickable job cards).
+   - #/jobs/:id — Dedicated Job Candidate Detail View (Candidate status badge, full normalized fields list, syntax-highlighted Formatted JSON Job Ops Payload pre-block).
+
+2. UI Components & Aesthetics:
+   - Add radar outlined brand mark with quiet status pulse in Sidebar.tsx.
+   - Add dynamic route breadcrumbs in Header.tsx.
+   - Add collapsible sidebar rail toggle with localStorage persistence.
+   - Add mobile drawer navigation overlay.
+
+3. Vite Build:
+   - Run npm run build in ui/ to compile static production assets to src/job_radar/static/.
+
+4. Playwright Automated Testing & Verification:
+   - Ensure Job Radar server is running on http://localhost:3000.
+   - Use Playwright (via Playwright MCP or a python/node script using Playwright) to navigate and verify all 8 pages, test filtering/sorting, click job cards to open JSON payload viewers, click board runs to inspect Playwright audit logs, trigger a run via modal, and verify all visual state transitions.

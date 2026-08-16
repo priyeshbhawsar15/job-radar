@@ -50,7 +50,8 @@ The implementation is broken into **7 modular, testable phases**. Each phase pro
 ## 2. Phase Detailed Breakdowns
 
 ### Phase 1: Backend Core & Database Models
-* **Reference Specs:** `SYSTEM_DESIGN.md` Section 3 (Components), Section 5 (API Surface), Section 6 (Data Model & Entities).
+* **Reference Specs:** `SYSTEM_DESIGN.md` Section 3 (Components), Section 5 (API Surface), Section 6 (Data Model, Entities & SQL Constraints Table).
+* **Tech Stack:** Python 3.12, FastAPI 0.111+, Pydantic v2, SQLAlchemy 2.0 (async), asyncpg, Alembic 1.13+, PostgreSQL 16.
 * **Objective:** Establish the Python FastAPI application structure, PostgreSQL database connection pooling, SQLAlchemy 2.0 async models, and Alembic migrations.
 * **Tasks:**
   1. Initialize Python project structure under `/home/priyesh/Work/job-radar` with `pyproject.toml` or `requirements.txt`.
@@ -68,7 +69,8 @@ The implementation is broken into **7 modular, testable phases**. Each phase pro
 ---
 
 ### Phase 2: Modern React Operations Cockpit (UI)
-* **Reference Specs:** `ui-prototype/index.html` (Full HTML/JS mock), `docs/UI_DESIGN.md` (Design System), `SYSTEM_DESIGN.md` Section 5 (API Routes & SSE).
+* **Reference Specs:** `ui-prototype/index.html` (Full HTML/JS mock), `docs/UI_DESIGN.md` (Design System), `SYSTEM_DESIGN.md` Section 5 (API Routes & SSE Payload Contracts).
+* **Tech Stack:** Vite 5, React 18, `@tanstack/react-query` v5, React Router DOM v6 (hash router), Tailwind CSS v3, `lucide-react` 0.350+, Native `EventSource` wrapper hook.
 * **Objective:** Replace the static HTML prototype with a production Vite + React SPA served directly by FastAPI's static mount.
 * **Tasks:**
   1. Initialize Vite + React + Tailwind CSS project in `/ui` directory.

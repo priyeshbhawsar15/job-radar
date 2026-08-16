@@ -1,167 +1,226 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Save, ArrowLeft, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { StatusBadge } from '../components/StatusBadge';
+import { ArrowLeft, Save, ShieldAlert } from 'lucide-react';
+import { getBoard } from '../data/mockData';
+import type { BoardItem } from '../data/mockData';
 
 export const BoardConfig: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [board, setBoard] = useState<BoardItem | null>(null);
+  const [url, setUrl] = useState<string>('');
+  const [cron, setCron] = useState<string>('Daily · 06:00 Asia/Kolkata');
+  const [readiness, setReadiness] = useState<string>('ready-listing-v2');
 
-  const isNew = !id || id === 'new';
+  useEffect(() => {
+    if (!id || id === 'new') {
+      setBoard({
+        id: 'new-board',
+        name: 'New Board',
+        adapter: 'greenhouse',
+        url: 'https://boards.greenhouse.io/example',
+        state: 'draft',
+        rev: 'rev-01',
+        runs: 0,
+        success: 100,
+        missing: ['reviewed readiness descriptor', 'reviewed detail route allowlist'],
+        next: 'Draft'
+      });
+    } else {
+      const b = getBoard(id);
+      if (b) {
+        setBoard(b);
+        setUrl(b.url);
+        if (b.missing.includes('reviewed readiness descriptor')) {
+          setReadiness('Missing — required');
+        }
+      } else {
+        setBoard({
+          id,
+          name: id,
+          adapter: 'custom',
+          url: 'https://example.com/careers',
+          state: 'draft',
+          rev: 'rev-01',
+          runs: 0,
+          success: 100,
+          missing: [],
+          next: 'Review required'
+        });
+      }
+    }
+  }, [id]);
 
-  const [name, setName] = useState(isNew ? '' : 'Stripe Engineering');
-  const [family, setFamily] = useState(isNew ? 'greenhouse' : 'greenhouse');
-  const [targetUrl, setTargetUrl] = useState(isNew ? '' : 'https://boards.greenhouse.io/stripe');
-  const [cron, setCron] = useState(isNew ? '0 */6 * * *' : '0 */6 * * *');
-  const [selectorConfig, setSelectorConfig] = useState(
-    JSON.stringify(
-      {
-        container: '.job-post',
-        title: 'h3.title',
-        location: '.location',
-        department: '.department',
-        link: 'a.job-link'
-      },
-      null,
-      2
-    )
-  );
+  if (!board) {
+    return <div className="p-8 text-center text-slate-400 font-mono">Loading configuration...</div>;
+  }
 
-  const [submitted, setSubmitted] = useState(false);
+  const requiredFields = [
+    'adapter family',
+    'public listing link',
+    'detail route allowlist',
+    'pagination cap',
+    'readiness descriptor',
+    'resource policy'
+  ];
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      navigate('/boards');
-    }, 1000);
+    alert('Static prototype: configuration is not saved.');
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => navigate('/boards')}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Registry</span>
-        </button>
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-teal-500" />
-          <span className="text-xs font-mono text-slate-500">Board Revision Safety Guard</span>
-        </div>
-      </div>
-
-      <div className="p-6 sm:p-8 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-6">
+    <div className="space-y-6">
+      {/* Top Header */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            {isNew ? 'Create New Board Configuration' : `Edit Board Configuration: ${id}`}
+          <p className="text-[10px] uppercase tracking-widest font-extrabold text-teal-600 dark:text-teal-400 mb-1">
+            Operator workspace · Configuration
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Edit {board.name} configuration
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Submitting creates a new immutable revision entry in the database.
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Static form only. Saving, review, state transitions, secret values, and source enablement are intentionally unavailable.
           </p>
         </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate(`/boards/${board.id}`)}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Cancel</span>
+          </button>
+        </div>
+      </header>
 
-        {submitted ? (
-          <div className="py-12 text-center space-y-3">
-            <CheckCircle2 className="w-12 h-12 text-teal-500 mx-auto" />
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Revision Saved Successfully</h3>
-            <p className="text-xs text-slate-500 font-mono">Redirecting back to Board Registry...</p>
+      {/* Breadcrumb path */}
+      <p className="text-xs text-slate-500 dark:text-slate-400">
+        <Link to="/boards" className="hover:underline">Boards</Link> /{' '}
+        <Link to={`/boards/${board.id}`} className="hover:underline">{board.name}</Link> / configuration
+      </p>
+
+      {/* Main Grid: Form + Status Matrix */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Form Card */}
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4"
+        >
+          {/* Review Gate Notice */}
+          <div className="p-3.5 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-900 dark:text-teal-300 text-xs flex items-start gap-2.5">
+            <ShieldAlert className="w-4 h-4 text-teal-500 shrink-0 mt-0.5" />
+            <div>
+              <b>Review gate:</b> edits create a draft revision in the real design; an editor cannot self-review or enable it.
+            </div>
           </div>
-        ) : (
-          <form onSubmit={handleSave} className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                  Board Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Stripe Engineering"
-                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500"
-                />
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                  Adapter Family
-                </label>
-                <select
-                  value={family}
-                  onChange={(e) => setFamily(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+          <div className="space-y-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Board ID
+            </label>
+            <input
+              type="text"
+              value={board.id}
+              readOnly
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-500 font-mono text-xs cursor-not-allowed"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Adapter family
+            </label>
+            <select
+              value={board.adapter}
+              onChange={(e) => setBoard({ ...board, adapter: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            >
+              <option value={board.adapter}>{board.adapter}</option>
+              <option value="greenhouse">greenhouse</option>
+              <option value="lever">lever</option>
+              <option value="ashby">ashby</option>
+              <option value="workday">workday</option>
+              <option value="careerpage">careerpage</option>
+              <option value="custom">custom</option>
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Public listing URL
+            </label>
+            <input
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Schedule / timezone
+            </label>
+            <input
+              type="text"
+              value={cron}
+              onChange={(e) => setCron(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Reviewed readiness descriptor
+            </label>
+            <input
+              type="text"
+              value={readiness}
+              onChange={(e) => setReadiness(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-xs transition-colors"
+          >
+            <Save className="w-4 h-4" />
+            <span>Save draft (demo)</span>
+          </button>
+        </form>
+
+        {/* Required Configuration Status Matrix */}
+        <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              Required configuration status
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Typed fields are validated server-side in the approved system design.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {requiredFields.map((field) => {
+              const prefix = field.split(' ')[0];
+              const isMissing = board.missing.some((m) => m.toLowerCase().includes(prefix));
+              return (
+                <div
+                  key={field}
+                  className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between shadow-xs"
                 >
-                  <option value="greenhouse">Greenhouse</option>
-                  <option value="lever">Lever</option>
-                  <option value="ashby">Ashby</option>
-                  <option value="workday">Workday</option>
-                  <option value="custom">Custom Selector JSON</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                Target URL
-              </label>
-              <input
-                type="url"
-                required
-                value={targetUrl}
-                onChange={(e) => setTargetUrl(e.target.value)}
-                placeholder="https://boards.greenhouse.io/company"
-                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono focus:outline-hidden focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                Schedule (Cron Expression)
-              </label>
-              <input
-                type="text"
-                required
-                value={cron}
-                onChange={(e) => setCron(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono focus:outline-hidden focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                DOM Extraction Rules (JSON)
-              </label>
-              <textarea
-                rows={6}
-                value={selectorConfig}
-                onChange={(e) => setSelectorConfig(e.target.value)}
-                className="w-full p-3.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-900 text-teal-400 font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={() => navigate('/boards')}
-                className="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm transition-colors shadow-xs"
-              >
-                <Save className="w-4 h-4" />
-                <span>Save Board Revision</span>
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
+                  <b className="text-xs font-bold text-slate-900 dark:text-white capitalize">{field}</b>
+                  <StatusBadge status={isMissing ? 'draft' : 'reviewed'} size="sm" />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

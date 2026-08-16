@@ -1,0 +1,98 @@
+INFO:     Started server process [1391122]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:60826 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59882 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59898 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59902 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39066 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36912 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46952 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46960 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52102 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52102 - "GET /assets/index-BT-RQq7O.js HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52108 - "GET /assets/index-CCTceOYD.css HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52102 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52108 - "GET /favicon.svg HTTP/1.1" 200 OK
+INFO:     192.168.2.90:50914 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36048 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36048 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36048 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39676 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1391122]
+INFO:     Started server process [1545955]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:32932 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51540 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51540 - "GET /assets/index-CbuR_jX-.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51542 - "GET /assets/index-DxDmL6u8.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51542 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51540 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51540 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51540 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51540 - "GET /api/v1/runs HTTP/1.1" 200 OK

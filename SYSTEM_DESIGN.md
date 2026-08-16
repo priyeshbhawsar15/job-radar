@@ -224,6 +224,41 @@ This pass records a **proposed** API surface, not a frozen contract.
 | `GET /api/v1/jobs` | normalized extracted jobs | UI/API | searchable/filterable safe fields |
 | `GET /api/v1/stream` | live update stream | UI/API | SSE recommended; token protected |
 
+### API payload & SSE event contracts
+
+#### SSE Live Stream Contract (`GET /api/v1/stream`)
+The live stream uses standard Server-Sent Events with the following typed event channels:
+- `event: pipeline_progress`: `{ "pipeline_id": "uuid", "status": "running", "completed_boards": 2, "total_boards": 5, "extracted_jobs": 12 }`
+- `event: board_status`: `{ "board_id": "uuid", "name": "Amazon", "stage": "extracting", "outcome": null }`
+- `event: job_discovered`: `{ "candidate_id": "uuid", "title": "Senior Software Engineer", "company": "Amazon", "location": "Bangalore, India", "discovered_at": "ISO-8601" }`
+- `event: handoff_update`: `{ "outbox_id": "uuid", "candidate_id": "uuid", "state": "accepted", "receipt_id": "jobops_rcpt_123" }`
+
+#### Manual Run Request Payload (`POST /api/v1/run-requests`)
+```json
+{
+  "origin": "manual",
+  "board_id": "optional-board-uuid-or-null-for-all-boards",
+  "reason": "Operator manual pipeline run triggered from UI cockpit"
+}
+```
+
+#### Job Ops Outbox Dispatch Payload (`POST /api/v1/job-ops/postings`)
+Uses HTTP Basic Auth (`Authorization: Basic <base64(JOBOPS_USERNAME:JOBOPS_PASSWORD)>`):
+```json
+{
+  "producer_key": "job_radar",
+  "candidate_id": "uuid",
+  "title": "Senior Software Engineer",
+  "company": "Amazon",
+  "location": "Bangalore, India",
+  "public_apply_url": "https://jobs.amazon.com/en/jobs/12345",
+  "posting_date": "2026-08-16T00:00:00Z",
+  "employment_type": "Full-time",
+  "department": "Engineering",
+  "idempotency_key": "job_radar_cand_12345_v1"
+}
+```
+
 ### Errors and versioning
 
 - All operator endpoints remain under `/api/v1`.
@@ -247,6 +282,22 @@ This pass records a **proposed** API surface, not a frozen contract.
 | `handoff_outbox` | durable handoff intent | candidate id, contract revision, idempotency key, state, next action | durable through reconciliation |
 | `handoff_attempts` | dispatch history | outbox id, attempt seq, start/end, safe result class | audit-policy controlled |
 | `audit_events` | append-only mutation/security audit | actor, role, action, entity, reason, correlation id | durable |
+
+### Detailed Database Schema & SQL Constraints
+
+| Entity / Table | Primary Key | Foreign Keys | Key Columns & Data Types | Constraints & Indexes |
+|---|---|---|---|---|
+| `boards` | `board_id` (UUID) | `current_revision_id` -> `board_revisions` | `name` VARCHAR, `family` VARCHAR, `status` VARCHAR, `consecutive_parser_failures` INT DEFAULT 0, `created_at` TIMESTAMPTZ | INDEX `idx_boards_status` (`status`) |
+| `board_revisions` | `revision_id` (UUID) | `board_id` -> `boards` | `revision_number` INT, `status` VARCHAR, `config_json` JSONB, `approved_by` VARCHAR, `approved_at` TIMESTAMPTZ | UNIQUE (`board_id`, `revision_number`) |
+| `run_requests` | `request_id` (UUID) | `board_id` -> `boards` (nullable) | `origin` VARCHAR (`scheduled` \| `manual`), `scheduled_time` TIMESTAMPTZ, `status` VARCHAR, `requested_by` VARCHAR, `reason` TEXT | INDEX `idx_requests_status_time` (`status`, `scheduled_time`) |
+| `execution_attempts` | `execution_id` (UUID) | `request_id` -> `run_requests` | `fence_generation` BIGINT, `lease_token` UUID, `heartbeat_at` TIMESTAMPTZ, `stage` VARCHAR, `outcome` VARCHAR, `terminal_at` TIMESTAMPTZ | INDEX `idx_execution_lease` (`execution_id`, `fence_generation`), INDEX `idx_execution_terminal` (`terminal_at`) |
+| `pipeline_runs` | `pipeline_id` (UUID) | none | `trigger` VARCHAR, `status` VARCHAR, `total_boards` INT, `extracted_count` INT, `accepted_count` INT, `held_count` INT, `failed_count` INT, `started_at` TIMESTAMPTZ, `terminal_at` TIMESTAMPTZ | INDEX `idx_pipeline_terminal` (`terminal_at`) |
+| `board_runs` | `board_run_id` (UUID) | `pipeline_id` -> `pipeline_runs`, `board_id` -> `boards`, `revision_id` -> `board_revisions` | `stage` VARCHAR, `outcome` VARCHAR, `duration_ms` INT, `extracted_count` INT, `error_code` VARCHAR, `started_at` TIMESTAMPTZ, `terminal_at` TIMESTAMPTZ | ON DELETE CASCADE from `pipeline_runs`; INDEX `idx_board_runs_terminal` (`terminal_at`) |
+| `candidate_jobs` | `candidate_id` (UUID) | `board_id` -> `boards` | `identity_key` VARCHAR UNIQUE, `canonical_url_hash` VARCHAR(64), `title` VARCHAR, `company` VARCHAR, `location` VARCHAR, `public_apply_url` TEXT, `posting_date` TIMESTAMPTZ, `employment_type` VARCHAR, `department` VARCHAR, `discovered_at` TIMESTAMPTZ | UNIQUE `idx_candidate_identity` (`canonical_url_hash`, `board_id`); INDEX `idx_candidate_discovered` (`discovered_at`) |
+| `run_candidates` | PK `(run_id, candidate_id)` | `run_id` -> `board_runs`, `board_id` -> `boards`, `candidate_id` -> `candidate_jobs` | `observation_outcome` VARCHAR, `discovered_at` TIMESTAMPTZ | ON DELETE CASCADE from `board_runs` |
+| `handoff_outbox` | `outbox_id` (UUID) | `candidate_id` -> `candidate_jobs` (UNIQUE) | `contract_revision` VARCHAR, `idempotency_key` VARCHAR UNIQUE, `state` VARCHAR, `next_retry_at` TIMESTAMPTZ, `receipt_id` VARCHAR, `created_at` TIMESTAMPTZ, `updated_at` TIMESTAMPTZ | INDEX `idx_outbox_state_retry` (`state`, `next_retry_at`) |
+| `handoff_attempts` | `attempt_id` (UUID) | `outbox_id` -> `handoff_outbox` | `attempt_seq` INT, `http_status` INT, `safe_outcome` VARCHAR, `error_message` TEXT, `started_at` TIMESTAMPTZ, `finished_at` TIMESTAMPTZ | ON DELETE CASCADE from `handoff_outbox` |
+| `audit_events` | `event_id` (UUID) | none | `actor` VARCHAR, `role` VARCHAR, `action` VARCHAR, `entity_type` VARCHAR, `entity_id` VARCHAR, `reason` TEXT, `correlation_id` UUID, `prev_hash` VARCHAR, `hash` VARCHAR, `created_at` TIMESTAMPTZ | APPEND-ONLY; INDEX `idx_audit_created` (`created_at`) |
 
 ### Migration and ownership summary
 
@@ -340,9 +391,11 @@ stateDiagram-v2
   uncertain --> queued: same-key retry explicitly proven safe
 ```
 
-State explicitly without separate lifecycle models:
-- Adapter registry: no independent persisted lifecycle beyond application deployment.
-- Browser client: no business lifecycle beyond request/response and service readiness.
+### Worker Heartbeat & Crash Reaper Rules
+- **Heartbeat Interval:** While executing a board run, the worker updates `heartbeat_at` on `execution_attempts` every **10 seconds**.
+- **Reaper Task:** An in-process background task runs every **30 seconds**. Any `execution_attempts` in `running` status where `heartbeat_at < NOW() - INTERVAL '30 seconds'` is marked `expired`.
+- **Fencing Protection:** Reaping increments `fence_generation`. Any late DB write from the crashed worker carrying the old `fence_generation` will fail with zero rows updated.
+- **Auto-Pause Reset Trigger:** When a board is automatically set to `paused` after 3 consecutive `parser_contract` failures, approving a new `board_revision` via `POST /api/v1/boards/{id}/revisions/{rev}/review` or running a successful test via `POST /api/v1/boards/{id}/test` resets `consecutive_parser_failures` to `0` and transitions board status to `reviewed`/`enabled`.
 
 ## 8. Security, privacy, permissions, abuse controls, and auditability
 

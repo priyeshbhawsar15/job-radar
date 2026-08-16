@@ -1,208 +1,199 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Briefcase, ExternalLink, ChevronRight, X, Building2, MapPin } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { StatusBadge } from '../components/StatusBadge';
+import { Search, Filter, ArrowLeft, ChevronRight } from 'lucide-react';
+import { MOCK_JOBS, MOCK_BOARDS } from '../data/mockData';
 
 export const Jobs: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [employmentFilter, setEmploymentFilter] = useState<string>('all');
-  const [selectedJob, setSelectedJob] = useState<any | null>(null);
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [dateSort, setDateSort] = useState<'new' | 'old'>('new');
+  const [boardFilter, setBoardFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [jobs, setJobs] = useState<JobItem[]>(MOCK_JOBS);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    const fetchJobs = async () => {
+    // Attempt to merge with API data if backend returns jobs
+    const fetchApiJobs = async () => {
       try {
         const res = await fetch('/api/v1/jobs');
         if (res.ok) {
-          const data = await res.json();
-          setJobs(data);
+          const apiJobs: any[] = await res.json();
+          if (apiJobs && apiJobs.length > 0) {
+            const mapped: JobItem[] = apiJobs.map((j) => ({
+              id: j.candidate_id || j.id,
+              title: j.title,
+              company: j.company,
+              location: j.location || j.location_raw || 'Unspecified',
+              url: j.public_apply_url || j.url || '',
+              posted: j.first_seen_at ? j.first_seen_at.split('T')[0] : '2026-08-20',
+              type: j.employment_type || 'Full-time',
+              department: j.department || 'Engineering',
+              board: j.board_id || 'oracle',
+              source: j.source || `${j.board_id}:${j.candidate_id}`,
+              revision: 'rev-01',
+              discovered: j.first_seen_at || new Date().toISOString(),
+              normalization: 'accepted · norm-v3',
+              eligibility: 'eligible · policy-11',
+              ops: 'accepted',
+              receipt: `OPS-${j.candidate_id}`
+            }));
+
+            // Merge with mock jobs ensuring unique IDs
+            const existingIds = new Set(MOCK_JOBS.map((x) => x.id));
+            const fresh = mapped.filter((x) => !existingIds.has(x.id));
+            setJobs([...MOCK_JOBS, ...fresh]);
+          }
         }
       } catch (e) {
-        console.error('Failed to fetch jobs', e);
-      } finally {
-        setLoading(false);
+        console.error('API jobs fetch error:', e);
       }
     };
-    fetchJobs();
+    fetchApiJobs();
   }, []);
 
-  const filteredJobs = jobs.filter((job) => {
-    const title = job.title || '';
-    const company = job.company || '';
-    const location = job.location_raw || '';
-    const matchesSearch =
-      title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      location.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesType =
-      employmentFilter === 'all' || job.employment_type === employmentFilter;
-
-    return matchesSearch && matchesType;
-  });
+  const filteredJobs = jobs
+    .filter((j) => {
+      const q = searchTerm.toLowerCase();
+      const textMatch =
+        `${j.title} ${j.company} ${j.location} ${j.board}`.toLowerCase().includes(q);
+      const boardMatch = boardFilter === 'all' || j.board.toLowerCase() === boardFilter.toLowerCase();
+      const statusMatch = statusFilter === 'all' || j.ops.toLowerCase() === statusFilter.toLowerCase();
+      return textMatch && boardMatch && statusMatch;
+    })
+    .sort((a, b) => {
+      const comp = b.discovered.localeCompare(a.discovered);
+      return dateSort === 'new' ? comp : -comp;
+    });
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Normalized Jobs Explorer</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Unified schema job candidates extracted across parser revisions with deduplication fingerprints.
-        </p>
-      </div>
-
-      {/* Search & Filter Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-2 relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-          <input
-            type="text"
-            placeholder="Search by title, company, or location..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500"
-          />
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Extracted jobs
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Search and filter normalized mock records.
+          </p>
         </div>
-
-        <div className="relative">
-          <Filter className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-          <select
-            value={employmentFilter}
-            onChange={(e) => setEmploymentFilter(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+        <div className="flex items-center gap-2">
+          <Link
+            to="/runs"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
-            <option value="all">All Employment Types</option>
-            <option value="full_time">Full-Time</option>
-            <option value="part_time">Part-Time</option>
-            <option value="contract">Contract</option>
-          </select>
+            <span>Runs</span>
+          </Link>
         </div>
-      </div>
+      </header>
 
-      {/* Main Jobs Table */}
-      <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                <th className="py-3 px-3">Job Title & Company</th>
-                <th className="py-3 px-3">Location</th>
-                <th className="py-3 px-3">Department</th>
-                <th className="py-3 px-3">First Seen</th>
-                <th className="py-3 px-3 text-right">Details</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
-              {filteredJobs.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-400 font-mono">
-                    {loading ? 'Loading jobs...' : 'No normalized candidate jobs found.'}
-                  </td>
-                </tr>
-              ) : (
-                filteredJobs.map((job) => (
-                  <tr
-                    key={job.candidate_id}
-                    onClick={() => setSelectedJob(job)}
-                    className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
-                  >
-                    <td className="py-3.5 px-3">
-                      <span className="font-semibold text-slate-900 dark:text-white block text-sm">{job.title}</span>
-                      <span className="text-slate-500 font-medium">{job.company}</span>
-                    </td>
-                    <td className="py-3.5 px-3 text-slate-600 dark:text-slate-400">{job.location_raw || 'Unspecified'}</td>
-                    <td className="py-3.5 px-3">
-                      <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-medium">
-                        {job.department || 'General'}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-3 text-slate-500 font-mono">
-                      {job.first_seen_at ? new Date(job.first_seen_at).toLocaleDateString() : '-'}
-                    </td>
-                    <td className="py-3.5 px-3 text-right">
-                      <ChevronRight className="w-4 h-4 text-slate-400 ml-auto" />
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Job Details Modal/Drawer */}
-      {selectedJob && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                <h3 className="font-semibold text-slate-900 dark:text-white">Normalized Job Detail</h3>
-              </div>
-              <button
-                onClick={() => setSelectedJob(null)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-5">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white">{selectedJob.title}</h2>
-                <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 font-medium">
-                  <span className="flex items-center gap-1">
-                    <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                    {selectedJob.company}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    {selectedJob.location_raw || 'Unspecified'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-2 text-xs font-mono">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Candidate ID:</span>
-                  <span className="text-teal-600 dark:text-teal-400 font-bold">{selectedJob.candidate_id}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Department:</span>
-                  <span className="text-slate-700 dark:text-slate-300">{selectedJob.department || 'N/A'}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Employment Type:</span>
-                  <span className="text-slate-700 dark:text-slate-300 capitalize">{selectedJob.employment_type || 'N/A'}</span>
-                </div>
-              </div>
-
-              <div>
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                  Canonical Job URL
-                </span>
-                <a
-                  href={selectedJob.public_apply_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-teal-600 dark:text-teal-400 hover:underline break-all font-mono"
-                >
-                  <span>{selectedJob.public_apply_url}</span>
-                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                </a>
-              </div>
-            </div>
-
-            <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 text-right">
-              <button
-                onClick={() => setSelectedJob(null)}
-                className="px-4 py-1.5 rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 text-xs font-medium"
-              >
-                Close
-              </button>
+      {/* Filter Control Box */}
+      <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Search Input */}
+          <div className="space-y-1">
+            <label htmlFor="jobSearch" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Search jobs
+            </label>
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <input
+                id="jobSearch"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Title, company, location"
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+              />
             </div>
           </div>
+
+          {/* Date Sort Dropdown */}
+          <div className="space-y-1">
+            <label htmlFor="jobDate" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Sort by date
+            </label>
+            <select
+              id="jobDate"
+              value={dateSort}
+              onChange={(e) => setDateSort(e.target.value as 'new' | 'old')}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="new">Newest first</option>
+              <option value="old">Oldest first</option>
+            </select>
+          </div>
+
+          {/* Board Filter Dropdown */}
+          <div className="space-y-1">
+            <label htmlFor="jobBoard" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Board
+            </label>
+            <select
+              id="jobBoard"
+              value={boardFilter}
+              onChange={(e) => setBoardFilter(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="all">All boards</option>
+              {MOCK_BOARDS.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Job Ops Status Dropdown */}
+          <div className="space-y-1">
+            <label htmlFor="jobStatus" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Job Ops status
+            </label>
+            <select
+              id="jobStatus"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="all">All outcomes</option>
+              <option value="accepted">Accepted</option>
+              <option value="held">Held</option>
+            </select>
+          </div>
         </div>
-      )}
+
+        {/* Job Cards List */}
+        <div id="jobList" className="space-y-3 pt-2">
+          {filteredJobs.length > 0 ? (
+            filteredJobs.map((j) => (
+              <Link
+                key={j.id}
+                to={`/jobs/${j.id}`}
+                className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-500 dark:hover:border-teal-500 transition-all group shadow-xs"
+              >
+                <div>
+                  <b className="block text-sm font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                    {j.title}
+                  </b>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 block">
+                    {j.company} · {j.posted}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={j.ops} size="sm" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="empty p-10 text-center text-xs text-slate-400 font-mono border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+              No jobs match these filters.
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 };

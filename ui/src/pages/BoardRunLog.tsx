@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, ChevronRight } from 'lucide-react';
 
 export const BoardRunLog: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [data, setData] = useState<any | null>(null);
+  const [extractedJobs, setExtractedJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!id) return;
-    fetch('/api/v1/runs')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((runs: any[]) => {
+    Promise.all([
+      fetch('/api/v1/runs').then((res) => (res.ok ? res.json() : [])),
+      fetch('/api/v1/jobs').then((res) => (res.ok ? res.json() : []))
+    ])
+      .then(([runs, jobs]) => {
         const found = runs.find((r: any) => r.run_id === id || r.pipeline_id === id);
         if (found) {
           setData({
@@ -21,6 +24,8 @@ export const BoardRunLog: React.FC = () => {
             run: { id: found.pipeline_id || found.run_id, time: found.created_at || 'Recently', state: found.outcome, duration: 'N/A' },
             board: { id: found.board_id, name: found.board_name, adapter: found.family, rev: 'rev-01' }
           });
+          const matchedJobs = jobs.filter((j: any) => j.board_id === found.board_id);
+          setExtractedJobs(matchedJobs);
         }
       })
       .catch((e) => console.error(e))
@@ -129,6 +134,55 @@ export const BoardRunLog: React.FC = () => {
           <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40 text-[11px] font-mono text-slate-400 border border-slate-200/60 dark:border-slate-800">
             Boundary check: 100% sanitized metadata only
           </div>
+        </div>
+      </section>
+
+      {/* Extracted Jobs Section Card */}
+      <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              Extracted jobs from this board run ({extractedJobs.length})
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Candidate records normalized during this execution attempt.
+            </p>
+          </div>
+          <Link
+            to="/jobs"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline"
+          >
+            <span>All jobs</span>
+          </Link>
+        </div>
+
+        <div className="space-y-3">
+          {extractedJobs.length > 0 ? (
+            extractedJobs.map((j) => (
+              <Link
+                key={j.candidate_id}
+                to={'/jobs/' + j.candidate_id}
+                className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-500 dark:hover:border-teal-500 transition-all group"
+              >
+                <div className="space-y-0.5">
+                  <b className="block text-sm font-semibold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                    {j.title}
+                  </b>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {j.company} · {j.location || 'Unspecified'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={j.job_ops_status || 'accepted'} size="sm" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="p-8 text-center text-xs text-slate-400 font-mono border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+              No job records were extracted for this board run.
+            </div>
+          )}
         </div>
       </section>
 

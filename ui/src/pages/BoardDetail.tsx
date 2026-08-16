@@ -2,44 +2,51 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
 import { ArrowLeft, Edit3, AlertTriangle, CheckCircle, ExternalLink, ChevronRight } from 'lucide-react';
-import { getBoard, MOCK_RUNS } from '../data/mockData';
-import type { BoardItem } from '../data/mockData';
 
 export const BoardDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [board, setBoard] = useState<BoardItem | null>(null);
+  const [board, setBoard] = useState<any | null>(null);
+  const [recentRuns, setRecentRuns] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!id) return;
-    const mock = getBoard(id);
-    if (mock) {
-      setBoard(mock);
-      setLoading(false);
-    } else {
-      fetch('/api/v1/boards')
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data: any[]) => {
-          const found = data.find((b: any) => b.board_id === id || b.name.toLowerCase() === id.toLowerCase());
-          if (found) {
-            setBoard({
-              id: found.board_id,
-              name: found.name,
-              adapter: found.family,
-              url: found.target_url || 'https://example.com/careers',
-              state: found.status === 'active' ? 'reviewed' : found.status,
-              rev: 'rev-01',
-              runs: 10,
-              success: found.consecutive_parser_failures > 0 ? 50 : 100,
-              missing: found.consecutive_parser_failures >= 3 ? ['listing readiness descriptor', 'reviewed detail route allowlist'] : [],
-              next: found.schedule_cron || '06:00 IST',
-            });
-          }
-        })
-        .catch((e) => console.error(e))
-        .finally(() => setLoading(false));
-    }
+    Promise.all([
+      fetch('/api/v1/boards').then((res) => (res.ok ? res.json() : [])),
+      fetch('/api/v1/runs').then((res) => (res.ok ? res.json() : []))
+    ])
+      .then(([boards, runs]) => {
+        const found = boards.find((b: any) => b.board_id === id || b.name.toLowerCase() === id.toLowerCase());
+        if (found) {
+          const boardRunsForThisBoard = runs.filter((r: any) => r.board_id === found.board_id);
+          const successCount = boardRunsForThisBoard.filter((r: any) => r.outcome === 'success').length;
+          const totalRuns = boardRunsForThisBoard.length;
+          const successRate = totalRuns > 0 ? Math.round((successCount / totalRuns) * 100) : 0;
+
+          setBoard({
+            id: found.board_id,
+            name: found.name,
+            adapter: found.family,
+            url: found.target_url || found.url || '',
+            state: found.status === 'active' ? 'reviewed' : found.status,
+            rev: 'rev-01',
+            runs: totalRuns,
+            success: successRate,
+            missing: found.consecutive_parser_failures >= 3 ? ['consecutive parser failures threshold exceeded'] : [],
+            next: found.schedule_cron || '06:00 IST',
+          });
+
+          setRecentRuns(boardRunsForThisBoard.map((br: any) => ({
+            runTime: br.created_at || 'Recently',
+            outcome: br.outcome + ' (' + br.stage + ')',
+            boardRunId: br.run_id,
+            parentRunId: br.pipeline_id
+          })));
+        }
+      })
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) {
@@ -59,21 +66,6 @@ export const BoardDetail: React.FC = () => {
     );
   }
 
-  // Find recent board runs for this board across all retained runs
-  const recentRuns: { runTime: string; outcome: string; boardRunId: string; parentRunId: string }[] = [];
-  MOCK_RUNS.forEach((r) => {
-    r.boardRuns.forEach((br) => {
-      if (br.boardId.toLowerCase() === board.id.toLowerCase()) {
-        recentRuns.push({
-          runTime: r.time,
-          outcome: `${br.outcome} (${br.state})`,
-          boardRunId: br.boardRunId,
-          parentRunId: r.id,
-        });
-      }
-    });
-  });
-
   return (
     <div className="space-y-6">
       {/* Top Action Header */}
@@ -91,7 +83,7 @@ export const BoardDetail: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            to={`/boards/${board.id}/config`}
+            to={'/boards/' + board.id + '/config'}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold shadow-xs transition-colors"
           >
             <Edit3 className="w-3.5 h-3.5" />
@@ -153,7 +145,7 @@ export const BoardDetail: React.FC = () => {
                 <span>Mandatory configuration incomplete</span>
               </div>
               <ul className="list-disc list-inside space-y-1 font-mono text-[11px] text-amber-800 dark:text-amber-300">
-                {board.missing.map((item, idx) => (
+                {board.missing.map((item: string, idx: number) => (
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
@@ -162,7 +154,7 @@ export const BoardDetail: React.FC = () => {
             <div className="mt-4 p-3.5 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-900 dark:text-teal-300 text-xs flex items-start gap-2.5">
               <CheckCircle className="w-4 h-4 text-teal-500 shrink-0 mt-0.5" />
               <div>
-                <b>All representative mandatory configuration fields are present.</b> This does not enable a live source.
+                <b>All representative mandatory configuration fields are present.</b> Target URL & filter active.
               </div>
             </div>
           )}
@@ -196,7 +188,7 @@ export const BoardDetail: React.FC = () => {
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
               <span className="block text-xs text-slate-500 dark:text-slate-400">State</span>
               <b className="block text-xl font-bold font-mono text-slate-900 dark:text-white mt-1 capitalize">{board.state}</b>
-              <span className="block text-[11px] text-slate-400 mt-0.5">no live activation</span>
+              <span className="block text-[11px] text-slate-400 mt-0.5">active configuration</span>
             </div>
           </div>
         </div>
@@ -214,7 +206,7 @@ export const BoardDetail: React.FC = () => {
             recentRuns.map((r, idx) => (
               <Link
                 key={idx}
-                to={`/board-runs/${r.boardRunId}`}
+                to={'/board-runs/' + r.boardRunId}
                 className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-500 dark:hover:border-teal-500 transition-all group"
               >
                 <div>
@@ -228,7 +220,7 @@ export const BoardDetail: React.FC = () => {
             ))
           ) : (
             <div className="p-8 text-center text-xs text-slate-400 font-mono border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-              No retained board runs in this prototype.
+              No runs executed yet for this board.
             </div>
           )}
         </div>

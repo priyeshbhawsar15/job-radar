@@ -96,3 +96,65 @@ INFO:     127.0.0.1:51540 - "GET /api/v1/runs HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51540 - "GET /api/v1/boards HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51540 - "GET /api/v1/jobs HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51540 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40346 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40346 - "GET /assets/index-CbuR_jX-.js HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40362 - "GET /assets/index-DxDmL6u8.css HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40346 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40006 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:40006 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40270 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40270 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40270 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40270 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40270 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     Shutting down
+ERROR:    ASGI callable returned without completing response.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1545955]
+INFO:     Started server process [1600856]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:60376 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45104 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45120 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45124 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38408 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:48282 - "GET /assets/index-DxDmL6u8.css HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:48276 - "GET /assets/index-CbuR_jX-.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:48282 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:48276 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48298 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:48298 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48312 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:48312 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48320 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:48320 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48330 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:48330 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48338 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:48338 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48342 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48342 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48342 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48342 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+ERROR:    ASGI callable returned without completing response.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1600856]
+INFO:     Started server process [1611547]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:47256 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38530 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38530 - "GET /assets/index-63DS5JGR.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38542 - "GET /assets/index-DxDmL6u8.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38546 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38542 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38530 - "GET /api/v1/boards HTTP/1.1" 200 OK

@@ -1,27 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
-import { ArrowLeft, PlaySquare, ChevronRight } from 'lucide-react';
-import { getRun, getBoard, getJob, MOCK_RUNS } from '../data/mockData';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 
 export const RunDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [run, setRun] = useState<RunItem | null>(null);
+  const [run, setRun] = useState<any | null>(null);
+  const [runJobs, setRunJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!id) return;
-    const mock = getRun(id);
-    if (mock) {
-      setRun(mock);
-    } else {
-      // Fallback if requested ID isn't in mock data
-      setRun(MOCK_RUNS[0]);
-    }
+    Promise.all([
+      fetch('/api/v1/runs').then((res) => (res.ok ? res.json() : [])),
+      fetch('/api/v1/jobs').then((res) => (res.ok ? res.json() : []))
+    ])
+      .then(([runs, jobs]) => {
+        const foundRun = runs.find((r: any) => r.run_id === id || r.pipeline_id === id);
+        if (foundRun) {
+          setRun(foundRun);
+          const matchedJobs = jobs.filter((j: any) => j.board_id === foundRun.board_id);
+          setRunJobs(matchedJobs);
+        }
+      })
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  if (!run) {
+  if (loading) {
     return <div className="p-8 text-center text-slate-400 font-mono">Loading run details...</div>;
+  }
+
+  if (!run) {
+    return (
+      <div className="p-8 text-center space-y-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Pipeline Run Not Found</h2>
+        <p className="text-sm text-slate-500">The requested run ID "{id}" could not be found.</p>
+        <Link to="/runs" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-600 text-white font-medium text-xs">
+          <ArrowLeft className="w-4 h-4" />
+          <span>Return to Pipeline Runs</span>
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -33,10 +54,10 @@ export const RunDetail: React.FC = () => {
             Operator workspace · Pipeline Run Detail
           </p>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Pipeline run detail
+            {run.board_name} Run Detail
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-mono">
-            {run.id} · {run.time} · {run.duration}
+            {run.run_id} · {run.created_at || 'Recently'} · stage: {run.stage}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -52,88 +73,51 @@ export const RunDetail: React.FC = () => {
 
       {/* Breadcrumbs */}
       <p className="text-xs text-slate-500 dark:text-slate-400">
-        <Link to="/runs" className="hover:underline">Run history</Link> / {run.id}
+        <Link to="/runs" className="hover:underline">Run history</Link> / {run.run_id}
       </p>
 
       {/* Top Metrics Summary Bar */}
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <span className="block text-xs text-slate-500 dark:text-slate-400">Board outcomes</span>
-          <b className="block text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1">
-            {run.completed}/{run.boards}
+          <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Board Target</span>
+          <b className="block text-lg font-bold text-slate-900 dark:text-white mt-1">
+            {run.board_name}
           </b>
-          <span className="block text-[11px] text-slate-400 mt-0.5">completed</span>
+          <span className="block text-[11px] text-slate-400 mt-0.5 uppercase font-mono">{run.family}</span>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <span className="block text-xs text-slate-500 dark:text-slate-400">Extracted</span>
+          <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Extracted Jobs</span>
           <b className="block text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1">
-            {run.extracted}
+            {run.extracted_count}
           </b>
           <span className="block text-[11px] text-slate-400 mt-0.5">bounded candidates</span>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <span className="block text-xs text-slate-500 dark:text-slate-400">Accepted</span>
-          <b className="block text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1">
-            {run.accepted}
+          <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Stage</span>
+          <b className="block text-lg font-bold capitalize text-slate-900 dark:text-white mt-1">
+            {run.stage}
           </b>
-          <span className="block text-[11px] text-slate-400 mt-0.5">Job Ops mock receipts</span>
+          <span className="block text-[11px] text-slate-400 mt-0.5">execution state</span>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <span className="block text-xs text-slate-500 dark:text-slate-400">Held</span>
-          <b className="block text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1">
-            {run.held}
-          </b>
-          <span className="block text-[11px] text-slate-400 mt-0.5">no dispatch</span>
+          <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Outcome</span>
+          <div className="mt-1">
+            <StatusBadge status={run.outcome === 'success' ? 'completed' : run.outcome} />
+          </div>
+          <span className="block text-[11px] text-slate-400 mt-0.5 font-mono">{run.error_code || 'no error'}</span>
         </div>
       </section>
 
-      {/* Board Runs Contribution Grid */}
+      {/* Extracted Jobs Stack for this Run */}
       <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">Board runs</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Select a board run to inspect its safe audit timeline.
-            </p>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">Extracted jobs from this run ({runJobs.length})</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Jobs parsed and normalized during this board run execution.</p>
           </div>
-          <StatusBadge status={run.state} />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {run.boardRuns.map((br, idx) => {
-            const b = getBoard(br.boardId) || { name: br.boardId, adapter: 'unknown' };
-            return (
-              <Link
-                key={idx}
-                to={`/board-runs/${br.boardRunId}`}
-                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-500 dark:hover:border-teal-500 transition-all flex flex-col justify-between space-y-3 group"
-              >
-                <div>
-                  <p className="text-[10px] uppercase font-mono font-bold text-teal-600 dark:text-teal-400">
-                    {b.adapter}
-                  </p>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-0.5 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
-                    {b.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-mono mt-1">{br.outcome}</p>
-                </div>
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-                  <StatusBadge status={br.state} size="sm" />
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Extracted Jobs Stack */}
-      <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">Extracted jobs</h2>
           <Link
             to="/jobs"
             className="inline-flex items-center gap-1 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline"
@@ -143,31 +127,27 @@ export const RunDetail: React.FC = () => {
         </div>
 
         <div className="space-y-3">
-          {run.jobs.length > 0 ? (
-            run.jobs.map((jobId) => {
-              const j = getJob(jobId);
-              if (!j) return null;
-              return (
-                <Link
-                  key={jobId}
-                  to={`/jobs/${jobId}`}
-                  className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-500 dark:hover:border-teal-500 transition-all group"
-                >
-                  <div className="space-y-0.5">
-                    <b className="block text-sm font-semibold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
-                      {j.title}
-                    </b>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {j.company} · {j.location}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <StatusBadge status={j.ops} size="sm" />
-                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
-                  </div>
-                </Link>
-              );
-            })
+          {runJobs.length > 0 ? (
+            runJobs.map((j) => (
+              <Link
+                key={j.candidate_id}
+                to={'/jobs/' + j.candidate_id}
+                className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-500 dark:hover:border-teal-500 transition-all group"
+              >
+                <div className="space-y-0.5">
+                  <b className="block text-sm font-semibold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                    {j.title}
+                  </b>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {j.company} · {j.location || 'Unspecified'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={j.job_ops_status || 'accepted'} size="sm" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
+                </div>
+              </Link>
+            ))
           ) : (
             <div className="p-8 text-center text-xs text-slate-400 font-mono border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
               No job records were extracted for this run.

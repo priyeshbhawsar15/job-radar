@@ -841,3 +841,10 @@ ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000)
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
 INFO:     127.0.0.1:51584 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     Started server process [749334]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     127.0.0.1:57954 - "GET /api/v1/health HTTP/1.1" 200 OK

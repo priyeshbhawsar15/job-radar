@@ -60,8 +60,8 @@
     "name": "Microsoft",
     "family": "eightfold",
     "status": "success",
-    "extracted": 18,
-    "notes": "Extracted 18 candidates"
+    "extracted": 17,
+    "notes": "Extracted 17 candidates"
   },
   {
     "board_id": "board-amazon",
@@ -171,128 +171,128 @@
     "board_id": "board-abnormalai",
     "name": "Abnormal AI",
     "family": "custom",
-    "status": "issue",
+    "status": "error",
     "extracted": 0,
-    "notes": "Outcome: success, extracted: 0, error: None"
+    "notes": "This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) attempt to write a readonly database\n[SQL: UPDATE execution_attempts SET stage=?, outcome=?, terminal_at=? WHERE execution_attempts.execution_id = ?]\n[parameters: ('completed', 'success', '2026-08-16 23:17:16.460290', 'b59a7033-dba2-4110-b32a-8987cc85d986')]\n(Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)"
   },
   {
     "board_id": "board-plane",
     "name": "Plane",
     "family": "ashby",
-    "status": "issue",
+    "status": "error",
     "extracted": 0,
-    "notes": "Outcome: success, extracted: 0, error: None"
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('3fad0427-f987-4041-84b2-3694586e54ba', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:16.962947', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-ameriprise",
     "name": "Ameriprise",
     "family": "phenom",
-    "status": "issue",
+    "status": "error",
     "extracted": 0,
-    "notes": "Outcome: success, extracted: 0, error: None"
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('0dc59123-81c1-4a0c-a5be-8e83bf4d8d1d', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:17.464812', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-celonis",
     "name": "Celonis",
     "family": "custom",
-    "status": "issue",
+    "status": "error",
     "extracted": 0,
-    "notes": "Outcome: success, extracted: 0, error: None"
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('ff54a28b-4cc9-40ee-bf31-8e5e0a3a6d9b', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:17.966852', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-highradius",
     "name": "HighRadius",
     "family": "custom",
-    "status": "success",
-    "extracted": 76,
-    "notes": "Extracted 76 candidates"
+    "status": "error",
+    "extracted": 0,
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('fe31ee95-26a7-4d8c-83a0-b6b0a4eebe51', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:18.468744', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-hp",
     "name": "HP",
     "family": "eightfold",
-    "status": "success",
-    "extracted": 18,
-    "notes": "Extracted 18 candidates"
+    "status": "error",
+    "extracted": 0,
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('40854c6a-a043-4db6-a173-55df4e22eb1f', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:18.971782', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-coupa",
     "name": "Coupa",
     "family": "lever",
-    "status": "issue",
+    "status": "error",
     "extracted": 0,
-    "notes": "Outcome: success, extracted: 0, error: None"
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('69735d95-cda6-47ca-8662-927a80c46ae5', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:19.473641', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-philips",
     "name": "Philips",
     "family": "phenom",
-    "status": "success",
-    "extracted": 10,
-    "notes": "Extracted 10 candidates"
+    "status": "error",
+    "extracted": 0,
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('6873628d-9d2d-4690-af31-72264b55bae9', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:19.975535', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-novartis",
     "name": "Novartis",
     "family": "custom",
-    "status": "success",
-    "extracted": 1,
-    "notes": "Extracted 1 candidates"
+    "status": "error",
+    "extracted": 0,
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('d3f9e8a9-09d7-4cdb-9c49-07477808af02', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:20.477460', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-adobe",
     "name": "Adobe",
     "family": "workday",
-    "status": "success",
-    "extracted": 20,
-    "notes": "Extracted 20 candidates"
+    "status": "error",
+    "extracted": 0,
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('f7e4fdb4-56bd-4c83-adeb-152ec47f3841', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:20.979395', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-motorola",
     "name": "Motorola Solutions",
     "family": "workday",
-    "status": "success",
-    "extracted": 20,
-    "notes": "Extracted 20 candidates"
+    "status": "error",
+    "extracted": 0,
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('0f84b0c0-a372-4572-b790-df635806ecba', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:21.481311', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-ebay",
     "name": "eBay",
     "family": "workday",
-    "status": "success",
-    "extracted": 20,
-    "notes": "Extracted 20 candidates"
+    "status": "error",
+    "extracted": 0,
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('e3888ca3-0554-4759-8af5-7772be4f4fb0', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:21.982847', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-vanguard",
     "name": "Vanguard",
     "family": "google_cloud_talent_solution",
-    "status": "success",
-    "extracted": 10,
-    "notes": "Extracted 10 candidates"
+    "status": "error",
+    "extracted": 0,
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('823f3fa1-335d-4bed-9bd8-c2d8918e00c0', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:22.484840', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-mattel",
     "name": "Mattel",
     "family": "custom",
-    "status": "success",
-    "extracted": 15,
-    "notes": "Extracted 15 candidates"
+    "status": "error",
+    "extracted": 0,
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('5bb8f93a-1129-48d6-89b1-0ca969a0e4eb', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:22.987604', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-apple",
     "name": "Apple",
     "family": "apple_jobs",
-    "status": "success",
-    "extracted": 22,
-    "notes": "Extracted 22 candidates"
+    "status": "error",
+    "extracted": 0,
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('a530da0a-76e6-4027-85e7-670f875de61b', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:23.489794', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   },
   {
     "board_id": "board-meta",
     "name": "Meta",
     "family": "meta_careers",
-    "status": "success",
-    "extracted": 10,
-    "notes": "Extracted 10 candidates"
+    "status": "error",
+    "extracted": 0,
+    "notes": "(sqlite3.OperationalError) attempt to write a readonly database\n[SQL: INSERT INTO pipeline_runs (pipeline_id, \"trigger\", status, total_boards, extracted_count, accepted_count, held_count, failed_count, started_at, terminal_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]\n[parameters: ('90bf24ff-a59c-4a9a-b5a8-e357017be49a', 'manual', 'running', 1, 0, 0, 0, 0, '2026-08-16 23:17:23.991700', None)]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
   }
 ]

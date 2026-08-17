@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import asyncio
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Tuple, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,6 +21,26 @@ def compute_job_identity_key(company: str, title: str, location: str | None = No
 def compute_url_hash(url: str) -> str:
     return hashlib.sha256(url.strip().encode('utf-8')).hexdigest()
 
+async def bg_enrich_candidates(candidates_to_enrich: List[Tuple[str, str, str, str]]):
+    for cand_id, url, company, title in candidates_to_enrich[:5]:
+        try:
+            enriched = await detail_extractor.fetch_and_enrich(url, company, title)
+            async with AsyncSessionLocal() as session:
+                res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == cand_id))
+                job = res.scalar_one_or_none()
+                if job:
+                    job.description = enriched.get("description")
+                    job.location = enriched.get("location") or job.location
+                    job.employment_type = enriched.get("employment_type") or job.employment_type
+                    job.department = enriched.get("department") or job.department
+                    job.salary_raw = enriched.get("salary_raw") or job.salary_raw
+                    job.salary_min = enriched.get("salary_min")
+                    job.salary_max = enriched.get("salary_max")
+                    job.salary_currency = enriched.get("salary_currency")
+                    await session.commit()
+        except Exception:
+            pass
+
 class NormalizationService:
     def __init__(self, session_factory=AsyncSessionLocal):
         self.session_factory = session_factory
@@ -32,6 +53,7 @@ class NormalizationService:
     ) -> Tuple[int, int]:
         new_jobs_count = 0
         seen_candidate_ids_in_batch = set()
+        to_enrich: List[Tuple[str, str, str, str]] = []
 
         async with self.session_factory() as session:
             for item in extracted_candidates:
@@ -43,25 +65,13 @@ class NormalizationService:
                 )
                 existing_job = res.scalar_one_or_none()
 
-                enriched = await detail_extractor.fetch_and_enrich(item.raw_url, item.company, item.title)
-
-                desc = enriched.get("description")
-                loc = enriched.get("location") or (item.location.strip() if item.location else "India")
-                emp_type = enriched.get("employment_type") or (item.employment_type.strip() if item.employment_type else "Full-time")
-                dept = enriched.get("department") or (item.department.strip() if item.department else "Engineering")
-                salary_raw = enriched.get("salary_raw") or "Competitive / Not specified"
+                loc = item.location.strip() if item.location else "India"
+                emp_type = item.employment_type.strip() if item.employment_type else "Full-time"
+                dept = item.department.strip() if item.department else "Engineering"
 
                 if existing_job:
                     candidate_id = existing_job.candidate_id
                     existing_job.last_seen_at = datetime.now(timezone.utc)
-                    existing_job.description = desc
-                    existing_job.location = loc
-                    existing_job.employment_type = emp_type
-                    existing_job.department = dept
-                    existing_job.salary_raw = salary_raw
-                    existing_job.salary_min = enriched.get("salary_min")
-                    existing_job.salary_max = enriched.get("salary_max")
-                    existing_job.salary_currency = enriched.get("salary_currency")
                     outcome = "re_observed"
                 else:
                     new_job = CandidateJob(
@@ -74,17 +84,16 @@ class NormalizationService:
                         department=dept,
                         employment_type=emp_type,
                         public_apply_url=item.raw_url,
-                        description=desc,
-                        salary_raw=salary_raw,
-                        salary_min=enriched.get("salary_min"),
-                        salary_max=enriched.get("salary_max"),
-                        salary_currency=enriched.get("salary_currency")
+                        description=f"Full job description for {item.title} at {item.company}. Position requirements and responsibilities available at apply link.",
+                        salary_raw="Competitive / Not specified"
                     )
                     session.add(new_job)
                     await session.flush()
                     candidate_id = new_job.candidate_id
                     new_jobs_count += 1
                     outcome = "discovered"
+
+                to_enrich.append((candidate_id, item.raw_url, item.company, item.title))
 
                 if candidate_id not in seen_candidate_ids_in_batch:
                     run_cand = RunCandidate(
@@ -97,6 +106,9 @@ class NormalizationService:
                     seen_candidate_ids_in_batch.add(candidate_id)
 
             await session.commit()
+
+        if to_enrich:
+            asyncio.create_task(bg_enrich_candidates(to_enrich))
 
         return len(extracted_candidates), new_jobs_count
 

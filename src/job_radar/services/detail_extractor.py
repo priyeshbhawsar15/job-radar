@@ -1,6 +1,7 @@
 import logging
 import json
 import re
+import httpx
 from typing import Optional, Dict, Any
 from job_radar.services.browser import BrowserServiceClient
 
@@ -13,6 +14,18 @@ class DetailExtractor:
         self.browser_client = browser_client or BrowserServiceClient()
 
     async def fetch_and_enrich(self, public_apply_url: str, board_name: str, title: str) -> Dict[str, Any]:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+        try:
+            async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:
+                resp = await client.get(public_apply_url)
+                if resp.status_code == 200 and len(resp.text) > 500:
+                    return self.parse_detail_html(resp.text, board_name, title, public_apply_url)
+        except Exception:
+            pass
+
         try:
             html = await self.browser_client.fetch_board_html(public_apply_url)
             return self.parse_detail_html(html, board_name, title, public_apply_url)

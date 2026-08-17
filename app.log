@@ -2393,3 +2393,80 @@ INFO:     192.168.2.90:47178 - "GET / HTTP/1.1" 304 Not Modified
 INFO:     192.168.2.90:47178 - "GET /assets/index-DQ1N6mjx.js HTTP/1.1" 304 Not Modified
 INFO:     192.168.2.90:47178 - "GET /api/v1/stream HTTP/1.1" 200 OK
 INFO:     127.0.0.1:54272 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /assets/index-DQ1N6mjx.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /assets/index-DQ1N6mjx.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /assets/index-DQ1N6mjx.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42276 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42276 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41430 - "GET /api/v1/boards/board-adobe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36212 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36212 - "GET /assets/index-DQ1N6mjx.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36214 - "GET /assets/index-BMYAX_o4.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36214 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36212 - "GET /api/v1/boards/board-adobe HTTP/1.1" 200 OK
+INFO:     Started server process [3490553]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     127.0.0.1:53286 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53286 - "GET /assets/index-Bxa3pa31.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /assets/index-BMYAX_o4.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53286 - "GET /api/v1/boards/board-adobe HTTP/1.1" 200 OK

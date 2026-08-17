@@ -34,7 +34,6 @@ export function App() {
   return (
     <Router>
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex font-sans antialiased selection:bg-teal-500 selection:text-white">
-        {/* Navigation Sidebar */}
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -42,11 +41,8 @@ export function App() {
           onToggleCollapse={toggleSidebarCollapse}
         />
 
-        {/* Main Content Area */}
         <div
-          className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ${
-            sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
-          }`}
+          className={'flex-1 flex flex-col min-w-0 transition-all duration-200 ' + (sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64')}
         >
           <Header
             onMenuClick={() => setSidebarOpen(true)}
@@ -60,8 +56,9 @@ export function App() {
               <Route path="/runs" element={<Runs />} />
               <Route path="/runs/:id" element={<RunDetail />} />
               <Route path="/boards" element={<Boards />} />
-              <Route path="/boards/:id" element={<BoardDetail />} />
               <Route path="/boards/:id/config" element={<BoardConfig />} />
+              <Route path="/boards/:id/edit" element={<BoardConfig />} />
+              <Route path="/boards/:id" element={<BoardDetail />} />
               <Route path="/board-runs/:id" element={<BoardRunLog />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/jobs/:id" element={<JobDetail />} />
@@ -70,7 +67,6 @@ export function App() {
           </main>
         </div>
 
-        {/* Manual Trigger Modal */}
         <RunModal isOpen={runModalOpen} onClose={() => setRunModalOpen(false)} />
       </div>
     </Router>

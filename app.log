@@ -1567,3 +1567,31 @@ ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000)
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
 INFO:     127.0.0.1:52036 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47326 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47326 - "GET /assets/index-YWF0PvLg.js HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47342 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47326 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47340 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47326 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47326 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47356 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+ERROR:    ASGI callable returned without completing response.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2811612]
+INFO:     Started server process [2869616]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:43300 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2869616]
+INFO:     Started server process [2871621]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:40800 - "GET /api/v1/health HTTP/1.1" 200 OK

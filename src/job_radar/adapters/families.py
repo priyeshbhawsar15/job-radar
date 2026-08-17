@@ -1,3 +1,22 @@
+def canonicalize_job_url(full_url: str, board_name: str, target_url: str) -> str:
+    if 'amazon.jobs' in full_url:
+        match = re.search(r'/jobs/(\d+)', full_url)
+        if match:
+            return f'https://www.amazon.jobs/en/jobs/{match.group(1)}'
+
+    if 'eightfold.ai' in full_url or 'eightfold' in board_name.lower():
+        match = re.search(r'/job/(\d+)', full_url)
+        if match:
+            domain_map = {'qualcomm': 'qualcomm.com', 'hp': 'hp.com', 'microsoft': 'microsoft.com'}
+            comp_key = board_name.lower()
+            domain = domain_map.get(comp_key, f'{comp_key}.com')
+            return f'https://{comp_key}.eightfold.ai/careers/job/{match.group(1)}?domain={domain}'
+
+    if 'myworkdayjobs.com' in full_url:
+        return full_url
+
+    return full_url.split('?')[0] if '?' in full_url and not any(k in full_url for k in ['gh_jid=', 'jobId=', 'team=']) else full_url
+
 import hashlib
 import json
 import re
@@ -66,7 +85,7 @@ def extract_html_job_links(html: str, board_name: str, target_url: str) -> List[
         if 'myworkdayjobs.com' in full_url:
             clean_url = full_url
         else:
-            clean_url = full_url.split('?')[0] if '?' in full_url and not any(k in full_url for k in ['gh_jid=', 'jobId=', 'team=']) else full_url
+            clean_url = canonicalize_job_url(full_url, board_name, target_url)
 
         if clean_url in seen_urls or clean_url.rstrip('/') == target_url.rstrip('/'):
             continue

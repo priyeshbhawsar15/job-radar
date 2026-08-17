@@ -1595,3 +1595,57 @@ INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
 INFO:     127.0.0.1:40800 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45802 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:45802 - "GET /assets/index-YWF0PvLg.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:45820 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45802 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45804 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45804 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45802 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45804 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33584 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33588 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33584 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33148 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33164 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33164 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38636 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38644 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38636 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38648 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38662 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38648 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38648 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38662 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38648 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60138 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60154 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60138 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60138 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60154 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60138 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60138 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60154 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60138 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60138 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60154 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60138 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:54622 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:54634 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37420 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37420 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37436 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37420 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39502 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39518 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39502 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39502 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39518 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39502 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     Started server process [2957507]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     127.0.0.1:35372 - "GET /api/v1/health HTTP/1.1" 200 OK

@@ -1,3 +1,4 @@
+import html
 def canonicalize_job_url(full_url: str, board_name: str, target_url: str) -> str:
     if 'amazon.jobs' in full_url:
         match = re.search(r'/jobs/(\d+)', full_url)
@@ -377,3 +378,302 @@ class GenericAdapter(BaseAdapter):
         except Exception:
             pass
         return extract_html_job_links(payload, board_name, target_url)
+
+class AmeripriseAdapter(BaseAdapter):
+    @property
+    def family(self) -> str:
+        return "ameriprise"
+
+    def parse_raw_payload(
+        self,
+        payload: str | bytes,
+        board_name: str,
+        target_url: str,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        if isinstance(payload, bytes):
+            payload = payload.decode("utf-8")
+
+        results: List[ExtractedCandidate] = []
+        seen = set()
+
+        parts = payload.split("/search-jobs/")
+        for part in parts[1:]:
+            sub = part.split('"')[0].split("'")[0].split(">")[0].strip()
+            sub_parts = [p for p in sub.split("/") if p]
+            if len(sub_parts) >= 2 and sub_parts[0].startswith("r"):
+                job_id = sub_parts[0]
+                slug = sub_parts[1]
+                path = f"/search-jobs/{job_id}/{slug}/"
+                full_url = f"https://careers.ameriprise.com{path}"
+                clean_url = canonicalize_job_url(full_url, board_name, target_url)
+                if clean_url in seen:
+                    continue
+                seen.add(clean_url)
+
+                title = slug.replace("-", " ").title()
+                fp = generate_fingerprint(board_name, f"{title} {job_id}", "India")
+                results.append(
+                    ExtractedCandidate(
+                        title=title,
+                        company=board_name,
+                        location="India",
+                        department="Technology",
+                        employment_type="Full-time",
+                        raw_url=clean_url,
+                        fingerprint=fp
+                    )
+                )
+
+        return results
+
+class OracleAdapter(BaseAdapter):
+    @property
+    def family(self) -> str:
+        return "oracle"
+
+    def parse_raw_payload(
+        self,
+        payload: str | bytes,
+        board_name: str,
+        target_url: str,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        if isinstance(payload, bytes):
+            payload = payload.decode("utf-8")
+
+        html_text = html.unescape(payload)
+        results: List[ExtractedCandidate] = []
+        seen = set()
+
+        # Parse links containing /job/<number>/ from HTML
+        parts = html_text.split("/job/")
+        for part in parts[1:]:
+            job_id_str = part.split("/")[0].split("?")[0].split('"')[0].split("'")[0].strip()
+            if job_id_str.isdigit():
+                full_url = target_url.split("/jobs")[0] + f"/job/{job_id_str}/"
+                clean_url = canonicalize_job_url(full_url, board_name, target_url)
+                if not clean_url or clean_url in seen:
+                    continue
+                seen.add(clean_url)
+
+                title = f"{board_name} Job Requisition {job_id_str}"
+                fp = generate_fingerprint(board_name, f"{title} {job_id_str}", "India")
+                results.append(
+                    ExtractedCandidate(
+                        title=title,
+                        company=board_name,
+                        location="India",
+                        department="Technology",
+                        employment_type="Full-time",
+                        raw_url=clean_url,
+                        fingerprint=fp
+                    )
+                )
+
+        return results
+
+class AvatureAdapter(BaseAdapter):
+    @property
+    def family(self) -> str:
+        return "avature"
+
+    def parse_raw_payload(
+        self,
+        payload: str | bytes,
+        board_name: str,
+        target_url: str,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        if isinstance(payload, bytes):
+            payload = payload.decode("utf-8")
+
+        html_text = html.unescape(payload)
+        results: List[ExtractedCandidate] = []
+        seen = set()
+
+        # Parse links containing /JobDetail/ in HTML
+        parts = html_text.split("/JobDetail")
+        for part in parts[1:]:
+            sub = part.split('"')[0].split("'")[0].split(">")[0].strip()
+            # E.g., /Principal-Software-Development-Engineer/141645 or ?jobId=141645
+            if sub.startswith("/"):
+                sub_parts = [p for p in sub.split("/") if p]
+                if len(sub_parts) >= 2:
+                    slug = sub_parts[0]
+                    job_id = sub_parts[1]
+                    raw_u = f"https://careers.tesco.com/en_GB/careers/JobDetail/{slug}/{job_id}"
+                    clean_url = canonicalize_job_url(raw_u, board_name, target_url)
+                    if not clean_url or clean_url in seen:
+                        continue
+                    seen.add(clean_url)
+
+                    title = slug.replace("-", " ").title()
+                    fp = generate_fingerprint(board_name, f"{title} {job_id}", "Bengaluru, India")
+                    results.append(
+                        ExtractedCandidate(
+                            title=title,
+                            company=board_name,
+                            location="Bengaluru, India",
+                            department="Technology",
+                            employment_type="Full-time",
+                            raw_url=clean_url,
+                            fingerprint=fp
+                        )
+                    )
+
+        return results
+
+class EightfoldAdapter(BaseAdapter):
+    @property
+    def family(self) -> str:
+        return "eightfold"
+
+    def parse_raw_payload(
+        self,
+        payload: str | bytes,
+        board_name: str,
+        target_url: str,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        if isinstance(payload, bytes):
+            payload = payload.decode("utf-8")
+
+        html_text = html.unescape(payload)
+        parsed_target = urllib.parse.urlparse(target_url)
+        base_domain = f"https://{parsed_target.netloc}"
+
+        results: List[ExtractedCandidate] = []
+        seen = set()
+
+        # Parse links containing /job/ or /careers/job/ in HTML
+        parts = html_text.split("/job/")
+        if len(parts) <= 1:
+            parts = html_text.split("/careers/job/")
+
+        for part in parts[1:]:
+            job_id_str = part.split("/")[0].split("?")[0].split('"')[0].split("'")[0].strip()
+            if job_id_str.isdigit():
+                full_url = f"{base_domain}/careers/job/{job_id_str}"
+                clean_url = canonicalize_job_url(full_url, board_name, target_url)
+                if not clean_url or clean_url in seen:
+                    continue
+                seen.add(clean_url)
+
+                title = f"{board_name} Job Requisition {job_id_str}"
+                fp = generate_fingerprint(board_name, f"{title} {job_id_str}", "India")
+                results.append(
+                    ExtractedCandidate(
+                        title=title,
+                        company=board_name,
+                        location="India",
+                        department="Engineering",
+                        employment_type="Full-time",
+                        raw_url=clean_url,
+                        fingerprint=fp
+                    )
+                )
+
+        return results
+
+class GoogleCareersAdapter(BaseAdapter):
+    @property
+    def family(self) -> str:
+        return "google_careers"
+
+    def parse_raw_payload(
+        self,
+        payload: str | bytes,
+        board_name: str,
+        target_url: str,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        if isinstance(payload, bytes):
+            payload = payload.decode("utf-8")
+
+        html_text = html.unescape(payload)
+        results: List[ExtractedCandidate] = []
+        seen = set()
+
+        parts = html_text.split("jobs/results/")
+        for part in parts[1:]:
+            sub = part.split('"')[0].split("'")[0].split(">")[0].split("?")[0].strip()
+            sub_parts = [p for p in sub.split("/") if p]
+            if sub_parts and "-" in sub_parts[0]:
+                raw_slug = sub_parts[0]
+                slug_bits = raw_slug.split("-")
+                job_id = slug_bits[0]
+                if job_id.isdigit():
+                    title_slug = "-".join(slug_bits[1:])
+                    full_u = f"https://www.google.com/about/careers/applications/jobs/results/{job_id}-{title_slug}"
+                    clean_url = canonicalize_job_url(full_u, board_name, target_url)
+                    if not clean_url or clean_url in seen:
+                        continue
+                    seen.add(clean_url)
+
+                    title = title_slug.replace("-", " ").title()
+                    fp = generate_fingerprint(board_name, f"{title} {job_id}", "India")
+                    results.append(
+                        ExtractedCandidate(
+                            title=title,
+                            company=board_name,
+                            location="India",
+                            department="Engineering",
+                            employment_type="Full-time",
+                            raw_url=clean_url,
+                            fingerprint=fp
+                        )
+                    )
+
+        return results
+
+class MetaCareersAdapter(BaseAdapter):
+    @property
+    def family(self) -> str:
+        return "meta_careers"
+
+    def parse_raw_payload(
+        self,
+        payload: str | bytes,
+        board_name: str,
+        target_url: str,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        if isinstance(payload, bytes):
+            payload = payload.decode("utf-8")
+
+        html_text = html.unescape(payload)
+        results: List[ExtractedCandidate] = []
+        seen = set()
+
+        # Parse links containing /job_details/ or /jobs/results/ in HTML
+        parts = html_text.split("/job_details/")
+        if len(parts) <= 1:
+            parts = html_text.split("/jobs/results/")
+
+        for part in parts[1:]:
+            sub = part.split('"')[0].split("'")[0].split(">")[0].split("?")[0].strip()
+            job_id_str = sub.split("-")[0].strip()
+            if job_id_str.isdigit():
+                full_u = f"https://www.metacareers.com/profile/job_details/{job_id_str}"
+                clean_url = canonicalize_job_url(full_u, board_name, target_url)
+                if not clean_url or clean_url in seen:
+                    continue
+                seen.add(clean_url)
+
+                title = f"{board_name} Job Requisition {job_id_str}"
+                fp = generate_fingerprint(board_name, f"{title} {job_id_str}", "India")
+                results.append(
+                    ExtractedCandidate(
+                        title=title,
+                        company=board_name,
+                        location="India",
+                        department="Engineering",
+                        employment_type="Full-time",
+                        raw_url=clean_url,
+                        fingerprint=fp
+                    )
+                )
+
+        return results
+

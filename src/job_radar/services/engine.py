@@ -36,6 +36,205 @@ class PipelineExecutionEngine:
         self.session_factory = session_factory
         self.browser_client = BrowserServiceClient()
 
+    async def fetch_rbctech_candidates(
+        self,
+        target_url: str,
+        board_name: str
+    ) -> List[ExtractedCandidate]:
+        """Fetch RBCTech job postings directly from Stratsy public API."""
+        api_url = "https://aligncrm.stratsy.us/api/public/opportunities"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        all_candidates: List[ExtractedCandidate] = []
+        seen_urls = set()
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(api_url, headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                items = data.get("data", [])
+                for item in items:
+                    title = str(item.get("title") or "").strip()
+                    job_id = str(item.get("id") or "")
+                    loc = str(item.get("location") or "India").strip()
+                    emp = str(item.get("opportunityType") or "Full-time").replace("_", "-").title()
+                    desc = str(item.get("description") or "").strip()
+
+                    full_u = f"https://aligncrm.stratsy.us/public/opportunities?board=RBC%20Technologies&id={job_id}"
+                    clean_u = canonicalize_job_url(full_u, board_name, target_url)
+                    if not clean_u or clean_u in seen_urls:
+                        continue
+                    seen_urls.add(clean_u)
+
+                    fp = generate_fingerprint(board_name, f"{title} {job_id}", loc)
+                    all_candidates.append(
+                        ExtractedCandidate(
+                            title=title,
+                            company=board_name,
+                            location=loc,
+                            department="Engineering",
+                            employment_type=emp,
+                            raw_url=clean_u,
+                            fingerprint=fp,
+                            extra_payload={"description": desc[:40000]}
+                        )
+                    )
+
+        return all_candidates
+
+    async def fetch_lever_candidates(
+        self,
+        target_url: str,
+        board_name: str
+    ) -> List[ExtractedCandidate]:
+        """Fetch Lever job postings directly from Lever's JSON API."""
+        parsed = urllib.parse.urlparse(target_url)
+        slug = parsed.path.strip("/").split("/")[0]
+        if not slug or slug == "v0":
+            slug = parsed.path.split("/postings/")[-1].split("?")[0]
+
+        api_url = f"https://api.lever.co/v0/postings/{slug}?mode=json"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        all_candidates: List[ExtractedCandidate] = []
+        seen_urls = set()
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(api_url, headers=headers)
+            if resp.status_code == 200:
+                jobs = resp.json()
+                for j in jobs:
+                    cats = j.get("categories", {})
+                    loc_str = str(cats.get("location", ""))
+                    country_str = str(cats.get("country", ""))
+                    text_str = str(j.get("text", ""))
+                    
+                    full_loc = f"{loc_str} {country_str} {text_str}"
+                    if "india" not in full_loc.lower():
+                        continue
+
+                    raw_u = j.get("hostedUrl") or j.get("applyUrl")
+                    clean_u = canonicalize_job_url(raw_u, board_name, target_url)
+                    if not clean_u or clean_u in seen_urls:
+                        continue
+                    seen_urls.add(clean_u)
+
+                    title = j.get("text", "").strip()
+                    job_id = j.get("id", "")
+                    dept = cats.get("department", "Technology").strip()
+                    emp = cats.get("commitment", "Full-time").strip()
+                    desc = j.get("descriptionPlain", "") or j.get("description", "")
+                    fp = generate_fingerprint(board_name, f"{title} {job_id}", loc_str or "India")
+
+                    all_candidates.append(
+                        ExtractedCandidate(
+                            title=title,
+                            company=board_name,
+                            location=loc_str or "India",
+                            department=dept,
+                            employment_type=emp,
+                            raw_url=clean_u,
+                            fingerprint=fp,
+                            extra_payload={"description": desc[:40000]}
+                        )
+                    )
+
+        return all_candidates
+
+    async def fetch_celonis_candidates(
+        self,
+        target_url: str,
+        board_name: str
+    ) -> List[ExtractedCandidate]:
+        """Fetch Celonis job postings directly from Celonis DXP API."""
+        api_url = "https://dxp-api.celonis.com/v1/jobs?limit=100"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        all_candidates: List[ExtractedCandidate] = []
+        seen_urls = set()
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(api_url, headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                jobs = data.get("jobs", []) or data.get("data", []) or []
+                for j in jobs:
+                    loc = str(j.get("location", "") or j.get("groupedLocation", ""))
+                    team = str(j.get("team", "") or j.get("department", ""))
+                    if "bangalore" not in loc.lower() and "india" not in loc.lower():
+                        continue
+
+                    job_id = j.get("jobId", "") or j.get("id", "")
+                    raw_u = f"https://careers.celonis.com/join-us/open-positions/job-detail?jobId={job_id}"
+                    clean_u = canonicalize_job_url(raw_u, board_name, target_url)
+                    if clean_u in seen_urls:
+                        continue
+                    seen_urls.add(clean_u)
+
+                    title = j.get("title", "").strip()
+                    desc = j.get("description", "") or j.get("content", "")
+                    fp = generate_fingerprint(board_name, f"{title} {job_id}", "Bangalore, India")
+
+                    all_candidates.append(
+                        ExtractedCandidate(
+                            title=title,
+                            company=board_name,
+                            location="Bangalore, India",
+                            department=team or "Engineering",
+                            employment_type="Full-time",
+                            raw_url=clean_u,
+                            fingerprint=fp,
+                            extra_payload={"description": str(desc)[:40000]}
+                        )
+                    )
+
+        return all_candidates
+
+    async def fetch_ashby_candidates(
+        self,
+        target_url: str,
+        board_name: str
+    ) -> List[ExtractedCandidate]:
+        """Fetch Ashby job postings directly from Ashby's public API."""
+        parsed = urllib.parse.urlparse(target_url)
+        org_slug = parsed.path.strip('/').split('/')[0]
+        api_url = f"https://api.ashbyhq.com/posting-api/job-board/{org_slug}"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+
+        all_candidates: List[ExtractedCandidate] = []
+        seen_urls = set()
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(api_url, headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                jobs = data.get("jobs", [])
+                for j in jobs:
+                    raw_u = j.get("jobUrl") or f"https://jobs.ashbyhq.com/{org_slug}/{j.get('id')}"
+                    clean_u = canonicalize_job_url(raw_u, board_name, target_url)
+                    if clean_u in seen_urls:
+                        continue
+                    seen_urls.add(clean_u)
+
+                    title = j.get("title", "").strip()
+                    loc = j.get("location", "India").strip()
+                    dept = j.get("department", "Technology").strip()
+                    emp = j.get("employmentType", "Full-time").strip()
+                    desc = j.get("descriptionPlain", "") or j.get("descriptionHtml", "")
+                    fp = generate_fingerprint(board_name, f"{title} {j.get('id')}", loc)
+
+                    all_candidates.append(
+                        ExtractedCandidate(
+                            title=title,
+                            company=board_name,
+                            location=loc,
+                            department=dept,
+                            employment_type=emp,
+                            raw_url=clean_u,
+                            fingerprint=fp,
+                            extra_payload={"description": desc[:40000]}
+                        )
+                    )
+
+        return all_candidates
+
     async def fetch_amazon_candidates_multipage(
         self,
         target_url: str,
@@ -124,7 +323,7 @@ class PipelineExecutionEngine:
         tenant = domain.split('.')[0]
         site = "external_experienced"
 
-        for idx, p in enumerate(parts):
+        for idx, p in enumerate(parts[1:], 1):
             if p in ("en-US", "en_US") and idx + 1 < len(parts):
                 site = parts[idx + 1].split('?')[0]
                 break
@@ -156,6 +355,11 @@ class PipelineExecutionEngine:
                 payload = {"appliedFacets": facets, "limit": 20, "offset": offset, "searchText": ""}
                 try:
                     resp = await client.post(cxs_url, json=payload, headers=headers)
+                    if resp.status_code != 200 and "locationCountry" in facets:
+                        fallback_facets = {k: v for k, v in facets.items() if k != "locationCountry"}
+                        payload["appliedFacets"] = fallback_facets
+                        resp = await client.post(cxs_url, json=payload, headers=headers)
+
                     if resp.status_code == 200:
                         page_payload = resp.text
                         page_cands = adapter.parse_raw_payload(
@@ -169,7 +373,23 @@ class PipelineExecutionEngine:
                         for c in page_cands:
                             if c.raw_url not in seen_urls:
                                 seen_urls.add(c.raw_url)
+                                try:
+                                    parsed_c = urllib.parse.urlparse(c.raw_url)
+                                    path_segment = parsed_c.path
+                                    if "/job/" in path_segment:
+                                        rel_path = path_segment[path_segment.find("/job/"):]
+                                        detail_endpoint = f"https://{domain}/wday/cxs/{tenant}/{site}{rel_path}"
+                                        dr = await client.get(detail_endpoint, headers=headers)
+                                        if dr.status_code == 200:
+                                            d_info = dr.json().get("jobPostingInfo", {})
+                                            raw_desc = d_info.get("jobDescription", "")
+                                            if raw_desc:
+                                                clean_desc = html.unescape(re.sub(r"<[^>]+>", " ", raw_desc)).strip()
+                                                c.extra_payload = {"description": clean_desc[:40000]}
+                                except Exception as de_err:
+                                    logger.info(f"CXS detail fetch exception for {c.raw_url}: {de_err}")
                                 all_candidates.append(c)
+
                         data = resp.json()
                         if data.get("total", 0) > 0:
                             total_known = data["total"]
@@ -303,6 +523,26 @@ class PipelineExecutionEngine:
                             board_name=board.name,
                             max_pages=max_pages,
                             selector_config=selector_config
+                        )
+                    elif family in ("ashby", "ashbyhq"):
+                        extracted_candidates = await self.fetch_ashby_candidates(
+                            target_url=target_url,
+                            board_name=board.name
+                        )
+                    elif family in ("celonis", "celonis_dxp"):
+                        extracted_candidates = await self.fetch_celonis_candidates(
+                            target_url=target_url,
+                            board_name=board.name
+                        )
+                    elif family == "lever":
+                        extracted_candidates = await self.fetch_lever_candidates(
+                            target_url=target_url,
+                            board_name=board.name
+                        )
+                    elif family in ("stratsy", "stratsy_api"):
+                        extracted_candidates = await self.fetch_rbctech_candidates(
+                            target_url=target_url,
+                            board_name=board.name
                         )
                     else:
                         raw_payload = await self.browser_client.fetch_board_html(

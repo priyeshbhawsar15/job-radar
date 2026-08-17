@@ -5,6 +5,11 @@ from job_radar.adapters.families import (
     LeverAdapter,
     AshbyAdapter,
     WorkdayAdapter,
+    MetaCareersAdapter,
+    GoogleCareersAdapter,
+    AvatureAdapter,
+    OracleAdapter,
+    AmeripriseAdapter,
     GenericAdapter,
 )
 
@@ -17,6 +22,11 @@ class AdapterRegistry:
         self.register(LeverAdapter())
         self.register(AshbyAdapter())
         self.register(WorkdayAdapter())
+        self.register(MetaCareersAdapter())
+        self.register(GoogleCareersAdapter())
+        self.register(AvatureAdapter())
+        self.register(OracleAdapter())
+        self.register(AmeripriseAdapter())
 
     def register(self, adapter: BaseAdapter) -> None:
         self._adapters[adapter.family.lower()] = adapter

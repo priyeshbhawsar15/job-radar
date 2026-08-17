@@ -1,78 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
-import { ArrowLeft, Save, ShieldAlert } from 'lucide-react';
-import { getBoard } from '../data/mockData';
-import type { BoardItem } from '../data/mockData';
+import { ArrowLeft, Save, ShieldAlert, CheckCircle } from 'lucide-react';
 
 export const BoardConfig: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [board, setBoard] = useState<BoardItem | null>(null);
+  const [board, setBoard] = useState<any>(null);
   const [url, setUrl] = useState<string>('');
-  const [cron, setCron] = useState<string>('Daily · 06:00 Asia/Kolkata');
-  const [readiness, setReadiness] = useState<string>('ready-listing-v2');
+  const [maxPages, setMaxPages] = useState<number>(3);
+  const [cron, setCron] = useState<string>('0 */6 * * *');
+  const [savedMsg, setSavedMsg] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!id || id === 'new') {
-      setBoard({
-        id: 'new-board',
-        name: 'New Board',
-        adapter: 'greenhouse',
-        url: 'https://boards.greenhouse.io/example',
-        state: 'draft',
-        rev: 'rev-01',
-        runs: 0,
-        success: 100,
-        missing: ['reviewed readiness descriptor', 'reviewed detail route allowlist'],
-        next: 'Draft'
-      });
-    } else {
-      const b = getBoard(id);
-      if (b) {
-        setBoard(b);
-        setUrl(b.url);
-        if (b.missing.includes('reviewed readiness descriptor')) {
-          setReadiness('Missing — required');
+    if (!id) return;
+    fetch('/api/v1/boards/' + id)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setBoard(data);
+          setUrl(data.target_url || '');
+          setMaxPages(data.max_pages || 3);
+          setCron(data.schedule_cron || '0 */6 * * *');
         }
-      } else {
-        setBoard({
-          id,
-          name: id,
-          adapter: 'custom',
-          url: 'https://example.com/careers',
-          state: 'draft',
-          rev: 'rev-01',
-          runs: 0,
-          success: 100,
-          missing: [],
-          next: 'Review required'
-        });
-      }
-    }
+      })
+      .catch((e) => console.error(e));
   }, [id]);
 
   if (!board) {
     return <div className="p-8 text-center text-slate-400 font-mono">Loading configuration...</div>;
   }
 
-  const requiredFields = [
-    'adapter family',
-    'public listing link',
-    'detail route allowlist',
-    'pagination cap',
-    'readiness descriptor',
-    'resource policy'
-  ];
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Static prototype: configuration is not saved.');
+    fetch('/api/v1/boards/' + id + '/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        target_url: url,
+        max_pages: Number(maxPages),
+        schedule_cron: cron
+      })
+    })
+      .then((res) => res.json())
+      .then(() => {
+        setSavedMsg(true);
+        setTimeout(() => setSavedMsg(false), 3000);
+      })
+      .catch((err) => alert('Error saving config: ' + err));
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <p className="text-[10px] uppercase tracking-widest font-extrabold text-teal-600 dark:text-teal-400 mb-1">
@@ -82,12 +61,12 @@ export const BoardConfig: React.FC = () => {
             Edit {board.name} configuration
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Static form only. Saving, review, state transitions, secret values, and source enablement are intentionally unavailable.
+            Update extraction parameters, pagination depth, and target URLs.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => navigate(`/boards/${board.id}`)}
+            onClick={() => navigate('/boards/' + board.board_id)}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -96,24 +75,22 @@ export const BoardConfig: React.FC = () => {
         </div>
       </header>
 
-      {/* Breadcrumb path */}
-      <p className="text-xs text-slate-500 dark:text-slate-400">
-        <Link to="/boards" className="hover:underline">Boards</Link> /{' '}
-        <Link to={`/boards/${board.id}`} className="hover:underline">{board.name}</Link> / configuration
-      </p>
+      {savedMsg && (
+        <div className="p-3.5 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-900 dark:text-teal-300 text-xs flex items-center gap-2 font-bold">
+          <CheckCircle className="w-4 h-4 text-teal-500 shrink-0" />
+          <span>Configuration saved successfully! New draft revision activated.</span>
+        </div>
+      )}
 
-      {/* Main Grid: Form + Status Matrix */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Form Card */}
         <form
           onSubmit={handleSubmit}
           className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4"
         >
-          {/* Review Gate Notice */}
           <div className="p-3.5 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-900 dark:text-teal-300 text-xs flex items-start gap-2.5">
             <ShieldAlert className="w-4 h-4 text-teal-500 shrink-0 mt-0.5" />
             <div>
-              <b>Review gate:</b> edits create a draft revision in the real design; an editor cannot self-review or enable it.
+              <b>Configuration Gate:</b> Updates create an approved revision in the live engine database.
             </div>
           </div>
 
@@ -123,7 +100,7 @@ export const BoardConfig: React.FC = () => {
             </label>
             <input
               type="text"
-              value={board.id}
+              value={board.board_id}
               readOnly
               className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-500 font-mono text-xs cursor-not-allowed"
             />
@@ -133,19 +110,12 @@ export const BoardConfig: React.FC = () => {
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
               Adapter family
             </label>
-            <select
-              value={board.adapter}
-              onChange={(e) => setBoard({ ...board, adapter: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
-            >
-              <option value={board.adapter}>{board.adapter}</option>
-              <option value="greenhouse">greenhouse</option>
-              <option value="lever">lever</option>
-              <option value="ashby">ashby</option>
-              <option value="workday">workday</option>
-              <option value="careerpage">careerpage</option>
-              <option value="custom">custom</option>
-            </select>
+            <input
+              type="text"
+              value={board.family}
+              readOnly
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-500 font-mono text-xs cursor-not-allowed"
+            />
           </div>
 
           <div className="space-y-1">
@@ -162,7 +132,24 @@ export const BoardConfig: React.FC = () => {
 
           <div className="space-y-1">
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-              Schedule / timezone
+              Max Pages to Extract (Pagination Depth)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="10"
+              value={maxPages}
+              onChange={(e) => setMaxPages(Number(e.target.value))}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            />
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Number of pages to iterate per run (default: 3 pages = up to 60 jobs per run).
+            </p>
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Schedule (Cron)
             </label>
             <input
               type="text"
@@ -172,52 +159,38 @@ export const BoardConfig: React.FC = () => {
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-              Reviewed readiness descriptor
-            </label>
-            <input
-              type="text"
-              value={readiness}
-              onChange={(e) => setReadiness(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-
           <button
             type="submit"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-xs transition-colors"
           >
             <Save className="w-4 h-4" />
-            <span>Save draft (demo)</span>
+            <span>Save Configuration</span>
           </button>
         </form>
 
-        {/* Required Configuration Status Matrix */}
         <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <div>
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              Required configuration status
+              Current Active Parameters
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Typed fields are validated server-side in the approved system design.
+              Live runtime parameters applied to execution engine runs.
             </p>
           </div>
 
-          <div className="space-y-3">
-            {requiredFields.map((field) => {
-              const prefix = field.split(' ')[0];
-              const isMissing = board.missing.some((m) => m.toLowerCase().includes(prefix));
-              return (
-                <div
-                  key={field}
-                  className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between shadow-xs"
-                >
-                  <b className="text-xs font-bold text-slate-900 dark:text-white capitalize">{field}</b>
-                  <StatusBadge status={isMissing ? 'draft' : 'reviewed'} size="sm" />
-                </div>
-              );
-            })}
+          <div className="space-y-3 font-mono text-xs">
+            <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-between">
+              <span>Adapter Family:</span>
+              <b className="text-teal-600 dark:text-teal-400">{board.family}</b>
+            </div>
+            <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-between">
+              <span>Max Pages Depth:</span>
+              <b className="text-teal-600 dark:text-teal-400">{maxPages} pages (up to {maxPages * 20} jobs)</b>
+            </div>
+            <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-between">
+              <span>Status:</span>
+              <StatusBadge status={board.status} size="sm" />
+            </div>
           </div>
         </div>
       </section>

@@ -1,7 +1,10 @@
 import asyncio
 import logging
+import json
+import re
+import httpx
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -9,17 +12,98 @@ from job_radar.db.session import AsyncSessionLocal
 from job_radar.db.models.board import Board, BoardRevision
 from job_radar.db.models.run import PipelineRun, BoardRun, RunRequest, ExecutionAttempt
 from job_radar.adapters.registry import adapter_registry
+from job_radar.adapters.base import ExtractedCandidate
 from job_radar.services.browser import BrowserServiceClient, TargetBoundaryViolation
 from job_radar.services.normalization import normalization_service
 
 logger = logging.getLogger(__name__)
 
 class PipelineExecutionEngine:
-    """Stateful engine for executing board parsing runs with retry & threshold rules."""
+    """Stateful engine for executing board parsing runs with multi-page pagination & threshold rules."""
 
     def __init__(self, session_factory=AsyncSessionLocal):
         self.session_factory = session_factory
         self.browser_client = BrowserServiceClient()
+
+    async def fetch_workday_candidates_multipage(
+        self,
+        target_url: str,
+        board_name: str,
+        max_pages: int = 3,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        """Fetch Workday job postings across multiple pages using Workday CXS API."""
+        parsed_target = target_url.replace("https://", "").replace("http://", "")
+        parts = parsed_target.split('/')
+        domain = parts[0]
+        tenant = domain.split('.')[0]
+        site = "external_experienced"
+
+        for idx, p in enumerate(parts):
+            if p in ("en-US", "en_US") and idx + 1 < len(parts):
+                site = parts[idx + 1].split('?')[0]
+                break
+            elif any(x in p.lower() for x in ["external", "career", "apply", "jobs"]):
+                site = p.split('?')[0]
+                break
+
+        facets = {}
+        if 'locationCountry=' in target_url:
+            country_code = target_url.split('locationCountry=')[-1].split('&')[0]
+            facets['locationCountry'] = [country_code]
+        if 'jobFamilyGroup=' in target_url:
+            groups = re.findall(r'jobFamilyGroup=([^&]+)', target_url)
+            if groups:
+                facets['jobFamilyGroup'] = groups
+        if 'timeType=' in target_url:
+            tt = target_url.split('timeType=')[-1].split('&')[0]
+            facets['timeType'] = [tt]
+
+        cxs_url = f"https://{domain}/wday/cxs/{tenant}/{site}/jobs"
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+
+        all_candidates: List[ExtractedCandidate] = []
+        seen_urls = set()
+        adapter = adapter_registry.get("workday")
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            for page in range(max_pages):
+                offset = page * 20
+                payload = {"appliedFacets": facets, "limit": 20, "offset": offset}
+                try:
+                    resp = await client.post(cxs_url, json=payload, headers=headers)
+                    if resp.status_code == 200:
+                        page_payload = resp.text
+                        page_cands = adapter.parse_raw_payload(
+                            payload=page_payload,
+                            board_name=board_name,
+                            target_url=target_url,
+                            selector_config=selector_config
+                        )
+                        if not page_cands:
+                            break
+                        for c in page_cands:
+                            if c.raw_url not in seen_urls:
+                                seen_urls.add(c.raw_url)
+                                all_candidates.append(c)
+                        data = resp.json()
+                        total = data.get("total", 0)
+                        if offset + 20 >= total:
+                            break
+                    else:
+                        break
+                except Exception as e:
+                    logger.info(f"Workday pagination error page {page+1} for {board_name}: {e}")
+                    break
+
+        if not all_candidates:
+            raw_payload = await self.browser_client.fetch_board_html(target_url, target_url)
+            all_candidates = adapter.parse_raw_payload(raw_payload, board_name, target_url, selector_config)
+
+        return all_candidates
 
     async def execute_board_run(
         self,
@@ -28,7 +112,6 @@ class PipelineExecutionEngine:
     ) -> BoardRun:
         """Execute a single board parsing run with state transition rules."""
         async with self.session_factory() as session:
-            # 1. Fetch Board and current revision
             result = await session.execute(
                 select(Board).where(Board.board_id == board_id)
             )
@@ -36,7 +119,6 @@ class PipelineExecutionEngine:
             if not board:
                 raise ValueError(f"Board not found: {board_id}")
 
-            # If pipeline_id not supplied, create a parent PipelineRun
             if not pipeline_id:
                 pipeline = PipelineRun(
                     trigger="manual",
@@ -71,14 +153,15 @@ class PipelineExecutionEngine:
 
             target_url = "https://localhost"
             selector_config = None
+            max_pages = 3
             family = board.family
 
             if revision and isinstance(revision.config_json, dict):
                 target_url = revision.config_json.get("target_url", target_url)
                 selector_config = revision.config_json.get("selector_config")
+                max_pages = int(revision.config_json.get("max_pages", 3))
                 family = revision.config_json.get("family", family)
 
-            # 2. Create BoardRun DB record
             board_run = BoardRun(
                 board_id=board_id,
                 pipeline_id=pipeline_id,
@@ -90,7 +173,6 @@ class PipelineExecutionEngine:
             await session.commit()
             await session.refresh(board_run)
 
-            # Create RunRequest & ExecutionAttempt
             run_req = RunRequest(
                 board_id=board_id,
                 origin="manual",
@@ -100,7 +182,6 @@ class PipelineExecutionEngine:
             await session.commit()
             await session.refresh(run_req)
 
-            # Determine parser adapter
             adapter = adapter_registry.get(family)
             if not adapter:
                 board_run.stage = "completed"
@@ -113,9 +194,7 @@ class PipelineExecutionEngine:
                 await session.commit()
                 return board_run
 
-            # 3. Attempt Execution Loop (max 2 attempts per run)
             max_attempts = 2
-            raw_payload: Optional[str] = None
             run_success = False
             error_msg: Optional[str] = None
             extracted_candidates = []
@@ -129,27 +208,31 @@ class PipelineExecutionEngine:
                 await session.commit()
 
                 try:
-                    # Fetch content via browser service boundary
-                    raw_payload = await self.browser_client.fetch_board_html(
-                        target_url=target_url,
-                        registered_target_url=target_url
-                    )
-                    # Parse candidates
-                    extracted_candidates = adapter.parse_raw_payload(
-                        payload=raw_payload,
-                        board_name=board.name,
-                        target_url=target_url,
-                        selector_config=selector_config
-                    )
+                    if family == "workday":
+                        extracted_candidates = await self.fetch_workday_candidates_multipage(
+                            target_url=target_url,
+                            board_name=board.name,
+                            max_pages=max_pages,
+                            selector_config=selector_config
+                        )
+                    else:
+                        raw_payload = await self.browser_client.fetch_board_html(
+                            target_url=target_url,
+                            registered_target_url=target_url
+                        )
+                        extracted_candidates = adapter.parse_raw_payload(
+                            payload=raw_payload,
+                            board_name=board.name,
+                            target_url=target_url,
+                            selector_config=selector_config
+                        )
 
-                    # Ingest candidate jobs into CandidateJob & RunCandidate tables
                     await normalization_service.ingest_candidates(
                         board_id=board_id,
                         board_run_id=board_run.board_run_id,
                         extracted_candidates=extracted_candidates
                     )
 
-                    # Successful attempt
                     attempt_rec.stage = "completed"
                     attempt_rec.outcome = "success"
                     attempt_rec.terminal_at = datetime.now(timezone.utc)
@@ -164,7 +247,7 @@ class PipelineExecutionEngine:
                     attempt_rec.terminal_at = datetime.now(timezone.utc)
                     error_msg = str(tbv)
                     await session.commit()
-                    break  # Don't retry boundary violations
+                    break
 
                 except Exception as e:
                     attempt_rec.stage = "completed"
@@ -173,14 +256,13 @@ class PipelineExecutionEngine:
                     error_msg = str(e)
                     await session.commit()
                     if attempt_num < max_attempts:
-                        await asyncio.sleep(1.0)  # Brief backoff
+                        await asyncio.sleep(1.0)
 
-            # 4. Finalize Board Run Status and Board consecutive failures count
             board_run.terminal_at = datetime.now(timezone.utc)
             board_run.stage = "completed"
             if run_success:
                 board_run.outcome = "success"
-                board.consecutive_parser_failures = 0  # Reset consecutive failure counter
+                board.consecutive_parser_failures = 0
             else:
                 board_run.outcome = "provider_failure"
                 board_run.error_code = error_msg

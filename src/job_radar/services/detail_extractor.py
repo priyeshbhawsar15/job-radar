@@ -22,8 +22,11 @@ class DetailExtractor:
         try:
             async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:
                 resp = await client.get(public_apply_url)
-                if resp.status_code == 200 and len(resp.text) > 500:
-                    return self.parse_detail_html(resp.text, board_name, title, public_apply_url)
+                if resp.status_code == 200 and len(resp.text) > 800:
+                    if 'application/ld+json' in resp.text or 'jobPostingDescription' in resp.text or 'ats-description' in resp.text:
+                        parsed = self.parse_detail_html(resp.text, board_name, title, public_apply_url)
+                        if parsed.get("location") and parsed.get("location") != "India" and len(parsed.get("description", "")) > 300:
+                            return parsed
         except Exception:
             pass
 
@@ -45,6 +48,7 @@ class DetailExtractor:
 
     def parse_detail_html(self, raw_html_text: str, board_name: str, title: str, apply_url: str) -> Dict[str, Any]:
         raw_html_text = html.unescape(raw_html_text)
+        
         ld_matches = re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', raw_html_text, re.DOTALL | re.IGNORECASE)
         ld_data = None
         for raw in ld_matches:
@@ -91,45 +95,57 @@ class DetailExtractor:
             if emp_type and str(emp_type).lower() != "other":
                 employment_type = str(emp_type).replace("_", "-").capitalize()
 
-        workday_loc_match = re.search(r'/job/([A-Za-z0-9\-%]+)/', apply_url)
-        if workday_loc_match:
-            raw_city = workday_loc_match.group(1)
-            if 'CHENNAI' in raw_city.upper():
-                url_city = "Chennai, India"
-            elif 'BANGALORE' in raw_city.upper() or 'BENGALURU' in raw_city.upper():
-                url_city = "Bangalore, India"
-            elif 'HYDERABAD' in raw_city.upper():
-                url_city = "Hyderabad, India"
-            elif 'NOIDA' in raw_city.upper():
-                url_city = "Noida, India"
-            elif 'MUMBAI' in raw_city.upper():
-                url_city = "Mumbai, India"
-            elif 'PUNE' in raw_city.upper():
-                url_city = "Pune, India"
-            elif 'GURGAON' in raw_city.upper() or 'GURUGRAM' in raw_city.upper():
-                url_city = "Gurgaon, India"
-            else:
-                url_city = raw_city.replace('-', ' ').title()
-                if not any(c in url_city.lower() for c in ['india', 'usa', 'united states']):
-                    url_city = f"{url_city}, India"
-            
-            if not location or len(location) < 3 or location in ('in', 'pageData'):
-                location = url_city
+        if not location or location.lower() in ('india', 'in', 'pagedata', ''):
+            workday_loc_match = re.search(r'/job/([A-Za-z0-9\-%]+)/', apply_url)
+            if workday_loc_match:
+                raw_city = workday_loc_match.group(1)
+                if 'CHENNAI' in raw_city.upper(): location = "Chennai, India"
+                elif 'BANGALORE' in raw_city.upper() or 'BENGALURU' in raw_city.upper(): location = "Bangalore, India"
+                elif 'HYDERABAD' in raw_city.upper(): location = "Hyderabad, India"
+                elif 'NOIDA' in raw_city.upper(): location = "Noida, India"
+                elif 'MUMBAI' in raw_city.upper(): location = "Mumbai, India"
+                elif 'PUNE' in raw_city.upper(): location = "Pune, India"
+                elif 'GURGAON' in raw_city.upper() or 'GURUGRAM' in raw_city.upper(): location = "Gurgaon, India"
+                else:
+                    c_title = raw_city.replace('-', ' ').title()
+                    location = f"{c_title}, India" if not any(x in c_title.lower() for x in ['india', 'usa']) else c_title
 
-        if not description:
-            clean_html = re.sub(r'<(script|style|nav|footer|header|iframe|noscript)[^>]*>.*?</>', ' ', raw_html_text, flags=re.DOTALL | re.IGNORECASE)
-            plain_text = re.sub(r'<[^>]+>', chr(10), clean_html)
-            lines = [l.strip() for l in plain_text.splitlines() if len(l.strip()) > 15]
-            filtered_lines = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'privacy policy', 'terms of use', 'sign in', 'apply now', 'all rights reserved'])]
+            if not location or location.lower() in ('india', 'in', ''):
+                gh_loc = re.search(r'<div[^>]*class=["\'][^"\']*location[^"\']*["\'][^>]*>(.*?)</div', raw_html_text, re.DOTALL | re.IGNORECASE)
+                if gh_loc:
+                    loc_t = re.sub(r'<[^>]+>', ' ', gh_loc.group(1)).strip()
+                    if len(loc_t) > 2 and loc_t.lower() != 'india':
+                        location = loc_t
 
-            if filtered_lines:
-                description = (chr(10) + chr(10)).join(filtered_lines[:25])[:4000]
-            else:
-                description = f"Full job description for {title} at {board_name}. Responsibilities include software development, system architecture design, and technical delivery."
+            if not location or location.lower() in ('india', 'in', ''):
+                city_dom_match = re.search(r'(Hyderabad|Bangalore|Bengaluru|Chennai|Noida|Mumbai|Pune|Gurgaon|Gurugram|Delhi)', raw_html_text + ' ' + title, re.IGNORECASE)
+                if city_dom_match:
+                    city_found = city_dom_match.group(1).capitalize()
+                    if city_found == 'Bengaluru': city_found = 'Bangalore'
+                    location = f"{city_found}, India"
 
-        if not location or location in ("in", "pageData"):
-            loc_match = re.search(r'(?:Location|Office|Base):\s*([A-Za-z0-9\s,\-\.]+)', raw_html_text, re.IGNORECASE)
-            location = loc_match.group(1).strip() if loc_match else "India"
+        if not description or len(description) < 100:
+            desc_match = re.search(r'<(?:div|section)[^>]*class=["\'][^"\']*(?:ats-description|job-description|job-details|content|section)[^"\']*["\'][^>]*>(.*?)</(?:div|section)>', raw_html_text, re.DOTALL | re.IGNORECASE)
+            if desc_match:
+                clean_desc_html = re.sub(r'<(script|style|iframe)[^>]*>.*?</>', ' ', desc_match.group(1), flags=re.DOTALL | re.IGNORECASE)
+                plain_desc_text = re.sub(r'<[^>]+>', chr(10), clean_desc_html)
+                lines = [l.strip() for l in plain_desc_text.splitlines() if len(l.strip()) > 10]
+                if lines:
+                    description = (chr(10) + chr(10)).join(lines[:30])[:4000]
+
+            if not description or len(description) < 100:
+                clean_html = re.sub(r'<(script|style|nav|footer|header|iframe|noscript)[^>]*>.*?</>', ' ', raw_html_text, flags=re.DOTALL | re.IGNORECASE)
+                plain_text = re.sub(r'<[^>]+>', chr(10), clean_html)
+                lines = [l.strip() for l in plain_text.splitlines() if len(l.strip()) > 15]
+                filtered_lines = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'privacy policy', 'terms of use', 'sign in', 'apply now', 'all rights reserved', 'javascript'])]
+
+                if filtered_lines:
+                    description = (chr(10) + chr(10)).join(filtered_lines[:25])[:4000]
+                else:
+                    description = f"Full job description for {title} at {board_name}. Responsibilities include software development, system architecture design, and technical delivery."
+
+        if not location:
+            location = "India"
 
         if not employment_type:
             type_match = re.search(r'(Full-time|Part-time|Contract|Temporary|Internship)', raw_html_text, re.IGNORECASE)

@@ -1649,3 +1649,37 @@ ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000)
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
 INFO:     127.0.0.1:35372 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43612 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43614 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43626 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43626 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53536 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43626 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53536 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53540 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53552 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53552 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53552 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53540 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53552 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53540 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:58748 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:58754 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:58748 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:58754 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49140 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49128 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49128 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42670 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49128 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49128 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42680 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49128 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49128 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     Started server process [3071636]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     127.0.0.1:47178 - "GET /api/v1/health HTTP/1.1" 200 OK

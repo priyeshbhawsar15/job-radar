@@ -19,6 +19,19 @@ class DetailExtractor:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         }
+        if 'abnormal' in board_name.lower() and 'gh_jid=' in public_apply_url:
+            gh_id = public_apply_url.split('gh_jid=')[-1].split('&')[0]
+            gh_url = f"https://job-boards.greenhouse.io/abnormalsecurity/jobs/{gh_id}"
+            try:
+                async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:
+                    resp = await client.get(gh_url)
+                    if resp.status_code == 200 and len(resp.text) > 500:
+                        parsed = self.parse_detail_html(resp.text, board_name, title, gh_url)
+                        parsed["location"] = "Bangalore, India"
+                        return parsed
+            except Exception:
+                pass
+
         try:
             async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:
                 resp = await client.get(public_apply_url)
@@ -37,7 +50,7 @@ class DetailExtractor:
             logger.info(f"Failed to fetch detail page for {public_apply_url}: {e}")
             return {
                 "description": f"Position for {title} at {board_name}. Full position requirements and responsibilities available at apply link.",
-                "location": "India",
+                "location": "Bangalore, India" if 'abnormal' in board_name.lower() else "India",
                 "salary_raw": "Competitive / Not specified",
                 "salary_min": None,
                 "salary_max": None,
@@ -68,7 +81,8 @@ class DetailExtractor:
 
         if ld_data:
             raw_desc = str(ld_data.get("description", ""))
-            clean_desc = re.sub(r'<(script|style|iframe)[^>]*>.*?</>', ' ', raw_desc, flags=re.DOTALL | re.IGNORECASE)
+            clean_desc = re.sub(r'<script[^>]*>([\s\S]*?)</script>', ' ', raw_desc, flags=re.IGNORECASE)
+            clean_desc = re.sub(r'<style[^>]*>([\s\S]*?)</style>', ' ', clean_desc, flags=re.IGNORECASE)
             plain_desc = re.sub(r'<[^>]+>', chr(10), clean_desc)
             desc_lines = [l.strip() for l in plain_desc.splitlines() if len(l.strip()) > 10]
             if desc_lines:
@@ -118,7 +132,7 @@ class DetailExtractor:
                         location = loc_t
 
             if not location or location.lower() in ('india', 'in', ''):
-                city_dom_match = re.search(r'(Hyderabad|Bangalore|Bengaluru|Chennai|Noida|Mumbai|Pune|Gurgaon|Gurugram|Delhi)', raw_html_text + ' ' + title, re.IGNORECASE)
+                city_dom_match = re.search(r'(Hyderabad|Bangalore|Bengaluru|Chennai|Noida|Mumbai|Pune|Gurgaon|Gurugram|Delhi)', raw_html_text + ' ' + title + ' ' + apply_url, re.IGNORECASE)
                 if city_dom_match:
                     city_found = city_dom_match.group(1).capitalize()
                     if city_found == 'Bengaluru': city_found = 'Bangalore'
@@ -127,25 +141,31 @@ class DetailExtractor:
         if not description or len(description) < 100:
             desc_match = re.search(r'<(?:div|section)[^>]*class=["\'][^"\']*(?:ats-description|job-description|job-details|content|section)[^"\']*["\'][^>]*>(.*?)</(?:div|section)>', raw_html_text, re.DOTALL | re.IGNORECASE)
             if desc_match:
-                clean_desc_html = re.sub(r'<(script|style|iframe)[^>]*>.*?</>', ' ', desc_match.group(1), flags=re.DOTALL | re.IGNORECASE)
+                clean_desc_html = re.sub(r'<script[^>]*>([\s\S]*?)</script>', ' ', desc_match.group(1), flags=re.IGNORECASE)
+                clean_desc_html = re.sub(r'<style[^>]*>([\s\S]*?)</style>', ' ', clean_desc_html, flags=re.IGNORECASE)
                 plain_desc_text = re.sub(r'<[^>]+>', chr(10), clean_desc_html)
                 lines = [l.strip() for l in plain_desc_text.splitlines() if len(l.strip()) > 10]
-                if lines:
-                    description = (chr(10) + chr(10)).join(lines[:30])[:4000]
+                filtered_lines = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'gtag', 'datalayer', 'window.', 'self.', 'privacy policy', 'terms of use', 'sign in', 'apply now'])]
+                if filtered_lines:
+                    description = (chr(10) + chr(10)).join(filtered_lines[:30])[:4000]
 
             if not description or len(description) < 100:
-                clean_html = re.sub(r'<(script|style|nav|footer|header|iframe|noscript)[^>]*>.*?</>', ' ', raw_html_text, flags=re.DOTALL | re.IGNORECASE)
+                clean_html = re.sub(r'<script[^>]*>([\s\S]*?)</script>', ' ', raw_html_text, flags=re.IGNORECASE)
+                clean_html = re.sub(r'<style[^>]*>([\s\S]*?)</style>', ' ', clean_html, flags=re.IGNORECASE)
                 plain_text = re.sub(r'<[^>]+>', chr(10), clean_html)
                 lines = [l.strip() for l in plain_text.splitlines() if len(l.strip()) > 15]
-                filtered_lines = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'privacy policy', 'terms of use', 'sign in', 'apply now', 'all rights reserved', 'javascript'])]
+                filtered_lines = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'gtag', 'datalayer', 'window.', 'self.', 'privacy policy', 'terms of use', 'sign in', 'apply now', 'all rights reserved', 'javascript'])]
 
                 if filtered_lines:
                     description = (chr(10) + chr(10)).join(filtered_lines[:25])[:4000]
                 else:
                     description = f"Full job description for {title} at {board_name}. Responsibilities include software development, system architecture design, and technical delivery."
 
-        if not location:
-            location = "India"
+        if not location or location.lower() == 'india':
+            if 'abnormal' in board_name.lower():
+                location = "Bangalore, India"
+            else:
+                location = "India"
 
         if not employment_type:
             type_match = re.search(r'(Full-time|Part-time|Contract|Temporary|Internship)', raw_html_text, re.IGNORECASE)

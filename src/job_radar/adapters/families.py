@@ -104,7 +104,7 @@ def extract_html_job_links(html: str, board_name: str, target_url: str) -> List[
             else:
                 title = clean_text.split('Summary')[0].strip()
         elif clean_text and len(clean_text) > 3 and not any(x in clean_text.lower() for x in ['apply', 'view', 'read more', 'learn more', 'details', 'work_outline', 'results']):
-            title = clean_text.split(' ⋅ ')[0].split(' Bangalore')[0].split(' India')[0].strip()
+            title = clean_text.split(' ⋅ ')[0].split(' Bangalore')[0].split(' India')[0].split(' Engineering Hybrid')[0].split(' Hybrid -')[0].rstrip(' →').strip()
         else:
             slug = clean_url.rstrip('/').split('/')[-1]
             slug_clean = re.sub(r'^[0-9a-f\-]+[-_]', '', slug).replace('-', ' ').replace('_', ' ').title()

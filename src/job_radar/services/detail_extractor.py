@@ -49,7 +49,7 @@ class DetailExtractor:
         except Exception as e:
             logger.info(f"Failed to fetch detail page for {public_apply_url}: {e}")
             return {
-                "description": f"Position for {title} at {board_name}. Full position requirements and responsibilities available at apply link.",
+                "description": f"Position for {title[:500]} at {board_name[:500]}. Full position requirements and responsibilities available at apply link.",
                 "location": "Bangalore, India" if 'abnormal' in board_name.lower() else "India",
                 "salary_raw": "Competitive / Not specified",
                 "salary_min": None,
@@ -86,7 +86,7 @@ class DetailExtractor:
             plain_desc = re.sub(r'<[^>]+>', chr(10), clean_desc)
             desc_lines = [l.strip() for l in plain_desc.splitlines() if len(l.strip()) > 10]
             if desc_lines:
-                description = (chr(10) + chr(10)).join(desc_lines)[:4000]
+                description = (chr(10) + chr(10)).join(desc_lines)[:40000]
 
             job_loc = ld_data.get("jobLocation")
             if isinstance(job_loc, list) and job_loc:
@@ -147,7 +147,7 @@ class DetailExtractor:
                 lines = [l.strip() for l in plain_desc_text.splitlines() if len(l.strip()) > 10]
                 filtered_lines = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'gtag', 'datalayer', 'window.', 'self.', 'privacy policy', 'terms of use', 'sign in', 'apply now'])]
                 if filtered_lines:
-                    description = (chr(10) + chr(10)).join(filtered_lines[:30])[:4000]
+                    description = (chr(10) + chr(10)).join(filtered_lines[:40])[:40000]
 
             if not description or len(description) < 100:
                 clean_html = re.sub(r'<script[^>]*>([\s\S]*?)</script>', ' ', raw_html_text, flags=re.IGNORECASE)
@@ -157,9 +157,9 @@ class DetailExtractor:
                 filtered_lines = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'gtag', 'datalayer', 'window.', 'self.', 'privacy policy', 'terms of use', 'sign in', 'apply now', 'all rights reserved', 'javascript'])]
 
                 if filtered_lines:
-                    description = (chr(10) + chr(10)).join(filtered_lines[:25])[:4000]
+                    description = (chr(10) + chr(10)).join(filtered_lines[:35])[:40000]
                 else:
-                    description = f"Full job description for {title} at {board_name}. Responsibilities include software development, system architecture design, and technical delivery."
+                    description = f"Full job description for {title[:500]} at {board_name[:500]}. Responsibilities include software development, system architecture design, and technical delivery."
 
         if not location or location.lower() == 'india':
             if 'abnormal' in board_name.lower():
@@ -207,11 +207,11 @@ class DetailExtractor:
             salary_raw = "Competitive / Not specified"
 
         return {
-            "description": description,
-            "location": location,
-            "employment_type": employment_type,
-            "department": department,
-            "salary_raw": salary_raw,
+            "description": description[:40000] if description else None,
+            "location": location[:200] if location else None,
+            "employment_type": employment_type[:200] if employment_type else None,
+            "department": department[:200] if department else None,
+            "salary_raw": salary_raw[:200] if salary_raw else None,
             "salary_min": salary_min,
             "salary_max": salary_max,
             "salary_currency": salary_currency

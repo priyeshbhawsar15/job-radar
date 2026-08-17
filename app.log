@@ -2117,3 +2117,32 @@ INFO:     127.0.0.1:57570 - "GET /api/v1/jobs HTTP/1.1" 200 OK
 INFO:     127.0.0.1:57584 - "GET /api/v1/boards HTTP/1.1" 200 OK
 INFO:     127.0.0.1:57584 - "GET /api/v1/runs HTTP/1.1" 200 OK
 INFO:     127.0.0.1:57570 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:54828 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:54844 - "GET /assets/index-BMYAX_o4.css HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:54828 - "GET /assets/index-CrgUGyan.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:54860 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:54844 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:54828 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:54828 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40456 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40472 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40472 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40472 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40472 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40456 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40472 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40456 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40472 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40456 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40472 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40472 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     Started server process [3176652]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     127.0.0.1:54470 - "GET /api/v1/health HTTP/1.1" 200 OK

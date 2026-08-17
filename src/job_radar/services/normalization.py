@@ -16,11 +16,11 @@ from job_radar.services.detail_extractor import detail_extractor
 logger = logging.getLogger(__name__)
 
 def compute_job_identity_key(company: str, title: str, location: str | None = None) -> str:
-    raw = f"{company.strip().lower()}|{title.strip().lower()}|{(location or '').strip().lower()}"
+    raw = f"{company.strip().lower()[:500]}|{title.strip().lower()[:500]}|{(location or '').strip().lower()[:200]}"
     return hashlib.sha256(raw.encode('utf-8')).hexdigest()
 
 def compute_url_hash(url: str) -> str:
-    return hashlib.sha256(url.strip().encode('utf-8')).hexdigest()
+    return hashlib.sha256(url.strip()[:2000].encode('utf-8')).hexdigest()
 
 async def bg_enrich_candidates(candidates_to_enrich: List[Tuple[str, str, str, str]]):
     sem = asyncio.Semaphore(10)
@@ -37,12 +37,12 @@ async def bg_enrich_candidates(candidates_to_enrich: List[Tuple[str, str, str, s
                         job = res.scalar_one_or_none()
                         if job:
                             if enriched.get("description") and len(enriched.get("description")) > 100:
-                                job.description = enriched.get("description")
+                                job.description = enriched.get("description")[:40000]
                             enr_loc = enriched.get("location")
                             if enr_loc and enr_loc.strip() not in ("India", "in", "pageData", ""):
-                                job.location = enr_loc.strip()
+                                job.location = enr_loc.strip()[:200]
                             if enriched.get("employment_type"):
-                                job.employment_type = enriched.get("employment_type")
+                                job.employment_type = enriched.get("employment_type")[:200]
                             await session.commit()
             except Exception:
                 pass
@@ -67,17 +67,21 @@ class NormalizationService:
 
         async with self.session_factory() as session:
             for item in extracted_candidates:
-                identity_key = item.fingerprint or compute_job_identity_key(item.company, item.title, item.location)
-                url_hash = compute_url_hash(item.raw_url)
+                title_capped = item.title.strip()[:500]
+                company_capped = item.company.strip()[:500]
+                url_capped = item.raw_url.strip()[:2000]
+
+                identity_key = item.fingerprint or compute_job_identity_key(company_capped, title_capped, item.location)
+                url_hash = compute_url_hash(url_capped)
 
                 res = await session.execute(
                     select(CandidateJob).where(CandidateJob.identity_key == identity_key)
                 )
                 existing_job = res.scalar_one_or_none()
 
-                loc = item.location.strip() if item.location else "India"
-                emp_type = item.employment_type.strip() if item.employment_type else "Full-time"
-                dept = item.department.strip() if item.department else "Engineering"
+                loc = (item.location.strip() if item.location else "India")[:200]
+                emp_type = (item.employment_type.strip() if item.employment_type else "Full-time")[:200]
+                dept = (item.department.strip() if item.department else "Engineering")[:200]
 
                 if existing_job:
                     candidate_id = existing_job.candidate_id
@@ -88,14 +92,14 @@ class NormalizationService:
                         board_id=board_id,
                         identity_key=identity_key,
                         canonical_url_hash=url_hash,
-                        company=item.company.strip(),
-                        title=item.title.strip(),
+                        company=company_capped,
+                        title=title_capped,
                         location=loc,
                         department=dept,
                         employment_type=emp_type,
-                        public_apply_url=item.raw_url,
-                        description=f"Full job description for {item.title} at {item.company}. Position requirements and responsibilities available at apply link.",
-                        salary_raw="Competitive / Not specified"
+                        public_apply_url=url_capped,
+                        description=f"Full job description for {title_capped} at {company_capped}. Position requirements and responsibilities available at apply link."[:40000],
+                        salary_raw="Competitive / Not specified"[:200]
                     )
                     session.add(new_job)
                     await session.flush()
@@ -103,7 +107,7 @@ class NormalizationService:
                     new_jobs_count += 1
                     outcome = "discovered"
 
-                to_enrich.append((candidate_id, item.raw_url, item.company, item.title))
+                to_enrich.append((candidate_id, url_capped, company_capped, title_capped))
 
                 if candidate_id not in seen_candidate_ids_in_batch:
                     run_cand = RunCandidate(

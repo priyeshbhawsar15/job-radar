@@ -95,17 +95,17 @@ class HandoffProcessor:
                     payload = {
                         "skipTailoring": False,
                         "job": {
-                            "source": cand.board_id if cand else "job_radar",
-                            "sourceJobId": cand.candidate_id if cand else "unknown",
-                            "title": cand.title if cand else "Unknown Position",
-                            "employer": cand.company if cand else "Unknown Company",
-                            "jobUrl": cand.public_apply_url if cand else "",
-                            "applicationLink": cand.public_apply_url if cand else "",
-                            "location": cand.location if cand else "India",
-                            "salary": cand.salary_raw if (cand and cand.salary_raw) else "Competitive / Not specified",
-                            "jobDescription": cand.description if (cand and cand.description) else f"Full position details and responsibilities for {cand.title if cand else 'Role'} at {cand.company if cand else 'Company'}.",
-                            "jobType": cand.employment_type if (cand and cand.employment_type) else "Full-time",
-                            "jobFunction": cand.department if (cand and cand.department) else "Engineering"
+                            "source": (cand.board_id if cand else "job_radar")[:120],
+                            "sourceJobId": (cand.candidate_id if cand else "unknown")[:500],
+                            "title": (cand.title if cand else "Unknown Position")[:500],
+                            "employer": (cand.company if cand else "Unknown Company")[:500],
+                            "jobUrl": (cand.public_apply_url if cand else "")[:2000],
+                            "applicationLink": (cand.public_apply_url if cand else "")[:2000],
+                            "location": (cand.location if cand else "India")[:200],
+                            "salary": (cand.salary_raw if (cand and cand.salary_raw) else "Competitive / Not specified")[:200],
+                            "jobDescription": (cand.description if (cand and cand.description) else f"Full position details and responsibilities for {cand.title if cand else 'Role'} at {cand.company if cand else 'Company'}.")[:40000],
+                            "jobType": (cand.employment_type if (cand and cand.employment_type) else "Full-time")[:200],
+                            "jobFunction": (cand.department if (cand and cand.department) else "Engineering")[:200]
                         }
                     }
 

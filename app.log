@@ -2470,3 +2470,104 @@ INFO:     127.0.0.1:53286 - "GET /assets/index-Bxa3pa31.js HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53290 - "GET /assets/index-BMYAX_o4.css HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53290 - "GET /api/v1/stream HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53286 - "GET /api/v1/boards/board-adobe HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET /assets/index-Bxa3pa31.js HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:32786 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:32786 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:32786 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:32786 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:32786 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:57058 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:57058 - "GET /assets/index-Bxa3pa31.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:57058 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:57058 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:57058 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:57058 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:57058 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:57058 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:57058 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:57058 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:57058 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:57058 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:57058 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:57058 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42044 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42052 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42052 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42056 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42056 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42066 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42066 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42066 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42072 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42066 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42066 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42072 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42066 - "GET /api/v1/runs/board-runs/02c3c29a-572a-479b-96d3-33a5833b11fb HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42066 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42066 - "GET /assets/index-Bxa3pa31.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:42072 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42066 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42086 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:42066 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52842 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52844 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52844 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52844 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:54182 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33304 - "GET /api/v1/runs/board-runs/02c3c29a-572a-479b-96d3-33a5833b11fb HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33304 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:33304 - "GET /assets/index-Bxa3pa31.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:33304 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33314 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36570 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36562 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36562 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36570 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36562 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36562 - "GET /api/v1/boards/board-adobe HTTP/1.1" 200 OK
+INFO:     192.168.2.90:59940 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36562 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36562 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:59940 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36562 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36562 - "GET /api/v1/boards/board-amazon HTTP/1.1" 200 OK
+INFO:     192.168.2.90:59950 - "PUT /api/v1/boards/board-amazon/config HTTP/1.1" 405 Method Not Allowed
+INFO:     192.168.2.90:35190 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:59950 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:59950 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35190 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:59950 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:59950 - "GET /api/v1/runs/board-runs/02c3c29a-572a-479b-96d3-33a5833b11fb HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60870 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60884 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60884 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60870 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60884 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60884 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60870 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60884 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37682 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:37682 - "GET /assets/index-Bxa3pa31.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:37706 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37696 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37682 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37682 - "GET /api/v1/runs/board-runs/31a8bc4a-bf05-44e0-9a49-577b0274542f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46778 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46782 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     Started server process [3538853]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     127.0.0.1:34262 - "GET /api/v1/health HTTP/1.1" 200 OK

@@ -5,7 +5,7 @@ import httpx
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Tuple, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, or_
 
 from job_radar.db.session import AsyncSessionLocal
 from job_radar.db.models.candidate import CandidateJob, RunCandidate
@@ -71,17 +71,23 @@ class NormalizationService:
                 url_hash = compute_url_hash(url_capped)
 
                 res = await session.execute(
-                    select(CandidateJob).where(CandidateJob.identity_key == identity_key)
+                    select(CandidateJob).where(
+                        (CandidateJob.board_id == board_id) &
+                        or_(CandidateJob.canonical_url_hash == url_hash, CandidateJob.identity_key == identity_key)
+                    )
                 )
-                existing_job = res.scalar_one_or_none()
+                existing_job = res.scalars().first()
 
                 loc = (item.location.strip() if item.location else "India")[:200]
                 emp_type = (item.employment_type.strip() if item.employment_type else "Full-time")[:200]
                 dept = (item.department.strip() if item.department else "Engineering")[:200]
+                initial_desc = (item.extra_payload.get("description") or f"Full job description for {title_capped} at {company_capped}.")[:40000]
 
                 if existing_job:
                     candidate_id = existing_job.candidate_id
                     existing_job.last_seen_at = datetime.now(timezone.utc)
+                    if item.extra_payload.get("description"):
+                        existing_job.description = item.extra_payload.get("description")[:40000]
                     outcome = "re_observed"
                 else:
                     new_job = CandidateJob(
@@ -94,7 +100,7 @@ class NormalizationService:
                         department=dept,
                         employment_type=emp_type,
                         public_apply_url=url_capped,
-                        description=f"Full job description for {title_capped} at {company_capped}. Position requirements and responsibilities available at apply link."[:40000],
+                        description=initial_desc,
                         salary_raw="Competitive / Not specified"[:200]
                     )
                     session.add(new_job)
@@ -103,7 +109,8 @@ class NormalizationService:
                     new_jobs_count += 1
                     outcome = "discovered"
 
-                to_enrich.append((candidate_id, url_capped, company_capped, title_capped))
+                if not item.extra_payload.get("description"):
+                    to_enrich.append((candidate_id, url_capped, company_capped, title_capped))
 
                 if candidate_id not in seen_candidate_ids_in_batch:
                     run_cand = RunCandidate(

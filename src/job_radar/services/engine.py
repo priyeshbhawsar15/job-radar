@@ -2,6 +2,7 @@ import asyncio
 import logging
 import json
 import re
+import html
 import httpx
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
@@ -13,10 +14,19 @@ from job_radar.db.models.board import Board, BoardRevision
 from job_radar.db.models.run import PipelineRun, BoardRun, RunRequest, ExecutionAttempt
 from job_radar.adapters.registry import adapter_registry
 from job_radar.adapters.base import ExtractedCandidate
+from job_radar.adapters.families import generate_fingerprint, canonicalize_job_url
 from job_radar.services.browser import BrowserServiceClient, TargetBoundaryViolation
 from job_radar.services.normalization import normalization_service
 
 logger = logging.getLogger(__name__)
+
+def clean_amazon_html(raw_html: str) -> str:
+    if not raw_html: return ''
+    text = html.unescape(raw_html)
+    clean = re.sub(r'<[^>]+>', ' ', text)
+    lines = [l.strip() for l in clean.splitlines() if len(l.strip()) > 5]
+    filtered = [l for l in lines if not any(x in l.lower() for x in ['equal opportunity', 'disability', 'accommodation', 'privacy', 'cookie', 'affirmative action', 'recruiting partner', 'pay transparency'])]
+    return (chr(10) + chr(10)).join(filtered)
 
 class PipelineExecutionEngine:
     """Stateful engine for executing board parsing runs with multi-page pagination & threshold rules."""
@@ -24,6 +34,79 @@ class PipelineExecutionEngine:
     def __init__(self, session_factory=AsyncSessionLocal):
         self.session_factory = session_factory
         self.browser_client = BrowserServiceClient()
+
+    async def fetch_amazon_candidates_multipage(
+        self,
+        target_url: str,
+        board_name: str,
+        max_pages: int = 3,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        """Fetch Amazon job postings across multiple pages using Amazon Search JSON API."""
+        base_api = "https://www.amazon.jobs/en/search.json?result_limit=10&sort=recent&category[]=software-development&distanceType=Mi&radius=24km&latitude=&longitude=&loc_group_id=&loc_query=India&base_query=software&city=&country=IND&region=&county=&query_options=|"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        all_candidates: List[ExtractedCandidate] = []
+        seen_urls = set()
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            for page in range(max_pages):
+                offset = page * 10
+                api_url = f"{base_api}&offset={offset}"
+                try:
+                    resp = await client.get(api_url, headers=headers)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        jobs = data.get("jobs", [])
+                        if not jobs:
+                            break
+                        for item in jobs:
+                            title = item.get("title", "").strip()
+                            raw_url = f"https://www.amazon.jobs{item.get('job_path', '')}"
+                            clean_url = canonicalize_job_url(raw_url, board_name, target_url)
+                            if clean_url in seen_urls:
+                                continue
+                            seen_urls.add(clean_url)
+
+                            desc_text = clean_amazon_html(item.get('description', ''))
+                            basic_text = clean_amazon_html(item.get('basic_qualifications', ''))
+                            pref_text = clean_amazon_html(item.get('preferred_qualifications', ''))
+
+                            full_desc = (desc_text + chr(10) + chr(10) + "=== BASIC QUALIFICATIONS ===" + chr(10) + basic_text + chr(10) + chr(10) + "=== PREFERRED QUALIFICATIONS ===" + chr(10) + pref_text).strip()
+                            loc_raw = item.get("location", "India")
+                            if "BANGALORE" in loc_raw.upper() or "BENGALURU" in loc_raw.upper() or "KA" in loc_raw.upper():
+                                loc = "Bangalore, India"
+                            elif "HYDERABAD" in loc_raw.upper() or "TS" in loc_raw.upper():
+                                loc = "Hyderabad, India"
+                            elif "NOIDA" in loc_raw.upper() or "UP" in loc_raw.upper():
+                                loc = "Noida, India"
+                            elif "GURGAON" in loc_raw.upper() or "GURUGRAM" in loc_raw.upper() or "HR" in loc_raw.upper():
+                                loc = "Gurgaon, India"
+                            else:
+                                loc = "India"
+
+                            fp = generate_fingerprint(board_name, title, loc)
+                            all_candidates.append(
+                                ExtractedCandidate(
+                                    title=title,
+                                    company=board_name,
+                                    location=loc,
+                                    department="Software Development",
+                                    employment_type="Full-time",
+                                    raw_url=clean_url,
+                                    fingerprint=fp,
+                                    extra_payload={"description": full_desc[:40000]}
+                                )
+                            )
+                        total = data.get("hits", 0)
+                        if offset + 10 >= total:
+                            break
+                    else:
+                        break
+                except Exception as e:
+                    logger.info(f"Amazon pagination error page {page+1} for {board_name}: {e}")
+                    break
+
+        return all_candidates
 
     async def fetch_workday_candidates_multipage(
         self,
@@ -210,6 +293,13 @@ class PipelineExecutionEngine:
                 try:
                     if family == "workday":
                         extracted_candidates = await self.fetch_workday_candidates_multipage(
+                            target_url=target_url,
+                            board_name=board.name,
+                            max_pages=max_pages,
+                            selector_config=selector_config
+                        )
+                    elif family == "amazon_jobs":
+                        extracted_candidates = await self.fetch_amazon_candidates_multipage(
                             target_url=target_url,
                             board_name=board.name,
                             max_pages=max_pages,

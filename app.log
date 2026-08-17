@@ -1683,3 +1683,339 @@ ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000)
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
 INFO:     127.0.0.1:47178 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40894 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40884 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40904 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40904 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40904 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40884 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40904 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40884 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40904 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40884 - "GET /assets/index-YWF0PvLg.js HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40884 - "GET /assets/index-DfDbjH85.css HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46454 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40904 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:40884 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+ERROR:    ASGI callable returned without completing response.
+ERROR:    ASGI callable returned without completing response.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2871621]
+INFO:     Started server process [3100789]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     192.168.2.90:51772 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51778 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51772 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51772 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51772 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51778 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51772 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51778 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51772 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51772 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51778 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51772 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51772 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51778 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51772 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39664 - "GET /api/v1/runs/board-runs/ce0de471-0319-4291-81a8-865013325fe8 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:34060 - "POST /api/v1/runs/trigger HTTP/1.1" 404 Not Found
+INFO:     192.168.2.90:41118 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41106 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34064 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41106 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41118 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41106 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34076 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46240 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39462 - "GET /api/v1/runs/board-runs/9229800e-09e8-49a3-98ed-4279b631ab49 HTTP/1.1" 404 Not Found
+INFO:     192.168.2.90:39296 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39290 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39300 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39300 - "GET /assets/index-CrgUGyan.js HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39314 - "GET /assets/index-BMYAX_o4.css HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39314 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39300 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38074 - "GET /api/v1/runs/board-runs/17ec51d8-71cd-49a8-8704-7ce04ae49443 HTTP/1.1" 404 Not Found
+INFO:     192.168.2.90:39326 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39300 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:56362 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39300 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:56374 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39300 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:56390 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39300 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39300 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39300 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52776 - "GET /api/v1/runs/board-runs/17ec51d8-71cd-49a8-8704-7ce04ae49443 HTTP/1.1" 404 Not Found
+INFO:     192.168.2.90:56398 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:56398 - "GET /assets/index-CrgUGyan.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:34316 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:34316 - "GET /assets/index-CrgUGyan.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:34316 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:34316 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:34318 - "GET /assets/index-BMYAX_o4.css HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:34318 - "GET /assets/index-BMYAX_o4.css HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:34318 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:34318 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:56254 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:56266 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:56268 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:56274 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+ERROR:    ASGI callable returned without completing response.
+ERROR:    ASGI callable returned without completing response.
+ERROR:    ASGI callable returned without completing response.
+ERROR:    ASGI callable returned without completing response.
+ERROR:    ASGI callable returned without completing response.
+ERROR:    ASGI callable returned without completing response.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3100789]
+INFO:     Started server process [3104924]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:53536 - "GET /api/v1/runs/board-runs/17ec51d8-71cd-49a8-8704-7ce04ae49443 HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 422, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1780, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2789, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1791, in _handle_selected
+    await route.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1780, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2789, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1800, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1279, in handle
+    await app(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 158, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 144, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 706, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 352, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/priyesh/Work/job-radar/src/job_radar/api/v1/runs.py", line 131, in get_board_run_detail
+    "created_at": j.first_seen_at.isoformat() if j.first_seen_at else None
+                                                 ^^^^^^^^^^^^^^^
+AttributeError: 'CandidateJob' object has no attribute 'first_seen_at'. Did you mean: 'last_seen_at'?
+INFO:     127.0.0.1:44418 - "GET /api/v1/runs/board-runs/17ec51d8-71cd-49a8-8704-7ce04ae49443 HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 422, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1780, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2789, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1791, in _handle_selected
+    await route.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1780, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2789, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1800, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1279, in handle
+    await app(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 158, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 144, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 706, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 352, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/priyesh/Work/job-radar/src/job_radar/api/v1/runs.py", line 131, in get_board_run_detail
+    "created_at": j.first_seen_at.isoformat() if j.first_seen_at else None
+                                                 ^^^^^^^^^^^^^^^
+AttributeError: 'CandidateJob' object has no attribute 'first_seen_at'. Did you mean: 'last_seen_at'?
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3104924]
+INFO:     Started server process [3106441]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:35704 - "GET /api/v1/runs/board-runs/17ec51d8-71cd-49a8-8704-7ce04ae49443 HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 422, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1780, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2789, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1791, in _handle_selected
+    await route.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1780, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 2789, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1800, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 1279, in handle
+    await app(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 158, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 144, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 706, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/priyesh/Work/job-radar/.venv/lib/python3.14/site-packages/fastapi/routing.py", line 352, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/priyesh/Work/job-radar/src/job_radar/api/v1/runs.py", line 131, in get_board_run_detail
+    "created_at": j.created_at.isoformat() if j.created_at else None
+                                              ^^^^^^^^^^^^
+AttributeError: 'CandidateJob' object has no attribute 'created_at'
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3106441]
+INFO:     Started server process [3107856]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:51304 - "GET /api/v1/runs/board-runs/17ec51d8-71cd-49a8-8704-7ce04ae49443 HTTP/1.1" 200 OK
+INFO:     Started server process [3108749]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     127.0.0.1:36096 - "GET /api/v1/health HTTP/1.1" 200 OK

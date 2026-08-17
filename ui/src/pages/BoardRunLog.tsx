@@ -1,31 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
 import { ShieldCheck, ChevronRight } from 'lucide-react';
 
 export const BoardRunLog: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [data, setData] = useState<any | null>(null);
   const [extractedJobs, setExtractedJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!id) return;
-    Promise.all([
-      fetch('/api/v1/runs').then((res) => (res.ok ? res.json() : [])),
-      fetch('/api/v1/jobs').then((res) => (res.ok ? res.json() : []))
-    ])
-      .then(([runs, jobs]) => {
-        const found = runs.find((r: any) => r.run_id === id || r.pipeline_id === id);
-        if (found) {
+    fetch('/api/v1/runs/board-runs/' + id)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((resData) => {
+        if (resData && resData.board_run) {
+          const br = resData.board_run;
           setData({
-            entry: { boardId: found.board_id, state: found.stage, outcome: found.outcome + ' (' + found.extracted_count + ' extracted)', boardRunId: found.run_id },
-            run: { id: found.pipeline_id || found.run_id, time: found.created_at || 'Recently', state: found.outcome, duration: 'N/A' },
-            board: { id: found.board_id, name: found.board_name, adapter: found.family, rev: 'rev-01' }
+            entry: { boardId: br.board_id, state: br.stage, outcome: br.outcome + ' (' + br.extracted_count + ' extracted)', boardRunId: br.run_id },
+            run: { id: br.pipeline_id || br.run_id, time: br.created_at || 'Recently', state: br.outcome, duration: 'N/A' },
+            board: { id: br.board_id, name: br.board_name, adapter: br.family, rev: 'rev-01' }
           });
-          const matchedJobs = jobs.filter((j: any) => j.board_id === found.board_id);
-          setExtractedJobs(matchedJobs);
+          setExtractedJobs(resData.extracted_jobs || []);
         }
       })
       .catch((e) => console.error(e))
@@ -54,7 +50,6 @@ export const BoardRunLog: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <p className="text-[10px] uppercase tracking-widest font-extrabold text-teal-600 dark:text-teal-400 mb-1">
@@ -83,15 +78,12 @@ export const BoardRunLog: React.FC = () => {
         </div>
       </header>
 
-      {/* Breadcrumbs */}
       <p className="text-xs text-slate-500 dark:text-slate-400">
         <Link to={'/runs/' + run.id} className="hover:underline">{run.id}</Link> /{' '}
         <Link to={'/boards/' + board.id} className="hover:underline">{board.name}</Link> / {id}
       </p>
 
-      {/* Summary grid */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Card 1: Board Run Summary */}
         <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
             <div>
@@ -120,7 +112,6 @@ export const BoardRunLog: React.FC = () => {
           </dl>
         </div>
 
-        {/* Card 2: Safe Audit Boundary Banner */}
         <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 font-bold border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -137,7 +128,6 @@ export const BoardRunLog: React.FC = () => {
         </div>
       </section>
 
-      {/* Extracted Jobs Section Card */}
       <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
           <div>
@@ -173,7 +163,7 @@ export const BoardRunLog: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <StatusBadge status={j.job_ops_status || 'accepted'} size="sm" />
+                  <StatusBadge status="accepted" size="sm" />
                   <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
                 </div>
               </Link>
@@ -183,69 +173,6 @@ export const BoardRunLog: React.FC = () => {
               No job records were extracted for this board run.
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Execution Timeline */}
-      <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-6">
-        <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">Execution timeline</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Safe structured events</p>
-        </div>
-
-        <div className="relative border-l-2 border-slate-200 dark:border-slate-800 ml-3 pl-6 space-y-8">
-          {/* Event 1 */}
-          <div className="relative">
-            <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
-            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">{run.time}</time>
-            <b className="block text-sm font-bold text-slate-900 dark:text-white">BoardRunRequest issued</b>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Capability: cap-run-{id} · board {board.id} · {board.rev}
-            </div>
-            <pre className="mt-2 text-xs font-mono p-3 rounded-lg bg-slate-950 text-teal-300 border border-slate-800 leading-relaxed overflow-x-auto">
-request_kind=BoardRunRequest
-limits=time_30s pages_3 bytes_5MiB
-readiness_descriptor=reviewed
-            </pre>
-          </div>
-
-          {/* Event 2 */}
-          <div className="relative">
-            <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
-            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">{run.time}</time>
-            <b className="block text-sm font-bold text-slate-900 dark:text-white">Playwright request admitted</b>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Safe response: accepted · diagnostic code browser_request_accepted
-            </div>
-          </div>
-
-          {/* Event 3 */}
-          <div className="relative">
-            <div
-              className={'absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full ' + (isPartial ? 'bg-amber-500' : isFailed ? 'bg-rose-500' : 'bg-teal-500')}
-            />
-            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">{run.time}</time>
-            <b className="block text-sm font-bold text-slate-900 dark:text-white">Playwright result received</b>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Outcome: {entry.outcome} · safe diagnostic{' '}
-              {isPartial ? 'provider_failure' : 'listing_verified'}
-            </div>
-            <pre className="mt-2 text-xs font-mono p-3 rounded-lg bg-slate-950 text-teal-300 border border-slate-800 leading-relaxed overflow-x-auto">
-response_kind=BoardRunResult
-outcome={entry.outcome}
-raw_payload=not_retained
-            </pre>
-          </div>
-
-          {/* Event 4 */}
-          <div className="relative">
-            <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
-            <time className="block text-[11px] font-bold text-slate-400 font-mono mb-1">{run.time}</time>
-            <b className="block text-sm font-bold text-slate-900 dark:text-white">Run finalized</b>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Candidate policy and Job Ops eligibility decisions handled cleanly.
-            </div>
-          </div>
         </div>
       </section>
     </div>

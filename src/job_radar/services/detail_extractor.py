@@ -84,12 +84,37 @@ class DetailExtractor:
                     elif loc_country.lower() in ('us', 'usa'):
                         loc_country = "United States"
                     location = f"{loc_city}, {loc_country}".strip(" ,") if loc_city else (loc_name or loc_country)
-                else:
+                elif loc_name:
                     location = loc_name
 
             emp_type = ld_data.get("employmentType")
             if emp_type and str(emp_type).lower() != "other":
                 employment_type = str(emp_type).replace("_", "-").capitalize()
+
+        workday_loc_match = re.search(r'/job/([A-Za-z0-9\-%]+)/', apply_url)
+        if workday_loc_match:
+            raw_city = workday_loc_match.group(1)
+            if 'CHENNAI' in raw_city.upper():
+                url_city = "Chennai, India"
+            elif 'BANGALORE' in raw_city.upper() or 'BENGALURU' in raw_city.upper():
+                url_city = "Bangalore, India"
+            elif 'HYDERABAD' in raw_city.upper():
+                url_city = "Hyderabad, India"
+            elif 'NOIDA' in raw_city.upper():
+                url_city = "Noida, India"
+            elif 'MUMBAI' in raw_city.upper():
+                url_city = "Mumbai, India"
+            elif 'PUNE' in raw_city.upper():
+                url_city = "Pune, India"
+            elif 'GURGAON' in raw_city.upper() or 'GURUGRAM' in raw_city.upper():
+                url_city = "Gurgaon, India"
+            else:
+                url_city = raw_city.replace('-', ' ').title()
+                if not any(c in url_city.lower() for c in ['india', 'usa', 'united states']):
+                    url_city = f"{url_city}, India"
+            
+            if not location or len(location) < 3 or location in ('in', 'pageData'):
+                location = url_city
 
         if not description:
             clean_html = re.sub(r'<(script|style|nav|footer|header|iframe|noscript)[^>]*>.*?</>', ' ', raw_html_text, flags=re.DOTALL | re.IGNORECASE)
@@ -102,9 +127,9 @@ class DetailExtractor:
             else:
                 description = f"Full job description for {title} at {board_name}. Responsibilities include software development, system architecture design, and technical delivery."
 
-        if not location or location == "in":
+        if not location or location in ("in", "pageData"):
             loc_match = re.search(r'(?:Location|Office|Base):\s*([A-Za-z0-9\s,\-\.]+)', raw_html_text, re.IGNORECASE)
-            location = loc_match.group(1).strip() if loc_match else "Hyderabad, India"
+            location = loc_match.group(1).strip() if loc_match else "India"
 
         if not employment_type:
             type_match = re.search(r'(Full-time|Part-time|Contract|Temporary|Internship)', raw_html_text, re.IGNORECASE)

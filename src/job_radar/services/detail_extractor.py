@@ -8,6 +8,17 @@ from job_radar.services.browser import BrowserServiceClient
 
 logger = logging.getLogger(__name__)
 
+def clean_html_to_text(raw_html_str: str) -> str:
+    if not raw_html_str:
+        return ""
+    text = html.unescape(raw_html_str)
+    # Strip script, style, svg, iframe, noscript, nav, footer, header
+    clean = re.sub(r'<(script|style|svg|iframe|noscript|nav|footer|header)[^>]*>([\s\S]*?)</>', ' ', text, flags=re.IGNORECASE)
+    plain = re.sub(r'<[^>]+>', chr(10), clean)
+    lines = [l.strip() for l in plain.splitlines() if len(l.strip()) > 8]
+    filtered = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'gtag', 'datalayer', 'window.', 'self.', 'scrollrestoration', '--bprogress', 'privacy policy', 'terms of use', 'sign in', 'apply now', 'all rights reserved', 'javascript:'])]
+    return (chr(10) + chr(10)).join(filtered)
+
 class DetailExtractor:
     """Service to fetch full job detail content and parse description, salary, department & employment type."""
 
@@ -19,18 +30,45 @@ class DetailExtractor:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         }
-        if 'abnormal' in board_name.lower() and 'gh_jid=' in public_apply_url:
-            gh_id = public_apply_url.split('gh_jid=')[-1].split('&')[0]
-            gh_url = f"https://job-boards.greenhouse.io/abnormalsecurity/jobs/{gh_id}"
-            try:
-                async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:
-                    resp = await client.get(gh_url)
-                    if resp.status_code == 200 and len(resp.text) > 500:
-                        parsed = self.parse_detail_html(resp.text, board_name, title, gh_url)
-                        parsed["location"] = "Bangalore, India"
-                        return parsed
-            except Exception:
-                pass
+        # Direct Greenhouse Public API for Greenhouse boards / gh_jid URLs
+        if 'gh_jid=' in public_apply_url or 'greenhouse.io' in public_apply_url:
+            gh_id = None
+            if 'gh_jid=' in public_apply_url:
+                gh_id = public_apply_url.split('gh_jid=')[-1].split('&')[0]
+            elif '/jobs/' in public_apply_url:
+                gh_id = public_apply_url.split('/jobs/')[-1].split('?')[0]
+            
+            if gh_id and gh_id.isdigit():
+                slug = "abnormalsecurity" if 'abnormal' in board_name.lower() else ("cognite" if 'cognite' in board_name.lower() else board_name.lower().replace(' ', ''))
+                api_url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs/{gh_id}"
+                try:
+                    async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:
+                        resp = await client.get(api_url)
+                        if resp.status_code == 200:
+                            data = resp.json()
+                            desc_clean = clean_html_to_text(data.get('content', ''))[:40000]
+                            loc_name = data.get('location', {}).get('name', '')
+                            if 'bangalore' in loc_name.lower() or 'bengaluru' in loc_name.lower():
+                                loc_clean = "Bangalore, India"
+                            elif 'hyderabad' in loc_name.lower():
+                                loc_clean = "Hyderabad, India"
+                            elif loc_name and loc_name.strip() != 'India':
+                                loc_clean = loc_name.strip()[:200]
+                            else:
+                                loc_clean = "Bangalore, India" if 'abnormal' in board_name.lower() else "India"
+                            
+                            return {
+                                "description": desc_clean if len(desc_clean) > 100 else f"Position for {title[:500]} at {board_name[:500]}.",
+                                "location": loc_clean[:200],
+                                "employment_type": "Full-time",
+                                "department": "Engineering",
+                                "salary_raw": "Competitive / Not specified",
+                                "salary_min": None,
+                                "salary_max": None,
+                                "salary_currency": None
+                            }
+                except Exception:
+                    pass
 
         try:
             async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:
@@ -81,12 +119,9 @@ class DetailExtractor:
 
         if ld_data:
             raw_desc = str(ld_data.get("description", ""))
-            clean_desc = re.sub(r'<script[^>]*>([\s\S]*?)</script>', ' ', raw_desc, flags=re.IGNORECASE)
-            clean_desc = re.sub(r'<style[^>]*>([\s\S]*?)</style>', ' ', clean_desc, flags=re.IGNORECASE)
-            plain_desc = re.sub(r'<[^>]+>', chr(10), clean_desc)
-            desc_lines = [l.strip() for l in plain_desc.splitlines() if len(l.strip()) > 10]
-            if desc_lines:
-                description = (chr(10) + chr(10)).join(desc_lines)[:40000]
+            clean_desc = clean_html_to_text(raw_desc)[:40000]
+            if clean_desc and len(clean_desc) > 50:
+                description = clean_desc
 
             job_loc = ld_data.get("jobLocation")
             if isinstance(job_loc, list) and job_loc:
@@ -141,23 +176,14 @@ class DetailExtractor:
         if not description or len(description) < 100:
             desc_match = re.search(r'<(?:div|section)[^>]*class=["\'][^"\']*(?:ats-description|job-description|job-details|content|section)[^"\']*["\'][^>]*>(.*?)</(?:div|section)>', raw_html_text, re.DOTALL | re.IGNORECASE)
             if desc_match:
-                clean_desc_html = re.sub(r'<script[^>]*>([\s\S]*?)</script>', ' ', desc_match.group(1), flags=re.IGNORECASE)
-                clean_desc_html = re.sub(r'<style[^>]*>([\s\S]*?)</style>', ' ', clean_desc_html, flags=re.IGNORECASE)
-                plain_desc_text = re.sub(r'<[^>]+>', chr(10), clean_desc_html)
-                lines = [l.strip() for l in plain_desc_text.splitlines() if len(l.strip()) > 10]
-                filtered_lines = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'gtag', 'datalayer', 'window.', 'self.', 'privacy policy', 'terms of use', 'sign in', 'apply now'])]
-                if filtered_lines:
-                    description = (chr(10) + chr(10)).join(filtered_lines[:40])[:40000]
+                clean_desc_text = clean_html_to_text(desc_match.group(1))[:40000]
+                if clean_desc_text and len(clean_desc_text) > 50:
+                    description = clean_desc_text
 
             if not description or len(description) < 100:
-                clean_html = re.sub(r'<script[^>]*>([\s\S]*?)</script>', ' ', raw_html_text, flags=re.IGNORECASE)
-                clean_html = re.sub(r'<style[^>]*>([\s\S]*?)</style>', ' ', clean_html, flags=re.IGNORECASE)
-                plain_text = re.sub(r'<[^>]+>', chr(10), clean_html)
-                lines = [l.strip() for l in plain_text.splitlines() if len(l.strip()) > 15]
-                filtered_lines = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'gtag', 'datalayer', 'window.', 'self.', 'privacy policy', 'terms of use', 'sign in', 'apply now', 'all rights reserved', 'javascript'])]
-
-                if filtered_lines:
-                    description = (chr(10) + chr(10)).join(filtered_lines[:35])[:40000]
+                clean_full = clean_html_to_text(raw_html_text)[:40000]
+                if clean_full and len(clean_full) > 100:
+                    description = clean_full
                 else:
                     description = f"Full job description for {title[:500]} at {board_name[:500]}. Responsibilities include software development, system architecture design, and technical delivery."
 

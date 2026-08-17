@@ -25,31 +25,27 @@ def compute_url_hash(url: str) -> str:
 async def bg_enrich_candidates(candidates_to_enrich: List[Tuple[str, str, str, str]]):
     sem = asyncio.Semaphore(10)
 
-    async def do_enrich(cand_tuple, client):
+    async def do_enrich(cand_tuple):
         cand_id, url, company, title = cand_tuple
         async with sem:
             try:
-                resp = await client.get(url)
-                if resp.status_code == 200 and len(resp.text) > 500:
-                    enriched = detail_extractor.parse_detail_html(resp.text, company, title, url)
-                    async with AsyncSessionLocal() as session:
-                        res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == cand_id))
-                        job = res.scalar_one_or_none()
-                        if job:
-                            if enriched.get("description") and len(enriched.get("description")) > 100:
-                                job.description = enriched.get("description")[:40000]
-                            enr_loc = enriched.get("location")
-                            if enr_loc and enr_loc.strip() not in ("India", "in", "pageData", ""):
-                                job.location = enr_loc.strip()[:200]
-                            if enriched.get("employment_type"):
-                                job.employment_type = enriched.get("employment_type")[:200]
-                            await session.commit()
-            except Exception:
-                pass
+                enriched = await detail_extractor.fetch_and_enrich(url, company, title)
+                async with AsyncSessionLocal() as session:
+                    res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == cand_id))
+                    job = res.scalar_one_or_none()
+                    if job:
+                        if enriched.get("description") and len(enriched.get("description")) > 100:
+                            job.description = enriched.get("description")[:40000]
+                        enr_loc = enriched.get("location")
+                        if enr_loc and enr_loc.strip() not in ("India", "in", "pageData", ""):
+                            job.location = enr_loc.strip()[:200]
+                        if enriched.get("employment_type"):
+                            job.employment_type = enriched.get("employment_type")[:200]
+                        await session.commit()
+            except Exception as e:
+                logger.info(f"Enrichment error: {e}")
 
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-    async with httpx.AsyncClient(timeout=5.0, follow_redirects=True, headers=headers) as client:
-        await asyncio.gather(*[do_enrich(c, client) for c in candidates_to_enrich])
+    await asyncio.gather(*[do_enrich(c) for c in candidates_to_enrich])
 
 class NormalizationService:
     def __init__(self, session_factory=AsyncSessionLocal):

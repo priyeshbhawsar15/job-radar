@@ -1505,3 +1505,33 @@ INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
 INFO:     127.0.0.1:34040 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36004 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2803721]
+INFO:     Started server process [2809970]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:34082 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34088 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2809970]
+INFO:     Started server process [2811612]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:35508 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54912 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54912 - "GET /assets/index-YWF0PvLg.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54920 - "GET /assets/index-DfDbjH85.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54912 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54912 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52626 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52636 - "GET /assets/index-DfDbjH85.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52626 - "GET /assets/index-YWF0PvLg.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52636 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52626 - "GET /api/v1/boards HTTP/1.1" 200 OK

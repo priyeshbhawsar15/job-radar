@@ -13,7 +13,7 @@ export const Boards: React.FC = () => {
     fetch('/api/v1/boards')
       .then((res) => (res.ok ? res.json() : []))
       .then((data: any[]) => {
-        setBoards(data);
+        setBoards(data.sort((a, b) => a.name.localeCompare(b.name)));
       })
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
@@ -21,12 +21,14 @@ export const Boards: React.FC = () => {
 
   const uniqueAdapters = Array.from(new Set(boards.map((b) => b.family))).sort();
 
-  const filteredBoards = boards.filter((b) => {
-    const q = searchTerm.toLowerCase();
-    const matchesText = (b.name + ' ' + b.target_url + ' ' + b.family).toLowerCase().includes(q);
-    const matchesAdapter = adapterFilter === 'all' || b.family.toLowerCase() === adapterFilter.toLowerCase();
-    return matchesText && matchesAdapter;
-  });
+  const filteredBoards = boards
+    .filter((b) => {
+      const q = searchTerm.toLowerCase();
+      const matchesText = (b.name + ' ' + b.target_url + ' ' + b.family).toLowerCase().includes(q);
+      const matchesAdapter = adapterFilter === 'all' || b.family.toLowerCase() === adapterFilter.toLowerCase();
+      return matchesText && matchesAdapter;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="space-y-6">

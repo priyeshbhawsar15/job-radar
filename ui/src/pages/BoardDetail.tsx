@@ -33,6 +33,7 @@ export const BoardDetail: React.FC = () => {
             url: found.target_url || found.url || '',
             state: found.status === 'active' ? 'reviewed' : found.status,
             rev: 'rev-01',
+            maxPages: found.max_pages || 3,
             runs: totalRuns,
             success: successRate,
             missing: found.consecutive_parser_failures >= 3 ? ['consecutive parser failures threshold exceeded'] : [],
@@ -181,6 +182,9 @@ export const BoardDetail: React.FC = () => {
             <dt className="text-slate-500 dark:text-slate-400 font-medium">Current revision</dt>
             <dd className="sm:col-span-2 font-mono text-slate-900 dark:text-slate-100">{board.rev}</dd>
 
+            <dt className="text-slate-500 dark:text-slate-400 font-medium">Pagination depth</dt>
+            <dd className="sm:col-span-2 font-mono font-bold text-teal-600 dark:text-teal-400">{board.maxPages} {board.maxPages === 1 ? 'page' : 'pages'}</dd>
+
             <dt className="text-slate-500 dark:text-slate-400 font-medium">Next admission</dt>
             <dd className="sm:col-span-2 font-mono text-slate-900 dark:text-slate-100">{board.next}</dd>
           </dl>
@@ -211,30 +215,30 @@ export const BoardDetail: React.FC = () => {
         {/* Run Stats Summary Card */}
         <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
-            Run stats
+            Run stats & limits
           </h2>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
-              <span className="block text-xs text-slate-500 dark:text-slate-400">Retained runs</span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400">Pagination Depth</span>
+              <b className="block text-2xl font-bold font-mono text-teal-600 dark:text-teal-400 mt-1">{board.maxPages} {board.maxPages === 1 ? 'page' : 'pages'}</b>
+              <span className="block text-[11px] text-slate-400 mt-0.5">configured limit</span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
+              <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Retained runs</span>
               <b className="block text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1">{board.runs}</b>
-              <span className="block text-[11px] text-slate-400 mt-0.5">7 days</span>
+              <span className="block text-[11px] text-slate-400 mt-0.5">7 days window</span>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
-              <span className="block text-xs text-slate-500 dark:text-slate-400">Completion</span>
-              <b className="block text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1">{board.success}%</b>
-              <span className="block text-[11px] text-slate-400 mt-0.5">safe outcomes</span>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
-              <span className="block text-xs text-slate-500 dark:text-slate-400">Adapter</span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Adapter</span>
               <b className="block text-xl font-bold font-mono text-slate-900 dark:text-white mt-1 uppercase">{board.adapter}</b>
               <span className="block text-[11px] text-slate-400 mt-0.5">reviewed family</span>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
-              <span className="block text-xs text-slate-500 dark:text-slate-400">State</span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">State</span>
               <b className="block text-xl font-bold font-mono text-slate-900 dark:text-white mt-1 capitalize">{board.state}</b>
               <span className="block text-[11px] text-slate-400 mt-0.5">active configuration</span>
             </div>

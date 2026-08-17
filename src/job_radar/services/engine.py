@@ -3,6 +3,7 @@ import logging
 import json
 import re
 import html
+import urllib.parse
 import httpx
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
@@ -61,6 +62,7 @@ class PipelineExecutionEngine:
                             break
                         for item in jobs:
                             title = item.get("title", "").strip()
+                            job_id = item.get("id_icims", "") or item.get("id", "")
                             raw_url = f"https://www.amazon.jobs{item.get('job_path', '')}"
                             clean_url = canonicalize_job_url(raw_url, board_name, target_url)
                             if clean_url in seen_urls:
@@ -84,7 +86,7 @@ class PipelineExecutionEngine:
                             else:
                                 loc = "India"
 
-                            fp = generate_fingerprint(board_name, title, loc)
+                            fp = generate_fingerprint(board_name, f"{title} {job_id}", loc)
                             all_candidates.append(
                                 ExtractedCandidate(
                                     title=title,
@@ -130,17 +132,11 @@ class PipelineExecutionEngine:
                 site = p.split('?')[0]
                 break
 
-        facets = {}
-        if 'locationCountry=' in target_url:
-            country_code = target_url.split('locationCountry=')[-1].split('&')[0]
-            facets['locationCountry'] = [country_code]
-        if 'jobFamilyGroup=' in target_url:
-            groups = re.findall(r'jobFamilyGroup=([^&]+)', target_url)
-            if groups:
-                facets['jobFamilyGroup'] = groups
-        if 'timeType=' in target_url:
-            tt = target_url.split('timeType=')[-1].split('&')[0]
-            facets['timeType'] = [tt]
+        parsed_url = urllib.parse.urlparse(target_url)
+        qs = urllib.parse.parse_qs(parsed_url.query)
+
+        valid_facet_keys = {"workerSubType", "jobFamilyGroup", "timeType", "locationCountry", "locationHierarchy1", "locationRegion", "jobFamily"}
+        facets = {k: v for k, v in qs.items() if k in valid_facet_keys}
 
         cxs_url = f"https://{domain}/wday/cxs/{tenant}/{site}/jobs"
         headers = {

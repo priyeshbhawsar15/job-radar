@@ -3938,3 +3938,235 @@ ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000)
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
 INFO:     127.0.0.1:38252 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51992 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:51994 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:54222 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:54236 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:54250 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:54236 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     Started server process [115027]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:49416 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35456 - "GET /assets/index-Bxa3pa31.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35456 - "GET /assets/index-BMYAX_o4.css HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35466 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35480 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35480 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35496 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35480 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55318 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35480 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35480 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55322 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55336 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55352 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55364 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55372 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55382 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55394 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55404 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55406 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55408 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55424 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55426 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55430 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55434 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs/board-runs/90f61cbd-bbcf-4b07-b547-e1d07e728d32 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33018 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33018 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33028 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33018 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33018 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33018 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33018 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:35456 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45384 - "GET /api/v1/boards/board-abnormalai HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45384 - "PUT /api/v1/boards/board-abnormalai/config HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45396 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45384 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45384 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45384 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45396 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53314 - "GET /api/v1/runs/board-runs/247f9ab5-f942-4d88-93b9-a6f3a472995f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53314 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53318 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53318 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53314 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53318 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53318 - "GET /api/v1/boards/board-adobe HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38720 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53318 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:57668 - "GET /api/v1/boards/board-adobe HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39884 - "PUT /api/v1/boards/board-adobe/config HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39890 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39884 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39884 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39884 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39890 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39890 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39884 - "GET /api/v1/runs/board-runs/a7352aa2-19df-491c-adcb-49f040503ee8 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39884 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:43122 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39884 - "GET /api/v1/runs/board-runs/a7352aa2-19df-491c-adcb-49f040503ee8 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43136 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43124 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:58822 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:58808 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55938 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55938 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET /api/v1/runs/board-runs/d968f829-2b59-44ca-9dc6-1033231d7b75 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55938 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET /api/v1/runs/board-runs/d968f829-2b59-44ca-9dc6-1033231d7b75 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:47332 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET /api/v1/runs/board-runs/d968f829-2b59-44ca-9dc6-1033231d7b75 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:47336 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET /api/v1/runs/board-runs/d968f829-2b59-44ca-9dc6-1033231d7b75 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:47350 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET /api/v1/runs/board-runs/d968f829-2b59-44ca-9dc6-1033231d7b75 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:47360 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55936 - "GET /api/v1/runs/board-runs/d968f829-2b59-44ca-9dc6-1033231d7b75 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36474 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36484 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36484 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36662 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36654 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:36648 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49266 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49260 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49252 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49270 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49260 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49252 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49252 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49260 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49252 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:50858 - "GET /api/v1/runs/board-runs/226f9703-94b5-4411-93fa-a09e50b64331 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46526 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:46528 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46526 - "GET /api/v1/runs/board-runs/226f9703-94b5-4411-93fa-a09e50b64331 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46546 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46530 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46530 - "GET /api/v1/boards/board-amazon HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46546 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46530 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46530 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46546 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46530 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53900 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53910 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53900 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:44456 - "GET /api/v1/runs/board-runs/226f9703-94b5-4411-93fa-a09e50b64331 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:44420 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:44434 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:44420 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33478 - "GET /api/v1/runs/board-runs/99b9ea88-15db-42ee-b314-79f577d5d531 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33478 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:33478 - "GET /assets/index-Bxa3pa31.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:33492 - "GET /assets/index-BMYAX_o4.css HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:33492 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33478 - "GET /api/v1/runs/board-runs/99b9ea88-15db-42ee-b314-79f577d5d531 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33478 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:33502 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33478 - "GET /api/v1/runs/board-runs/99b9ea88-15db-42ee-b314-79f577d5d531 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33512 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33478 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33478 - "GET /api/v1/boards/board-ameriprise HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46270 - "PUT /api/v1/boards/board-ameriprise/config HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53588 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53588 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/runs/board-runs/9b1c2a1f-046f-4d60-9dbd-6b35c09b834f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:53588 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/runs/board-runs/9b1c2a1f-046f-4d60-9dbd-6b35c09b834f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35532 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/runs/board-runs/9b1c2a1f-046f-4d60-9dbd-6b35c09b834f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35538 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/runs/board-runs/9b1c2a1f-046f-4d60-9dbd-6b35c09b834f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35544 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/runs/board-runs/9b1c2a1f-046f-4d60-9dbd-6b35c09b834f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35558 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/runs/board-runs/9b1c2a1f-046f-4d60-9dbd-6b35c09b834f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35574 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/runs/board-runs/9b1c2a1f-046f-4d60-9dbd-6b35c09b834f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35590 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/runs/board-runs/9b1c2a1f-046f-4d60-9dbd-6b35c09b834f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35600 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/runs/board-runs/9b1c2a1f-046f-4d60-9dbd-6b35c09b834f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35604 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/runs/board-runs/9b1c2a1f-046f-4d60-9dbd-6b35c09b834f HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:35608 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53586 - "GET /api/v1/runs/board-runs/9b1c2a1f-046f-4d60-9dbd-6b35c09b834f HTTP/1.1" 200 OK
+INFO:     Started server process [152351]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:37852 - "GET /api/v1/health HTTP/1.1" 200 OK

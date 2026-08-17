@@ -1383,3 +1383,33 @@ INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
 INFO:     127.0.0.1:46690 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48754 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48754 - "GET /assets/index-BDetMwoE.js HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48766 - "GET /assets/index-DfDbjH85.css HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48754 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48766 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48778 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48778 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48778 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48766 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48766 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53462 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53462 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53476 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53476 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:53462 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:59340 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:59344 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:59340 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:59342 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55050 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47410 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47418 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47410 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     Started server process [2740696]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     127.0.0.1:40422 - "GET /api/v1/health HTTP/1.1" 200 OK

@@ -331,7 +331,8 @@ class WorkdayAdapter(BaseAdapter):
                 if location_filter and location_filter.lower() not in (location_str or "").lower():
                     continue
 
-                raw_url = f"{target_url.rstrip('/')}/{item.get('externalPath', '').lstrip('/')}"
+                base_target = target_url.split('?')[0].rstrip('/')
+                raw_url = f"{base_target}/{item.get('externalPath', '').lstrip('/')}"
                 fp = generate_fingerprint(board_name, title, location_str)
                 results.append(
                     ExtractedCandidate(

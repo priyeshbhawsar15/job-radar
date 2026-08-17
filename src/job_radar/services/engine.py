@@ -144,6 +144,7 @@ class PipelineExecutionEngine:
 
         cxs_url = f"https://{domain}/wday/cxs/{tenant}/{site}/jobs"
         headers = {
+            "Accept": "application/json",
             "Content-Type": "application/json",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         }
@@ -151,11 +152,12 @@ class PipelineExecutionEngine:
         all_candidates: List[ExtractedCandidate] = []
         seen_urls = set()
         adapter = adapter_registry.get("workday")
+        total_known: Optional[int] = None
 
         async with httpx.AsyncClient(timeout=10.0) as client:
             for page in range(max_pages):
                 offset = page * 20
-                payload = {"appliedFacets": facets, "limit": 20, "offset": offset}
+                payload = {"appliedFacets": facets, "limit": 20, "offset": offset, "searchText": ""}
                 try:
                     resp = await client.post(cxs_url, json=payload, headers=headers)
                     if resp.status_code == 200:
@@ -173,8 +175,9 @@ class PipelineExecutionEngine:
                                 seen_urls.add(c.raw_url)
                                 all_candidates.append(c)
                         data = resp.json()
-                        total = data.get("total", 0)
-                        if offset + 20 >= total:
+                        if data.get("total", 0) > 0:
+                            total_known = data["total"]
+                        if total_known is not None and total_known > 0 and offset + 20 >= total_known:
                             break
                     else:
                         break

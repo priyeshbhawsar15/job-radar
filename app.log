@@ -3843,3 +3843,98 @@ INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
 INFO:     127.0.0.1:46726 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37614 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:37614 - "GET /assets/index-Bxa3pa31.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:37624 - "GET /assets/index-BMYAX_o4.css HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:37624 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37614 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37628 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:37614 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45882 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55294 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45882 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52916 - "GET /api/v1/boards/board-abnormalai HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52916 - "PUT /api/v1/boards/board-abnormalai/config HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38788 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52916 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52916 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38788 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52916 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43972 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:43972 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43988 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43984 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43984 - "GET /api/v1/runs/board-runs/8e1085d0-81e7-460a-86f3-ca758e5d19dc HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43984 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43984 - "GET /api/v1/runs/board-runs/8e1085d0-81e7-460a-86f3-ca758e5d19dc HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52692 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43984 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43984 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52692 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43984 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52692 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43984 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52692 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43984 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52692 - "GET /api/v1/runs/board-runs/8e1085d0-81e7-460a-86f3-ca758e5d19dc HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49416 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52692 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52692 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49416 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52692 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41066 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41078 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41066 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET /api/v1/boards/board-adobe HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "PUT /api/v1/boards/board-adobe/config HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45342 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45342 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET /api/v1/runs/board-runs/57f2fdf9-8a6e-4cb9-99cc-0d421805b134 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:45342 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET /api/v1/runs/board-runs/57f2fdf9-8a6e-4cb9-99cc-0d421805b134 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:49164 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET /api/v1/runs/board-runs/57f2fdf9-8a6e-4cb9-99cc-0d421805b134 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:49172 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET /api/v1/runs/board-runs/57f2fdf9-8a6e-4cb9-99cc-0d421805b134 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:49188 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:45332 - "GET /api/v1/runs/board-runs/57f2fdf9-8a6e-4cb9-99cc-0d421805b134 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33112 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33112 - "GET /api/v1/runs/board-runs/57f2fdf9-8a6e-4cb9-99cc-0d421805b134 HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33112 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47256 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33112 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:47260 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33112 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46186 - "GET /api/v1/boards/board-adobe HTTP/1.1" 200 OK
+INFO:     192.168.2.90:56706 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46186 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46186 - "GET /api/v1/runs/board-runs/57f2fdf9-8a6e-4cb9-99cc-0d421805b134 HTTP/1.1" 200 OK
+INFO:     Started server process [64944]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:42544 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37140 - "GET /api/v1/runs/board-runs/d22698fc-c9e2-4135-a80d-aa760c58f246 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37148 - "GET /api/v1/runs/board-runs/d22698fc-c9e2-4135-a80d-aa760c58f246 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48204 - "GET /api/v1/boards/board-adobe HTTP/1.1" 200 OK
+INFO:     Started server process [74909]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:36414 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34042 - "GET /api/v1/runs/board-runs/f2c3c408-b631-43b4-aa5e-dd86f3da1f39 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34044 - "GET /api/v1/runs/board-runs/f2c3c408-b631-43b4-aa5e-dd86f3da1f39 HTTP/1.1" 200 OK
+INFO:     Started server process [106968]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 3000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     127.0.0.1:38252 - "GET /api/v1/health HTTP/1.1" 200 OK

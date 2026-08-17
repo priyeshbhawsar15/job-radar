@@ -2164,3 +2164,40 @@ INFO:     127.0.0.1:51130 - "GET /api/v1/health HTTP/1.1" 200 OK
 INFO:     192.168.2.90:39328 - "GET /api/v1/stream HTTP/1.1" 200 OK
 INFO:     192.168.2.90:39344 - "GET /api/v1/jobs HTTP/1.1" 200 OK
 INFO:     192.168.2.90:39354 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:39356 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38448 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38464 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38464 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:38464 - "GET /assets/index-CrgUGyan.js HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:38448 - "GET /assets/index-BMYAX_o4.css HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:38474 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38464 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38448 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:38464 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60944 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:60952 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49568 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:49574 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49568 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49570 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49570 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+ERROR:    ASGI callable returned without completing response.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3159891]
+INFO:     Started server process [3435319]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:47944 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3435319]
+INFO:     Started server process [3437159]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:54758 - "GET /api/v1/health HTTP/1.1" 200 OK

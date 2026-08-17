@@ -63,7 +63,10 @@ def extract_html_job_links(html: str, board_name: str, target_url: str) -> List[
         else:
             continue
 
-        clean_url = full_url.split('?')[0] if '?' in full_url and not any(k in full_url for k in ['gh_jid=', 'jobId=', 'team=']) else full_url
+        if 'myworkdayjobs.com' in full_url:
+            clean_url = full_url
+        else:
+            clean_url = full_url.split('?')[0] if '?' in full_url and not any(k in full_url for k in ['gh_jid=', 'jobId=', 'team=']) else full_url
 
         if clean_url in seen_urls or clean_url.rstrip('/') == target_url.rstrip('/'):
             continue

@@ -15,6 +15,20 @@ from job_radar.services.detail_extractor import detail_extractor
 
 logger = logging.getLogger(__name__)
 
+def _description_looks_bad(text: str) -> bool:
+    if not text:
+        return True
+    low = text.lower()
+    bad_markers = [
+        "@keyframes scale-in-center",
+        "page not found. - oracle careers",
+        "candidate experience page careers",
+        ".job-details-wrapper",
+        "full job description for ",
+        "privacy notice",
+    ]
+    return any(marker in low for marker in bad_markers)
+
 def compute_job_identity_key(company: str, title: str, location: str | None = None) -> str:
     raw = f"{company.strip().lower()[:500]}|{title.strip().lower()[:500]}|{(location or '').strip().lower()[:200]}"
     return hashlib.sha256(raw.encode('utf-8')).hexdigest()
@@ -86,8 +100,9 @@ class NormalizationService:
                 if existing_job:
                     candidate_id = existing_job.candidate_id
                     existing_job.last_seen_at = datetime.now(timezone.utc)
-                    if item.extra_payload.get("description"):
-                        existing_job.description = item.extra_payload.get("description")[:40000]
+                    new_desc = item.extra_payload.get("description")
+                    if new_desc and (not existing_job.description or _description_looks_bad(existing_job.description) or len(new_desc) > len(existing_job.description or "")):
+                        existing_job.description = new_desc[:40000]
                     outcome = "re_observed"
                 else:
                     new_job = CandidateJob(

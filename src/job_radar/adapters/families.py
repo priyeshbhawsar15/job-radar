@@ -543,16 +543,24 @@ class EightfoldAdapter(BaseAdapter):
         parsed_target = urllib.parse.urlparse(target_url)
         base_domain = f"https://{parsed_target.netloc}"
 
+        # 1. Parse JSON-LD if present (e.g. Microsoft / HP / Qualcomm single job or page)
+        json_ld_desc = ""
+        m_ld = re.search(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', html_text, re.DOTALL)
+        if m_ld:
+            try:
+                ld_data = json.loads(m_ld.group(1).strip())
+                if isinstance(ld_data, dict) and ld_data.get("@type") == "JobPosting":
+                    json_ld_desc = html.unescape(re.sub(r'<[^>]+>', ' ', ld_data.get("description", ""))).strip()
+            except Exception:
+                pass
+
+        # 2. Parse job links
+        parts = html_text.split("/job/")
         results: List[ExtractedCandidate] = []
         seen = set()
 
-        # Parse links containing /job/ or /careers/job/ in HTML
-        parts = html_text.split("/job/")
-        if len(parts) <= 1:
-            parts = html_text.split("/careers/job/")
-
         for part in parts[1:]:
-            job_id_str = part.split("/")[0].split("?")[0].split('"')[0].split("'")[0].strip()
+            job_id_str = part.split("/")[0].split("?")[0].split('"')[0].split("'")[0].split("#")[0].strip()
             if job_id_str.isdigit():
                 full_url = f"{base_domain}/careers/job/{job_id_str}"
                 clean_url = canonicalize_job_url(full_url, board_name, target_url)
@@ -561,7 +569,20 @@ class EightfoldAdapter(BaseAdapter):
                 seen.add(clean_url)
 
                 title = f"{board_name} Job Requisition {job_id_str}"
+                
+                # Extract title from nearby text if available
+                title_match = re.search(r'>([^<]{3,100})</a>', part[:200])
+                if title_match:
+                    t_cand = title_match.group(1).strip()
+                    if len(t_cand) > 3 and not t_cand.startswith("http"):
+                        title = t_cand
+
                 fp = generate_fingerprint(board_name, f"{title} {job_id_str}", "India")
+                
+                extra = {}
+                if json_ld_desc:
+                    extra = {"description": json_ld_desc[:40000]}
+
                 results.append(
                     ExtractedCandidate(
                         title=title,
@@ -570,7 +591,8 @@ class EightfoldAdapter(BaseAdapter):
                         department="Engineering",
                         employment_type="Full-time",
                         raw_url=clean_url,
-                        fingerprint=fp
+                        fingerprint=fp,
+                        extra_payload=extra
                     )
                 )
 

@@ -21,13 +21,46 @@ from job_radar.services.normalization import normalization_service
 
 logger = logging.getLogger(__name__)
 
+def oracle_clean_description(text: str) -> str:
+    if not text:
+        return ""
+    t = html.unescape(text)
+    t = re.sub(r"<[^>]+>", " ", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    bad_markers = [
+        "@keyframes scale-in-center",
+        "candidate experience page careers",
+        "page not found. - oracle careers",
+        ".job-details-wrapper",
+        "cx-footer",
+        "data-apibaseurl",
+    ]
+    if any(m in t.lower() for m in bad_markers):
+        return ""
+    return t[:40000]
+
+def oracle_meta_fallback(html_text: str) -> str:
+    if not html_text:
+        return ""
+    m = re.search(r'<meta\s+property="og:description"\s+content="([^"]*)"', html_text, re.I)
+    if m:
+        return html.unescape(m.group(1)).strip()[:40000]
+    return ""
+
 def clean_amazon_html(raw_html: str) -> str:
-    if not raw_html: return ''
+    if not raw_html:
+        return ''
     text = html.unescape(raw_html)
-    clean = re.sub(r'<[^>]+>', ' ', text)
-    lines = [l.strip() for l in clean.splitlines() if len(l.strip()) > 5]
-    filtered = [l for l in lines if not any(x in l.lower() for x in ['equal opportunity', 'disability', 'accommodation', 'privacy', 'cookie', 'affirmative action', 'recruiting partner', 'pay transparency'])]
-    return (chr(10) + chr(10)).join(filtered)
+    text = re.sub(r'</?(p|div|li|h[1-6]|br|tr|td)[^>]*>', '\n', text, flags=re.I)
+    text = re.sub(r'<[^>]+>', '', text)
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    filtered = []
+    for l in lines:
+        l_lower = l.lower()
+        if any(x in l_lower for x in ['equal opportunity employer', 'disability/veteran', 'pay transparency', 'affirmative action']):
+            continue
+        filtered.append(l)
+    return '\n\n'.join(filtered)
 
 class PipelineExecutionEngine:
     """Stateful engine for executing board parsing runs with multi-page pagination & threshold rules."""
@@ -544,6 +577,52 @@ class PipelineExecutionEngine:
                             target_url=target_url,
                             board_name=board.name
                         )
+                    elif family == "eightfold":
+                        raw_payload = await self.browser_client.fetch_board_html(
+                            target_url=target_url,
+                            registered_target_url=target_url
+                        )
+                        extracted_candidates = adapter.parse_raw_payload(
+                            payload=raw_payload,
+                            board_name=board.name,
+                            target_url=target_url,
+                            selector_config=selector_config
+                        )
+                        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True, verify=False, headers={"User-Agent": "Mozilla/5.0"}) as client:
+                            for c in extracted_candidates:
+                                try:
+                                    dr = await client.get(c.raw_url)
+                                    m_ld = re.search(r'<script[^>]*type=[\"\']application/ld\+json[\"\'][^>]*>(.*?)</script>', dr.text, re.DOTALL)
+                                    if m_ld:
+                                        ld_data = json.loads(m_ld.group(1).strip())
+                                        if isinstance(ld_data, dict) and ld_data.get("@type") == "JobPosting":
+                                            clean_desc = html.unescape(re.sub(r'<[^>]+>', ' ', ld_data.get("description", ""))).strip()
+                                            if clean_desc:
+                                                c.extra_payload = {"description": clean_desc[:40000]}
+                                except Exception as ef_err:
+                                    logger.info(f"Eightfold detail fetch failed for {c.raw_url}: {ef_err}")
+                    elif family == "oracle":
+                        raw_payload = await self.browser_client.fetch_board_html(
+                            target_url=target_url,
+                            registered_target_url=target_url
+                        )
+                        extracted_candidates = adapter.parse_raw_payload(
+                            payload=raw_payload,
+                            board_name=board.name,
+                            target_url=target_url,
+                            selector_config=selector_config
+                        )
+                        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True, verify=False, headers={"User-Agent": "Mozilla/5.0"}) as client:
+                            for c in extracted_candidates:
+                                try:
+                                    dr = await client.get(c.raw_url)
+                                    cleaned = oracle_clean_description(dr.text)
+                                    if not cleaned:
+                                        cleaned = oracle_meta_fallback(dr.text)
+                                    if cleaned:
+                                        c.extra_payload = {"description": cleaned[:40000]}
+                                except Exception as oracle_detail_err:
+                                    logger.info(f"Oracle detail fetch failed for {c.raw_url}: {oracle_detail_err}")
                     else:
                         raw_payload = await self.browser_client.fetch_board_html(
                             target_url=target_url,

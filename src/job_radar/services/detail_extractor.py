@@ -13,7 +13,7 @@ def clean_html_to_text(raw_html_str: str) -> str:
         return ""
     text = html.unescape(raw_html_str)
     # Strip script, style, svg, iframe, noscript, nav, footer, header
-    clean = re.sub(r'<(script|style|svg|iframe|noscript|nav|footer|header)[^>]*>([\s\S]*?)</>', ' ', text, flags=re.IGNORECASE)
+    clean = re.sub(r'<(script|style|svg|iframe|noscript|nav|footer|header)\b[^>]*>[\s\S]*?</\1>', ' ', text, flags=re.IGNORECASE)
     plain = re.sub(r'<[^>]+>', chr(10), clean)
     lines = [l.strip() for l in plain.splitlines() if len(l.strip()) > 8]
     filtered = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'gtag', 'datalayer', 'window.', 'self.', 'scrollrestoration', '--bprogress', 'privacy policy', 'terms of use', 'sign in', 'apply now', 'all rights reserved', 'javascript:'])]

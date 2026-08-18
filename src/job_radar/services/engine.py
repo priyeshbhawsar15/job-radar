@@ -31,6 +31,8 @@ def oracle_clean_description(text: str) -> str:
     t = re.sub(r"\s+", " ", t).strip()
     bad_markers = [
         "page not found. - oracle careers",
+        "hashbang_regex",
+        "candidate experience page",
     ]
     if any(m in t.lower() for m in bad_markers):
         return ""
@@ -674,7 +676,7 @@ class PipelineExecutionEngine:
                                                 pass
                                 except Exception as ef_err:
                                     logger.info(f"Eightfold detail fetch failed for {c.raw_url}: {ef_err}")
-                    elif family == "oracle":
+                    elif family == "google_careers":
                         raw_payload = await self.browser_client.fetch_board_html(
                             target_url=target_url,
                             registered_target_url=target_url
@@ -686,6 +688,29 @@ class PipelineExecutionEngine:
                             selector_config=selector_config
                         )
                         async with httpx.AsyncClient(timeout=20.0, follow_redirects=True, verify=False, headers={"User-Agent": "Mozilla/5.0"}) as client:
+                            for c in extracted_candidates:
+                                try:
+                                    dr = await client.get(c.raw_url)
+                                    if dr.status_code == 200:
+                                        m_meta = re.search(r'meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']', dr.text, re.IGNORECASE)
+                                        if m_meta:
+                                            g_desc = html.unescape(m_meta.group(1)).strip()
+                                            if g_desc and len(g_desc) > 50:
+                                                c.extra_payload = {"description": g_desc[:40000]}
+                                except Exception as g_err:
+                                    logger.info(f"Google detail fetch failed for {c.raw_url}: {g_err}")
+                    elif family == "oracle":
+                        raw_payload = await self.browser_client.fetch_board_html(
+                            target_url=target_url,
+                            registered_target_url=target_url
+                        )
+                        extracted_candidates = adapter.parse_raw_payload(
+                            payload=raw_payload,
+                            board_name=board.name,
+                            target_url=target_url,
+                            selector_config=selector_config
+                        )
+                        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True, verify=False, headers={"User-Agent": "Mozilla/5.0"}) as client:
                             for c in extracted_candidates:
                                 try:
                                     dr = await client.get(c.raw_url)

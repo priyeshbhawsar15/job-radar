@@ -1,0 +1,88 @@
+INFO:     Started server process [3534169]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:55884 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46154 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46154 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46170 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46154 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46170 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46154 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46170 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46154 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48194 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:48210 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48194 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:48196 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41640 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:41640 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41648 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41654 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:34882 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:34882 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:34886 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:34888 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52126 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52126 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52136 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52136 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:52120 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52136 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52126 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52136 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52126 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52136 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52126 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55204 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52136 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52126 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52136 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52126 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52136 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52126 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:55216 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52136 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52126 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52136 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52126 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:55228 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33166 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33168 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33168 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33166 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33168 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:33166 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41968 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41974 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:41974 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:56322 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:56324 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:56324 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52194 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:52194 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52206 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52206 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52206 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43334 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52206 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:43344 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:43334 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:52206 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49862 - "POST /api/v1/runs/trigger HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49862 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49872 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49872 - "GET /api/v1/runs/board-runs/927151d9-5bce-4341-9a09-b6d88fd46ddc HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49872 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     192.168.2.90:49862 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49872 - "GET /api/v1/runs/board-runs/927151d9-5bce-4341-9a09-b6d88fd46ddc HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49872 - "GET /api/v1/jobs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49872 - "GET /api/v1/runs/board-runs/927151d9-5bce-4341-9a09-b6d88fd46ddc HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49872 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     192.168.2.90:46504 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     192.168.2.90:49872 - "GET /api/v1/boards HTTP/1.1" 200 OK
+INFO:     Shutting down
+ERROR:    ASGI callable returned without completing response.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3534169]

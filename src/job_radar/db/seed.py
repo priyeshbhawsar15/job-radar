@@ -12,7 +12,7 @@ INITIAL_BOARDS = [
     ("board-adobe", "Adobe", "workday", "https://adobe.wd5.myworkdayjobs.com/en-US/external_experienced?Job_Application_ID=cf0155a2a4659000ad6ec95db1160000&workerSubType=3ba4ecdf4893100b2f8d06b0870c6c8b&jobFamilyGroup=591af8b812fa10737b0e880e0e3eeee9&jobFamilyGroup=591af8b812fa10737af39db3d96eed9f&locationCountry=c4f78be1a8f14da0ab49ce1162348a5e"),
     ("board-amazon", "Amazon", "amazon_jobs", "https://www.amazon.jobs/en/search?offset=0&result_limit=10&sort=recent&category[]=software-development&distanceType=Mi&radius=24km&latitude=&longitude=&loc_group_id=&loc_query=India&base_query=software&city=&country=IND&region=&county=&query_options=&"),
     ("board-ameriprise", "Ameriprise", "ameriprise", "https://careers.ameriprise.com/search-jobs/?search=software&country=India&team=Technology&type=Full+Time&pagesize=20#results"),
-    ("board-amex", "AMEX", "oracle", "https://egug.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs?location=India"),
+    ("board-amex", "AMEX", "oracle", "https://egug.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs?keyword=Software"),
     ("board-apple", "Apple", "apple_jobs", "https://jobs.apple.com/en-in/search?search=Software&sort=newest&location=bangalore-metro-BANG"),
     ("board-aspora", "Aspora", "ashby", "https://jobs.ashbyhq.com/Aspora?departmentId=3790eb6b-6f6f-4d71-ad69-6a1a9fea6066&employmentType=FullTime&utm_medium=organic&utm_source=startup.jobs"),
     ("board-celonis", "Celonis", "celonis_dxp", "https://careers.celonis.com/join-us/open-positions?team=Engineering&seniority=Experienced+Professional&groupedLocation=Bangalore%2C+India"),

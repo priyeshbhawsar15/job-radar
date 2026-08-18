@@ -305,7 +305,29 @@ class PipelineExecutionEngine:
                             basic_text = clean_amazon_html(item.get('basic_qualifications', ''))
                             pref_text = clean_amazon_html(item.get('preferred_qualifications', ''))
 
-                            full_desc = (desc_text + chr(10) + chr(10) + "=== BASIC QUALIFICATIONS ===" + chr(10) + basic_text + chr(10) + chr(10) + "=== PREFERRED QUALIFICATIONS ===" + chr(10) + pref_text).strip()
+                            detail_desc = ""
+                            try:
+                                dr = await client.get(clean_url, headers=headers)
+                                if dr.status_code == 200:
+                                    m_og = re.search(r'<meta\s+property=["\x27]og:description["\x27]\s+content=["\x27]([^"\x27]*)["\x27]', dr.text, re.I)
+                                    og_d = html.unescape(m_og.group(1)).strip() if m_og else ""
+                                    m_b = re.search(r'<h2>Basic Qualifications</h2>\s*<p>(.*?)</p>', dr.text, re.DOTALL | re.I)
+                                    b_q = ""
+                                    if m_b:
+                                        b_t = re.sub(r'</?(p|div|li|br)[^>]*>', '\n', m_b.group(1), flags=re.I)
+                                        b_q = '\n'.join([l.strip() for l in html.unescape(re.sub(r'<[^>]+>', '', b_t)).splitlines() if l.strip()])
+                                    m_p = re.search(r'<h2>Preferred Qualifications</h2>\s*<p>(.*?)</p>', dr.text, re.DOTALL | re.I)
+                                    p_q = ""
+                                    if m_p:
+                                        p_t = re.sub(r'</?(p|div|li|br)[^>]*>', '\n', m_p.group(1), flags=re.I)
+                                        p_q = '\n'.join([l.strip() for l in html.unescape(re.sub(r'<[^>]+>', '', p_t)).splitlines() if l.strip()])
+                                    
+                                    if og_d:
+                                        detail_desc = f"{og_d}\n\n=== BASIC QUALIFICATIONS ===\n{b_q}\n\n=== PREFERRED QUALIFICATIONS ===\n{p_q}".strip()
+                            except Exception:
+                                pass
+
+                            full_desc = detail_desc if detail_desc else (desc_text + chr(10) + chr(10) + "=== BASIC QUALIFICATIONS ===" + chr(10) + basic_text + chr(10) + chr(10) + "=== PREFERRED QUALIFICATIONS ===" + chr(10) + pref_text).strip()
                             loc_raw = item.get("location", "India")
                             if "BANGALORE" in loc_raw.upper() or "BENGALURU" in loc_raw.upper() or "KA" in loc_raw.upper():
                                 loc = "Bangalore, India"

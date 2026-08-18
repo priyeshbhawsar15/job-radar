@@ -24,16 +24,13 @@ logger = logging.getLogger(__name__)
 def oracle_clean_description(text: str) -> str:
     if not text:
         return ""
-    t = html.unescape(text)
+    t = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL | re.I)
+    t = re.sub(r'@keyframes[^{]+\{[^}]+\}', '', t)
+    t = html.unescape(t)
     t = re.sub(r"<[^>]+>", " ", t)
     t = re.sub(r"\s+", " ", t).strip()
     bad_markers = [
-        "@keyframes scale-in-center",
-        "candidate experience page careers",
         "page not found. - oracle careers",
-        ".job-details-wrapper",
-        "cx-footer",
-        "data-apibaseurl",
     ]
     if any(m in t.lower() for m in bad_markers):
         return ""
@@ -614,13 +611,18 @@ class PipelineExecutionEngine:
                             for c in extracted_candidates:
                                 try:
                                     dr = await client.get(c.raw_url)
-                                    m_ld = re.search(r'<script[^>]*type=[\"\']application/ld\+json[\"\'][^>]*>(.*?)</script>', dr.text, re.DOTALL)
-                                    if m_ld:
-                                        ld_data = json.loads(m_ld.group(1).strip())
-                                        if isinstance(ld_data, dict) and ld_data.get("@type") == "JobPosting":
-                                            clean_desc = html.unescape(re.sub(r'<[^>]+>', ' ', ld_data.get("description", ""))).strip()
-                                            if clean_desc:
-                                                c.extra_payload = {"description": clean_desc[:40000]}
+                                    if dr.status_code == 200:
+                                        matches = re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', dr.text, re.DOTALL | re.I)
+                                        for m in matches:
+                                            try:
+                                                ld_data = json.loads(m.strip())
+                                                if isinstance(ld_data, dict) and ld_data.get("@type") == "JobPosting" and ld_data.get("description"):
+                                                    clean_desc = html.unescape(re.sub(r'<[^>]+>', ' ', ld_data.get("description"))).strip()
+                                                    if clean_desc and len(clean_desc) > 100:
+                                                        c.extra_payload = {"description": clean_desc[:40000]}
+                                                        break
+                                            except Exception:
+                                                pass
                                 except Exception as ef_err:
                                     logger.info(f"Eightfold detail fetch failed for {c.raw_url}: {ef_err}")
                     elif family == "oracle":

@@ -151,7 +151,22 @@ class PipelineExecutionEngine:
                     job_id = j.get("id", "")
                     dept = cats.get("department", "Technology").strip()
                     emp = cats.get("commitment", "Full-time").strip()
-                    desc = j.get("descriptionPlain", "") or j.get("description", "")
+                    desc_p = html.unescape(j.get("descriptionPlain", "") or j.get("description", ""))
+                    add_p = html.unescape(j.get("additionalPlain", "") or j.get("additional", ""))
+                    lists = j.get("lists", [])
+                    list_parts = []
+                    if isinstance(lists, list):
+                        for lst in lists:
+                            if isinstance(lst, dict):
+                                h_t = lst.get("text", "")
+                                c_h = lst.get("content", "")
+                                c_t = re.sub(r'</?(p|li|ul|br|div)[^>]*>', '\n', c_h, flags=re.I)
+                                c_t = re.sub(r'<[^>]+>', '', c_t)
+                                c_c = '\n'.join([l.strip() for l in html.unescape(c_t).splitlines() if l.strip()])
+                                if h_t or c_c:
+                                    list_parts.append(f"=== {h_t.upper()} ===\n{c_c}")
+                    full_lever_desc = f"{desc_p}\n\n" + "\n\n".join(list_parts) + f"\n\n{add_p}"
+                    desc = full_lever_desc.strip()
                     fp = generate_fingerprint(board_name, f"{title} {job_id}", loc_str or "India")
 
                     all_candidates.append(

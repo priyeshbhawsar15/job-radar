@@ -63,10 +63,10 @@ The remaining `custom` labels are deliberate: a board-specific, first-party cont
 **Boards:** Oracle, AMEX, JPMC.
 
 - **Observed:** Oracle’s normal listing navigation rendered `/en/sites/jobsearch/job/{id}/` detail links and public Candidate Experience responses, including `.../hcmRestApi/resources/latest/recruitingCEJobRequisitions`.
-- **Acquisition:** wait for the configured tenant/site Candidate Experience requisition response *during the ordinary listing navigation*, or a reviewed visible job-card locator. The adapter must accept only the reviewed wrapper/record shape and flatten it safely before normal candidate validation.
+- **Acquisition:** wait for the configured tenant/site Candidate Experience requisition response *during the ordinary listing navigation*, or a reviewed visible job-card locator. The adapter must accept only the reviewed wrapper/record shape and flatten it safely before normal candidate validation. Direct detail extraction utilizes the public `recruitingCEJobRequisitionDetails` endpoint (`finder=ById;Id="{public_id}"`) configured via `oracle_detail` provider config (`api_origin`, `allowed_origins`, `site_number`).
 - **Detail rule:** configured public host, exact site prefix, `/job/{numeric-id}` route only.
 - **Pagination:** configured page/offset behavior inferred from the observed response; bounded and stopped on repeated requisition IDs.
-- **Failure:** response missing = `not_observed`; mismatched schema = `parser_contract`; challenge/403 = `blocked_resource`/`challenge`. Never call a guessed `hcmRestApi` endpoint separately.
+- **Failure:** response missing = `not_observed`; mismatched schema = `parser_contract`; challenge/403 = `blocked_resource`/`challenge`. Never call an unconfigured or un-allowed origin.
 
 ### `workday` — Workday Candidate Experience Search
 
@@ -134,8 +134,8 @@ The remaining `custom` labels are deliberate: a board-specific, first-party cont
 
 **Boards:** Ameriprise, Philips.
 
-- **Observed:** Philips loaded `content-ir.phenompeople.com` configuration; Ameriprise rendered first-party `/search-jobs/{requisition}_{id}/{slug}/` routes.
-- **Acquisition:** DOM-first. Treat Phenom configuration as readiness metadata, not permission to call an inferred vendor endpoint. Capture a public response only when exact origin/path and record schema have been observed for that board.
+- **Observed:** Philips loaded `content-ir.phenompeople.com` configuration; Ameriprise rendered first-party `/search-jobs/{requisition}_{id}/{slug}/` routes. Philips static HTML embedding exposes complete `application/ld+json` `JobPosting` structured payloads directly during initial GET fetch, bypassing dynamic browser rendering.
+- **Acquisition:** DOM-first and static JSON-LD parser. Treat Phenom configuration as readiness metadata, not permission to call an inferred vendor endpoint. Capture a public response or static HTML JSON-LD node only when exact origin/path and record schema have been observed for that board.
 - **Detail rule:** board-specific configured first-party detail pattern, never generic `/search-jobs/` listings, profile, or saved-job paths.
 
 ### `avature` — Avature portal

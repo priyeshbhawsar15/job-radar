@@ -110,6 +110,34 @@ def extract_oracle_description(record: Dict[str, Any], requisition_id: str) -> O
     return None
 
 
+def extract_phenom_description(raw_html: str, title: str = "") -> Optional[str]:
+    if not raw_html or not isinstance(raw_html, str):
+        return None
+
+    posting = extract_job_posting(raw_html)
+    if posting:
+        raw_desc = str(posting.get("description", ""))
+        cleaned = clean_html_to_text(raw_desc)[:40000]
+        if description_is_valid(cleaned, title=title):
+            return cleaned
+
+    desc_match = re.search(
+        r'<(?:div|section|article)[^>]*class=["\'][^"\']*(?:ats-description|job-description|job-details|ph-caption|description)[^"\']*["\'][^>]*>(.*?)</(?:div|section|article)>',
+        raw_html,
+        re.DOTALL | re.IGNORECASE,
+    )
+    if desc_match:
+        cleaned = clean_html_to_text(desc_match.group(1))[:40000]
+        if description_is_valid(cleaned, title=title):
+            return cleaned
+
+    cleaned_full = clean_html_to_text(raw_html)[:40000]
+    if description_is_valid(cleaned_full, title=title):
+        return cleaned_full
+
+    return None
+
+
 def description_is_valid(text: Optional[str], *, title: str = "") -> bool:
     if not text or not isinstance(text, str):
         return False
@@ -228,6 +256,17 @@ class DetailExtractor:
                         }
             except Exception as e:
                 logger.info(f"Oracle record enrichment failed for {public_apply_url}: {e}")
+
+            return {
+                "description": None,
+                "location": "India",
+                "salary_raw": "Competitive / Not specified",
+                "salary_min": None,
+                "salary_max": None,
+                "salary_currency": None,
+                "employment_type": "Full-time",
+                "department": "Engineering"
+            }
 
         try:
             async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:

@@ -710,17 +710,6 @@ class PipelineExecutionEngine:
                             target_url=target_url,
                             selector_config=selector_config
                         )
-                        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True, verify=False, headers={"User-Agent": "Mozilla/5.0"}) as client:
-                            for c in extracted_candidates:
-                                try:
-                                    dr = await client.get(c.raw_url)
-                                    cleaned = oracle_clean_description(dr.text)
-                                    if not cleaned:
-                                        cleaned = oracle_meta_fallback(dr.text)
-                                    if cleaned:
-                                        c.extra_payload = {"description": cleaned[:40000]}
-                                except Exception as oracle_detail_err:
-                                    logger.info(f"Oracle detail fetch failed for {c.raw_url}: {oracle_detail_err}")
                     else:
                         raw_payload = await self.browser_client.fetch_board_html(
                             target_url=target_url,

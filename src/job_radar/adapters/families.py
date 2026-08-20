@@ -474,6 +474,77 @@ class OracleAdapter(BaseAdapter):
 
         return results
 
+
+class PhenomAdapter(BaseAdapter):
+    @property
+    def family(self) -> str:
+        return "phenom"
+
+    def parse_raw_payload(
+        self,
+        payload: str | bytes,
+        board_name: str,
+        target_url: str,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        if isinstance(payload, bytes):
+            payload = payload.decode("utf-8")
+
+        html_text = html.unescape(payload)
+        results: List[ExtractedCandidate] = []
+        seen = set()
+        parsed_target = urlparse(target_url)
+
+        matches = re.findall(r'<a\s+[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', html_text, re.DOTALL | re.IGNORECASE)
+
+        for href, inner in matches:
+            href_clean = href.strip()
+            if href_clean.startswith("/"):
+                full_url = f"https://{parsed_target.netloc}{href_clean}"
+            elif href_clean.startswith("http"):
+                full_url = href_clean
+            else:
+                continue
+
+            parsed_url = urlparse(full_url)
+            if parsed_url.scheme != "https" or parsed_url.netloc != parsed_target.netloc:
+                continue
+
+            path_match = re.search(r'/job/(\d+)/([^/?#]+)', parsed_url.path)
+            if not path_match:
+                continue
+
+            req_id = path_match.group(1)
+            slug = path_match.group(2)
+            if not req_id or not slug:
+                continue
+
+            clean_url = f"https://{parsed_url.netloc}{parsed_url.path}"
+            if clean_url in seen:
+                continue
+            seen.add(clean_url)
+
+            clean_text = re.sub(r'<[^>]+>', ' ', inner).strip()
+            clean_text = ' '.join(clean_text.split())
+            if not clean_text or clean_text.lower() in ('apply', 'apply now', 'read more', 'saved jobs', 'search results'):
+                clean_text = slug.replace('-', ' ').title()
+
+            fp = generate_fingerprint(board_name, clean_text, "India")
+            results.append(
+                ExtractedCandidate(
+                    title=clean_text,
+                    company=board_name,
+                    location="India",
+                    department="Engineering",
+                    employment_type="Full-time",
+                    raw_url=clean_url,
+                    fingerprint=fp,
+                    extra_payload={"requisition_id": req_id}
+                )
+            )
+
+        return results
+
 class AvatureAdapter(BaseAdapter):
     @property
     def family(self) -> str:

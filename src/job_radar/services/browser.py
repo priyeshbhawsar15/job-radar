@@ -1,24 +1,4 @@
 import logging
-from urllib.parse import urlparse
-import httpx
-from typing import Optional
-from job_radar.config import settings
-
-logger = logging.getLogger(__name__)
-
-class TargetBoundaryViolation(Exception):
-    """Raised when a target URL violates private boundary rules."""
-    pass
-
-def validate_target_url(target_url: str, registered_target_url: Optional[str] = None) -> bool:
-    parsed_target = urlparse(target_url)
-    if parsed_target.scheme not in ("http", "https"):
-        raise TargetBoundaryViolation(f"Invalid URL scheme: {parsed_target.scheme}")
-    if not parsed_target.netloc:
-        raise TargetBoundaryViolation("Target URL missing network location / domain host.")
-    return True
-
-import logging
 import json
 import re
 from urllib.parse import urlparse
@@ -38,6 +18,13 @@ def validate_target_url(target_url: str, registered_target_url: Optional[str] = 
         raise TargetBoundaryViolation(f"Invalid URL scheme: {parsed_target.scheme}")
     if not parsed_target.netloc:
         raise TargetBoundaryViolation("Target URL missing network location / domain host.")
+
+    if registered_target_url:
+        parsed_reg = urlparse(registered_target_url)
+        if parsed_reg.netloc and parsed_target.netloc != parsed_reg.netloc:
+            raise TargetBoundaryViolation(
+                f"Target URL netloc '{parsed_target.netloc}' does not match registered target '{parsed_reg.netloc}'"
+            )
     return True
 
 class BrowserServiceClient:

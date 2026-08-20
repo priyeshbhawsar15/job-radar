@@ -10,6 +10,7 @@ from job_radar.adapters.families import (
     AvatureAdapter,
     OracleAdapter,
     AmeripriseAdapter,
+    PhenomAdapter,
     GenericAdapter,
 )
 
@@ -27,6 +28,7 @@ class AdapterRegistry:
         self.register(AvatureAdapter())
         self.register(OracleAdapter())
         self.register(AmeripriseAdapter())
+        self.register(PhenomAdapter())
 
     def register(self, adapter: BaseAdapter) -> None:
         self._adapters[adapter.family.lower()] = adapter

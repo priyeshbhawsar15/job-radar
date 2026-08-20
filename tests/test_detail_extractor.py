@@ -2,11 +2,15 @@ from pathlib import Path
 import json
 import pytest
 
+from unittest.mock import AsyncMock
+
 from job_radar.services.detail_extractor import (
     iter_json_ld_nodes,
     extract_job_posting,
     description_is_valid,
     extract_oracle_description,
+    extract_phenom_description,
+    DetailExtractor,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures" / "descriptions"
@@ -123,6 +127,32 @@ def test_extract_oracle_description():
     # Short description only
     short_json = {"items": [{"RequisitionId": 123456, "ShortDescription": "SHORT_DESCRIPTION_TOKEN"}]}
     assert extract_oracle_description(short_json, "123456") is None
+
+
+def test_extract_phenom_description():
+    philips_detail = (FIXTURES / "philips_detail.html").read_text()
+    philips_no_results = (FIXTURES / "philips_no_results.html").read_text()
+
+    desc = extract_phenom_description(philips_detail, "Software Engineer")
+    assert desc is not None
+    assert "PHILIPS_FULL_DESCRIPTION_TOKEN" in desc
+    assert description_is_valid(desc)
+
+    # Returns None for no results shell
+    assert extract_phenom_description(philips_no_results, "Software Engineer") is None
+
+
+@pytest.mark.asyncio
+async def test_oracle_enrichment_does_not_fallback_to_shell_html():
+    extractor = DetailExtractor()
+    extractor.browser_client.fetch_oracle_detail_record = AsyncMock(return_value=None)
+    extractor.browser_client.fetch_board_html = AsyncMock(return_value="<html>window.VanityUrlEnabled = true;</html>")
+
+    url = "https://fa-efox-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/123456"
+    res = await extractor.fetch_and_enrich(url, "Oracle", "Senior Software Engineer")
+
+    assert res["description"] is None
+    extractor.browser_client.fetch_board_html.assert_not_called()
 
 
 def test_python_sources_contain_no_backspace_characters():

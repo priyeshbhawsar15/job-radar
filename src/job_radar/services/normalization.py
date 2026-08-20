@@ -11,23 +11,14 @@ from job_radar.db.session import AsyncSessionLocal
 from job_radar.db.models.candidate import CandidateJob, RunCandidate
 from job_radar.db.models.run import PipelineRun, BoardRun, ExecutionAttempt
 from job_radar.adapters.base import ExtractedCandidate
-from job_radar.services.detail_extractor import detail_extractor
+from job_radar.services.detail_extractor import detail_extractor, description_is_valid
 
 logger = logging.getLogger(__name__)
 
-def _description_looks_bad(text: str) -> bool:
+def _description_looks_bad(text: str, title: str = "") -> bool:
     if not text:
         return True
-    low = text.lower()
-    bad_markers = [
-        "@keyframes scale-in-center",
-        "page not found. - oracle careers",
-        "candidate experience page careers",
-        ".job-details-wrapper",
-        "full job description for ",
-        "privacy notice",
-    ]
-    return any(marker in low for marker in bad_markers)
+    return not description_is_valid(text, title=title)
 
 def compute_job_identity_key(company: str, title: str, location: str | None = None) -> str:
     raw = f"{company.strip().lower()[:500]}|{title.strip().lower()[:500]}|{(location or '').strip().lower()[:200]}"
@@ -48,8 +39,9 @@ async def bg_enrich_candidates(candidates_to_enrich: List[Tuple[str, str, str, s
                     res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == cand_id))
                     job = res.scalar_one_or_none()
                     if job:
-                        if enriched.get("description") and len(enriched.get("description")) > 100:
-                            job.description = enriched.get("description")[:40000]
+                        desc = enriched.get("description")
+                        if desc and description_is_valid(desc, title=title):
+                            job.description = desc[:40000]
                         enr_loc = enriched.get("location")
                         if enr_loc and enr_loc.strip() not in ("India", "in", "pageData", ""):
                             job.location = enr_loc.strip()[:200]
@@ -95,15 +87,19 @@ class NormalizationService:
                 loc = (item.location.strip() if item.location else "India")[:200]
                 emp_type = (item.employment_type.strip() if item.employment_type else "Full-time")[:200]
                 dept = (item.department.strip() if item.department else "Engineering")[:200]
-                initial_desc = (item.extra_payload.get("description") or f"Full job description for {title_capped} at {company_capped}.")[:40000]
+                raw_desc = item.extra_payload.get("description")
+                valid_extra_desc = raw_desc[:40000] if raw_desc and description_is_valid(raw_desc, title=title_capped) else None
 
                 if existing_job:
                     candidate_id = existing_job.candidate_id
                     existing_job.last_seen_at = datetime.now(timezone.utc)
-                    new_desc = item.extra_payload.get("description")
-                    if new_desc and (not existing_job.description or _description_looks_bad(existing_job.description) or len(new_desc) > len(existing_job.description or "")):
-                        existing_job.description = new_desc[:40000]
+                    if valid_extra_desc:
+                        if not existing_job.description or not description_is_valid(existing_job.description, title=existing_job.title) or len(valid_extra_desc) > len(existing_job.description or ""):
+                            existing_job.description = valid_extra_desc
                     outcome = "re_observed"
+
+                    if not existing_job.description or not description_is_valid(existing_job.description, title=existing_job.title):
+                        to_enrich.append((candidate_id, url_capped, company_capped, title_capped))
                 else:
                     new_job = CandidateJob(
                         board_id=board_id,
@@ -115,7 +111,7 @@ class NormalizationService:
                         department=dept,
                         employment_type=emp_type,
                         public_apply_url=url_capped,
-                        description=initial_desc,
+                        description=valid_extra_desc,
                         salary_raw="Competitive / Not specified"[:200]
                     )
                     session.add(new_job)
@@ -124,8 +120,8 @@ class NormalizationService:
                     new_jobs_count += 1
                     outcome = "discovered"
 
-                if not item.extra_payload.get("description"):
-                    to_enrich.append((candidate_id, url_capped, company_capped, title_capped))
+                    if not valid_extra_desc:
+                        to_enrich.append((candidate_id, url_capped, company_capped, title_capped))
 
                 if candidate_id not in seen_candidate_ids_in_batch:
                     run_cand = RunCandidate(

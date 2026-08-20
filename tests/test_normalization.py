@@ -9,7 +9,7 @@ from job_radar.db.models.board import Board
 from job_radar.db.models.candidate import CandidateJob
 from job_radar.db.models.run import PipelineRun, BoardRun
 from job_radar.adapters.base import ExtractedCandidate
-from job_radar.services.normalization import NormalizationService, RetentionPurger
+from job_radar.services.normalization import NormalizationService
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -59,19 +59,45 @@ async def test_deduplication_and_normalization(test_session_factory):
   assert new_created == 1  # 2nd item deduplicated by identity_key!
 
 @pytest.mark.asyncio
-async def test_7day_retention_purger(test_session_factory):
-  purger = RetentionPurger(retention_days=7, session_factory=test_session_factory)
+async def test_normalization_persists_none_for_missing_or_invalid_description(test_session_factory):
+    norm_svc = NormalizationService(session_factory=test_session_factory)
 
-  async with test_session_factory() as session:
-    old_time = datetime.now(timezone.utc) - timedelta(days=10)
-    old_run = PipelineRun(
-      pipeline_id="old-pipeline-01",
-      trigger="manual",
-      status="completed",
-      started_at=old_time
-    )
-    session.add(old_run)
-    await session.commit()
+    async with test_session_factory() as session:
+        board = Board(board_id="board-01", name="Oracle", family="oracle", status="active")
+        p_run = PipelineRun(pipeline_id="p-01", trigger="manual", status="running")
+        b_run = BoardRun(board_run_id="br-01", pipeline_id="p-01", board_id="board-01", stage="running", outcome="in_progress")
+        session.add(board)
+        session.add(p_run)
+        session.add(b_run)
+        await session.commit()
 
-  counts = await purger.purge_expired_records()
-  assert counts["pipeline_runs"] == 1
+    oracle_shell = "<html>window.VanityUrlEnabled = true; Accessibility Assistance</html>"
+    candidates = [
+        ExtractedCandidate(
+            title="Senior Developer",
+            company="Oracle",
+            location="Bangalore",
+            raw_url="https://oracle.com/job/123",
+            fingerprint="fp_oracle_1",
+            extra_payload={"description": oracle_shell}
+        ),
+        ExtractedCandidate(
+            title="Principal Engineer",
+            company="Oracle",
+            location="Bangalore",
+            raw_url="https://oracle.com/job/456",
+            fingerprint="fp_oracle_2",
+            extra_payload={}
+        )
+    ]
+
+    total, new_created = await norm_svc.ingest_candidates("board-01", "br-01", candidates)
+    assert total == 2
+    assert new_created == 2
+
+    async with test_session_factory() as session:
+        res = await session.execute(select(CandidateJob))
+        jobs = res.scalars().all()
+        for job in jobs:
+            assert job.description is None
+

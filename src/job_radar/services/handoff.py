@@ -12,6 +12,7 @@ from job_radar.config import settings
 from job_radar.db.session import AsyncSessionLocal
 from job_radar.db.models.handoff import HandoffOutbox, HandoffAttempt
 from job_radar.db.models.candidate import CandidateJob
+from job_radar.services.detail_extractor import description_is_valid
 
 logger = logging.getLogger(__name__)
 
@@ -101,9 +102,9 @@ class HandoffProcessor:
                             "employer": (cand.company if cand else "Unknown Company")[:500],
                             "jobUrl": (cand.public_apply_url if cand else "")[:2000],
                             "applicationLink": (cand.public_apply_url if cand else "")[:2000],
-                            "location": (cand.location if cand else "India")[:200],
+                            "location": ((cand.location if (cand and cand.location) else "India") or "India")[:200],
                             "salary": (cand.salary_raw if (cand and cand.salary_raw) else "Competitive / Not specified")[:200],
-                            "jobDescription": (cand.description if (cand and cand.description) else f"Full position details and responsibilities for {cand.title if cand else 'Role'} at {cand.company if cand else 'Company'}.")[:40000],
+                            "jobDescription": (cand.description if (cand and cand.description and description_is_valid(cand.description, title=cand.title if cand else "")) else f"Full position details and responsibilities for {cand.title if cand else 'Role'} at {cand.company if cand else 'Company'}.")[:40000],
                             "jobType": (cand.employment_type if (cand and cand.employment_type) else "Full-time")[:200],
                             "jobFunction": (cand.department if (cand and cand.department) else "Engineering")[:200]
                         }

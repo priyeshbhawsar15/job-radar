@@ -12,10 +12,9 @@ router = APIRouter(prefix="/jobs", tags=["Normalized Jobs"])
 @router.get("", response_model=List[dict])
 async def list_jobs(
     board_id: Optional[str] = None,
-    limit: int = 5000,
     db: AsyncSession = Depends(get_db_session)
 ):
-    query = select(CandidateJob).order_by(CandidateJob.discovered_at.desc()).limit(limit)
+    query = select(CandidateJob).order_by(CandidateJob.discovered_at.desc())
     if board_id:
         query = query.where(CandidateJob.board_id == board_id)
 

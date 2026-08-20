@@ -18,7 +18,7 @@ export const RunDetail: React.FC = () => {
         const foundRun = runs.find((r: any) => r.run_id === id || r.pipeline_id === id);
         if (foundRun) {
           setRun(foundRun);
-          fetch('/api/v1/jobs?limit=5000&board_id=' + foundRun.board_id)
+          fetch('/api/v1/jobs?board_id=' + foundRun.board_id)
             .then((res) => (res.ok ? res.json() : []))
             .then((bJobs) => setRunJobs(bJobs));
         }

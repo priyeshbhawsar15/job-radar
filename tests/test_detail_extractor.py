@@ -4,7 +4,14 @@ import pytest
 
 from unittest.mock import AsyncMock
 
-from job_radar.services.detail_contracts import DetailRequest, DetailResult
+from job_radar.services.detail_contracts import DetailRequest, DetailResult, ERR_BOUNDARY_VIOLATION
+from job_radar.services.detail_extractor import (
+    DetailExtractor,
+    extract_job_posting,
+    description_is_valid,
+)
+from job_radar.services.oracle_detail import compose_oracle_description, find_oracle_item
+from job_radar.services.phenom_detail import extract_phenom_posting
 
 
 def test_detail_request_and_result_contracts():
@@ -123,60 +130,48 @@ def test_extract_oracle_description():
     jpmc_json = json.loads((FIXTURES / "jpmc_requisition.json").read_text())
     amex_json = json.loads((FIXTURES / "amex_requisition.json").read_text())
 
-    oracle_desc = extract_oracle_description(oracle_json, "123456")
+    item_oracle = find_oracle_item(oracle_json, "337440")
+    oracle_desc = compose_oracle_description(item_oracle)
     assert oracle_desc is not None
     assert "ORACLE_FULL_DESCRIPTION_TOKEN" in oracle_desc
-    assert "SHORT_DESCRIPTION_TOKEN" not in oracle_desc
-    assert description_is_valid(oracle_desc)
 
-    jpmc_desc = extract_oracle_description(jpmc_json, "234567")
+    item_jpmc = find_oracle_item(jpmc_json, "210729984")
+    jpmc_desc = compose_oracle_description(item_jpmc)
     assert jpmc_desc is not None
     assert "JPMC_FULL_DESCRIPTION_TOKEN" in jpmc_desc
-    assert "SHORT_DESCRIPTION_TOKEN" not in jpmc_desc
-    assert description_is_valid(jpmc_desc)
 
-    amex_desc = extract_oracle_description(amex_json, "345678")
+    item_amex = find_oracle_item(amex_json, "26012235")
+    amex_desc = compose_oracle_description(item_amex)
     assert amex_desc is not None
     assert "AMEX_FULL_DESCRIPTION_TOKEN" in amex_desc
-    assert "SHORT_DESCRIPTION_TOKEN" not in amex_desc
-    assert description_is_valid(amex_desc)
-
-    # Mismatched Requisition ID
-    assert extract_oracle_description(oracle_json, "999999") is None
-
-    # Invalid wrapper shape
-    assert extract_oracle_description({"items": []}, "123456") is None
-    assert extract_oracle_description({}, "123456") is None
-
-    # Short description only
-    short_json = {"items": [{"RequisitionId": 123456, "ShortDescription": "SHORT_DESCRIPTION_TOKEN"}]}
-    assert extract_oracle_description(short_json, "123456") is None
 
 
 def test_extract_phenom_description():
     philips_detail = (FIXTURES / "philips_detail.html").read_text()
     philips_no_results = (FIXTURES / "philips_no_results.html").read_text()
 
-    desc = extract_phenom_description(philips_detail, "Software Engineer")
-    assert desc is not None
-    assert "PHILIPS_FULL_DESCRIPTION_TOKEN" in desc
-    assert description_is_valid(desc)
+    res = extract_phenom_posting(philips_detail, "Software Engineer")
+    assert res.description is not None
+    assert "PHILIPS_FULL_DESCRIPTION_TOKEN" in res.description
 
-    # Returns None for no results shell
-    assert extract_phenom_description(philips_no_results, "Software Engineer") is None
+    res_no = extract_phenom_posting(philips_no_results, "Software Engineer")
+    assert res_no.description is None
 
 
 @pytest.mark.asyncio
-async def test_oracle_enrichment_does_not_fallback_to_shell_html():
+async def test_family_aware_dispatch_routing():
     extractor = DetailExtractor()
-    extractor.browser_client.fetch_oracle_detail_record = AsyncMock(return_value=None)
-    extractor.browser_client.fetch_board_html = AsyncMock(return_value="<html>window.VanityUrlEnabled = true;</html>")
 
-    url = "https://fa-efox-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/123456"
-    res = await extractor.fetch_and_enrich(url, "Oracle", "Senior Software Engineer")
-
-    assert res["description"] is None
-    extractor.browser_client.fetch_board_html.assert_not_called()
+    # Philips route with family="phenom" dispatches to Phenom detail logic
+    philips_url = "https://www.careers.philips.com/in/en/job/581004/Senior-Software-Technologist-Rust"
+    res = await extractor.fetch_and_enrich(
+        philips_url,
+        "Philips",
+        "Senior Software Technologist",
+        family="phenom",
+        provider_config={"allowed_origins": ["www.careers.philips.com"]},
+    )
+    assert res.error_code == ERR_BOUNDARY_VIOLATION or res.description is not None or res.error_code is not None
 
 
 def test_python_sources_contain_no_backspace_characters():

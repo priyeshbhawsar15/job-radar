@@ -3,8 +3,11 @@ import json
 import html
 import re
 import httpx
-from typing import Optional, Dict, Any, Iterator, List
+from typing import Optional, Dict, Any, Iterator, List, Mapping
 from job_radar.services.browser import BrowserServiceClient
+from job_radar.services.detail_contracts import DetailRequest, DetailResult, ERR_INVALID_DETAIL_URL
+from job_radar.services.oracle_detail import fetch_oracle_detail
+from job_radar.services.phenom_detail import fetch_phenom_detail
 
 logger = logging.getLogger(__name__)
 
@@ -79,65 +82,6 @@ def extract_job_posting(raw_html: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def extract_oracle_description(record: Dict[str, Any], requisition_id: str) -> Optional[str]:
-    if not isinstance(record, dict):
-        return None
-
-    items = record.get("items")
-    if not isinstance(items, list):
-        return None
-
-    target_item = None
-    req_str = str(requisition_id).strip()
-    for item in items:
-        if isinstance(item, dict):
-            item_req_id = str(item.get("RequisitionId") or item.get("requisitionId") or "").strip()
-            if item_req_id == req_str:
-                target_item = item
-                break
-
-    if not target_item:
-        return None
-
-    raw_desc = target_item.get("Description") or target_item.get("description")
-    if not raw_desc:
-        return None
-
-    cleaned = clean_html_to_text(str(raw_desc))[:40000]
-    if description_is_valid(cleaned):
-        return cleaned
-
-    return None
-
-
-def extract_phenom_description(raw_html: str, title: str = "") -> Optional[str]:
-    if not raw_html or not isinstance(raw_html, str):
-        return None
-
-    posting = extract_job_posting(raw_html)
-    if posting:
-        raw_desc = str(posting.get("description", ""))
-        cleaned = clean_html_to_text(raw_desc)[:40000]
-        if description_is_valid(cleaned, title=title):
-            return cleaned
-
-    desc_match = re.search(
-        r'<(?:div|section|article)[^>]*class=["\'][^"\']*(?:ats-description|job-description|job-details|ph-caption|description)[^"\']*["\'][^>]*>(.*?)</(?:div|section|article)>',
-        raw_html,
-        re.DOTALL | re.IGNORECASE,
-    )
-    if desc_match:
-        cleaned = clean_html_to_text(desc_match.group(1))[:40000]
-        if description_is_valid(cleaned, title=title):
-            return cleaned
-
-    cleaned_full = clean_html_to_text(raw_html)[:40000]
-    if description_is_valid(cleaned_full, title=title):
-        return cleaned_full
-
-    return None
-
-
 def description_is_valid(text: Optional[str], *, title: str = "") -> bool:
     if not text or not isinstance(text, str):
         return False
@@ -160,7 +104,6 @@ def clean_html_to_text(raw_html_str: str) -> str:
     if not raw_html_str:
         return ""
     text = html.unescape(raw_html_str)
-    # Strip script, style, svg, iframe, noscript, nav, footer, header
     clean = re.sub(
         r'<(script|style|svg|iframe|noscript|nav|footer|header)\b[^>]*>[\s\S]*?</\1>',
         ' ',
@@ -186,25 +129,53 @@ class DetailExtractor:
     def __init__(self, browser_client: Optional[BrowserServiceClient] = None):
         self.browser_client = browser_client or BrowserServiceClient()
 
-    async def fetch_and_enrich(self, public_apply_url: str, board_name: str, title: str) -> Dict[str, Any]:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-        }
-        # Direct Greenhouse Public API for Greenhouse boards / gh_jid URLs
-        if 'gh_jid=' in public_apply_url or 'greenhouse.io' in public_apply_url:
-            gh_id = None
-            if 'gh_jid=' in public_apply_url:
-                gh_id = public_apply_url.split('gh_jid=')[-1].split('&')[0]
-            elif '/jobs/' in public_apply_url:
-                gh_id = public_apply_url.split('/jobs/')[-1].split('?')[0]
+    async def fetch_and_enrich(
+        self,
+        public_apply_url: str,
+        board_name: str,
+        title: str,
+        *,
+        family: str = "generic",
+        provider_config: Optional[Mapping[str, Any]] = None,
+        client: Optional[httpx.AsyncClient] = None,
+    ) -> DetailResult:
+        provider_config = provider_config or {}
+        req = DetailRequest(
+            family=family,
+            public_url=public_apply_url,
+            board_name=board_name,
+            title=title,
+            provider_config=provider_config,
+        )
 
-            if gh_id and gh_id.isdigit():
-                slug = "abnormalsecurity" if 'abnormal' in board_name.lower() else ("cognite" if 'cognite' in board_name.lower() else board_name.lower().replace(' ', ''))
-                api_url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs/{gh_id}"
-                try:
-                    async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:
-                        resp = await client.get(api_url)
+        close_client = False
+        if client is None:
+            client = httpx.AsyncClient(timeout=10.0, follow_redirects=True)
+            close_client = True
+
+        try:
+            if family == "oracle":
+                return await fetch_oracle_detail(req, client)
+            elif family == "phenom":
+                return await fetch_phenom_detail(req, client)
+
+            # Greenhouse or Generic fallback logic
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            }
+            if 'gh_jid=' in public_apply_url or 'greenhouse.io' in public_apply_url:
+                gh_id = None
+                if 'gh_jid=' in public_apply_url:
+                    gh_id = public_apply_url.split('gh_jid=')[-1].split('&')[0]
+                elif '/jobs/' in public_apply_url:
+                    gh_id = public_apply_url.split('/jobs/')[-1].split('?')[0]
+
+                if gh_id and gh_id.isdigit():
+                    slug = "abnormalsecurity" if 'abnormal' in board_name.lower() else ("cognite" if 'cognite' in board_name.lower() else board_name.lower().replace(' ', ''))
+                    api_url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs/{gh_id}"
+                    try:
+                        resp = await client.get(api_url, headers=headers)
                         if resp.status_code == 200:
                             data = resp.json()
                             desc_clean = clean_html_to_text(data.get('content', ''))[:40000]
@@ -218,81 +189,60 @@ class DetailExtractor:
                             else:
                                 loc_clean = "Bangalore, India" if 'abnormal' in board_name.lower() else "India"
 
-                            return {
-                                "description": desc_clean if description_is_valid(desc_clean, title=title) else None,
-                                "location": loc_clean[:200],
-                                "employment_type": "Full-time",
-                                "department": "Engineering",
-                                "salary_raw": "Competitive / Not specified",
-                                "salary_min": None,
-                                "salary_max": None,
-                                "salary_currency": None
-                            }
-                except Exception:
-                    pass
+                            if description_is_valid(desc_clean, title=title):
+                                return DetailResult(
+                                    description=desc_clean,
+                                    location=loc_clean[:200],
+                                    employment_type="Full-time",
+                                    department="Engineering",
+                                    salary_raw="Competitive / Not specified",
+                                    source="greenhouse_api",
+                                )
+                    except Exception:
+                        pass
 
-        # Oracle Candidate Experience path
-        oracle_match = re.search(r'/job/(\d+)', public_apply_url)
-        if oracle_match:
-            req_id = oracle_match.group(1)
             try:
-                record = await self.browser_client.fetch_oracle_detail_record(public_apply_url)
-                if record:
-                    oracle_desc = extract_oracle_description(record, req_id)
-                    if oracle_desc:
-                        loc = None
-                        items = record.get("items", [])
-                        if items and isinstance(items[0], dict):
-                            loc = items[0].get("PrimaryLocation") or items[0].get("primaryLocation")
-                        return {
-                            "description": oracle_desc[:40000],
-                            "location": loc[:200] if loc else "India",
-                            "employment_type": "Full-time",
-                            "department": "Engineering",
-                            "salary_raw": "Competitive / Not specified",
-                            "salary_min": None,
-                            "salary_max": None,
-                            "salary_currency": None
-                        }
-            except Exception as e:
-                logger.info(f"Oracle record enrichment failed for {public_apply_url}: {e}")
-
-            return {
-                "description": None,
-                "location": "India",
-                "salary_raw": "Competitive / Not specified",
-                "salary_min": None,
-                "salary_max": None,
-                "salary_currency": None,
-                "employment_type": "Full-time",
-                "department": "Engineering"
-            }
-
-        try:
-            async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:
-                resp = await client.get(public_apply_url)
+                resp = await client.get(public_apply_url, headers=headers)
                 if resp.status_code == 200 and len(resp.text) > 800:
                     parsed = self.parse_detail_html(resp.text, board_name, title, public_apply_url)
-                    if parsed.get("description") or parsed.get("location"):
-                        return parsed
-        except Exception:
-            pass
+                    if parsed.get("description"):
+                        return DetailResult(
+                            description=parsed["description"],
+                            location=parsed.get("location"),
+                            employment_type=parsed.get("employment_type"),
+                            department=parsed.get("department"),
+                            salary_raw=parsed.get("salary_raw"),
+                            salary_min=parsed.get("salary_min"),
+                            salary_max=parsed.get("salary_max"),
+                            salary_currency=parsed.get("salary_currency"),
+                            source="generic_static_html",
+                        )
+            except Exception:
+                pass
 
-        try:
-            raw_html = await self.browser_client.fetch_board_html(public_apply_url)
-            return self.parse_detail_html(raw_html, board_name, title, public_apply_url)
-        except Exception as e:
-            logger.info(f"Failed to fetch detail page for {public_apply_url}: {e}")
-            return {
-                "description": None,
-                "location": "Bangalore, India" if 'abnormal' in board_name.lower() else "India",
-                "salary_raw": "Competitive / Not specified",
-                "salary_min": None,
-                "salary_max": None,
-                "salary_currency": None,
-                "employment_type": "Full-time",
-                "department": "Engineering"
-            }
+            try:
+                raw_html = await self.browser_client.fetch_board_html(public_apply_url)
+                parsed = self.parse_detail_html(raw_html, board_name, title, public_apply_url)
+                if parsed.get("description"):
+                    return DetailResult(
+                        description=parsed["description"],
+                        location=parsed.get("location"),
+                        employment_type=parsed.get("employment_type"),
+                        department=parsed.get("department"),
+                        salary_raw=parsed.get("salary_raw"),
+                        salary_min=parsed.get("salary_min"),
+                        salary_max=parsed.get("salary_max"),
+                        salary_currency=parsed.get("salary_currency"),
+                        source="generic_browser_html",
+                    )
+            except Exception as e:
+                logger.info(f"Failed to fetch detail page for {public_apply_url}: {e}")
+
+            return DetailResult.empty(ERR_INVALID_DETAIL_URL)
+
+        finally:
+            if close_client:
+                await client.aclose()
 
     def parse_detail_html(self, raw_html_text: str, board_name: str, title: str, apply_url: str) -> Dict[str, Any]:
         raw_html_text = html.unescape(raw_html_text)

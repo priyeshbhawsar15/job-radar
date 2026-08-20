@@ -35,6 +35,24 @@ def test_greenhouse_adapter_parsing():
   assert c.department == "Engineering"
   assert c.fingerprint is not None
 
+def test_oracle_adapter_registration_and_parsing():
+    adapter = adapter_registry.get("oracle")
+    assert adapter is not None
+    assert adapter.__class__.__name__ == "OracleAdapter"
+
+    html_payload = """
+    <html>
+        <body>
+            <a href="https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/337440/">Job 337440</a>
+        </body>
+    </html>
+    """
+    candidates = adapter.parse_raw_payload(html_payload, "Oracle", "https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs")
+    assert len(candidates) == 1
+    c = candidates[0]
+    assert c.extra_payload.get("public_job_id") == "337440"
+
+
 def test_phenom_adapter_registration_and_parsing():
     adapter = adapter_registry.get("phenom")
     assert adapter is not None

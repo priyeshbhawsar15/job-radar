@@ -468,7 +468,8 @@ class OracleAdapter(BaseAdapter):
                         department="Technology",
                         employment_type="Full-time",
                         raw_url=clean_url,
-                        fingerprint=fp
+                        fingerprint=fp,
+                        extra_payload={"public_job_id": job_id_str}
                     )
                 )
 

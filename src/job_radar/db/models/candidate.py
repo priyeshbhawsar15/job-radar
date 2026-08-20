@@ -30,6 +30,10 @@ class CandidateJob(Base):
     salary_min: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     salary_max: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     salary_currency: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
+    detail_enrichment_status: Mapped[str] = mapped_column(String(50), nullable=False, default="pending")
+    detail_enrichment_attempts: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+    detail_enrichment_error_code: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    detail_enriched_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     discovered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
 
@@ -38,6 +42,7 @@ class CandidateJob(Base):
     __table_args__ = (
         UniqueConstraint("canonical_url_hash", "board_id", name="uq_candidate_canonical_board"),
         Index("idx_candidate_discovered", "discovered_at"),
+        Index("idx_candidate_enrichment_status", "detail_enrichment_status"),
     )
 
 

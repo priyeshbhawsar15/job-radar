@@ -1,9 +1,10 @@
+from dataclasses import dataclass
 import hashlib
 import logging
 import asyncio
 import httpx
 from datetime import datetime, timezone, timedelta
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Tuple, Optional, Mapping
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, or_
 
@@ -12,8 +13,17 @@ from job_radar.db.models.candidate import CandidateJob, RunCandidate
 from job_radar.db.models.run import PipelineRun, BoardRun, ExecutionAttempt
 from job_radar.adapters.base import ExtractedCandidate
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
+from job_radar.services.detail_contracts import DetailResult
 
 logger = logging.getLogger(__name__)
+
+@dataclass(frozen=True)
+class IngestionResult:
+    observed_count: int
+    created_count: int
+    enrichment_succeeded: int
+    enrichment_failed: int
+
 
 def _description_looks_bad(text: str, title: str = "") -> bool:
     if not text:
@@ -27,45 +37,25 @@ def compute_job_identity_key(company: str, title: str, location: str | None = No
 def compute_url_hash(url: str) -> str:
     return hashlib.sha256(url.strip()[:2000].encode('utf-8')).hexdigest()
 
-async def bg_enrich_candidates(candidates_to_enrich: List[Tuple[str, str, str, str]]):
-    sem = asyncio.Semaphore(10)
-
-    async def do_enrich(cand_tuple):
-        cand_id, url, company, title = cand_tuple
-        async with sem:
-            try:
-                enriched = await detail_extractor.fetch_and_enrich(url, company, title)
-                async with AsyncSessionLocal() as session:
-                    res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == cand_id))
-                    job = res.scalar_one_or_none()
-                    if job:
-                        desc = enriched.get("description")
-                        if desc and description_is_valid(desc, title=title):
-                            job.description = desc[:40000]
-                        enr_loc = enriched.get("location")
-                        if enr_loc and enr_loc.strip() not in ("India", "in", "pageData", ""):
-                            job.location = enr_loc.strip()[:200]
-                        if enriched.get("employment_type"):
-                            job.employment_type = enriched.get("employment_type")[:200]
-                        await session.commit()
-            except Exception as e:
-                logger.info(f"Enrichment error: {e}")
-
-    await asyncio.gather(*[do_enrich(c) for c in candidates_to_enrich])
-
 class NormalizationService:
-    def __init__(self, session_factory=AsyncSessionLocal):
+    def __init__(self, session_factory=AsyncSessionLocal, detail_extractor=detail_extractor):
         self.session_factory = session_factory
+        self.detail_extractor = detail_extractor
 
     async def ingest_candidates(
         self,
         board_id: str,
         board_run_id: str,
-        extracted_candidates: List[ExtractedCandidate]
-    ) -> Tuple[int, int]:
+        extracted_candidates: List[ExtractedCandidate],
+        *,
+        family: str = "generic",
+        provider_config: Optional[Mapping[str, Any]] = None,
+    ) -> IngestionResult:
         new_jobs_count = 0
         seen_candidate_ids_in_batch = set()
-        to_enrich: List[Tuple[str, str, str, str]] = []
+        to_enrich: Dict[str, Tuple[str, str, str, str]] = {}  # cand_id -> (cand_id, url, company, title)
+        enrichment_succeeded_count = 0
+        enrichment_failed_count = 0
 
         async with self.session_factory() as session:
             for item in extracted_candidates:
@@ -96,11 +86,20 @@ class NormalizationService:
                     if valid_extra_desc:
                         if not existing_job.description or not description_is_valid(existing_job.description, title=existing_job.title) or len(valid_extra_desc) > len(existing_job.description or ""):
                             existing_job.description = valid_extra_desc
+                            existing_job.detail_enrichment_status = "succeeded"
+                            existing_job.detail_enriched_at = datetime.now(timezone.utc)
+                            existing_job.detail_enrichment_error_code = None
                     outcome = "re_observed"
 
                     if not existing_job.description or not description_is_valid(existing_job.description, title=existing_job.title):
-                        to_enrich.append((candidate_id, url_capped, company_capped, title_capped))
+                        existing_job.detail_enrichment_status = "pending"
+                        to_enrich[candidate_id] = (candidate_id, url_capped, company_capped, title_capped)
+                    else:
+                        enrichment_succeeded_count += 1
                 else:
+                    initial_status = "succeeded" if valid_extra_desc else "pending"
+                    initial_enriched_at = datetime.now(timezone.utc) if valid_extra_desc else None
+
                     new_job = CandidateJob(
                         board_id=board_id,
                         identity_key=identity_key,
@@ -112,7 +111,9 @@ class NormalizationService:
                         employment_type=emp_type,
                         public_apply_url=url_capped,
                         description=valid_extra_desc,
-                        salary_raw="Competitive / Not specified"[:200]
+                        salary_raw="Competitive / Not specified"[:200],
+                        detail_enrichment_status=initial_status,
+                        detail_enriched_at=initial_enriched_at,
                     )
                     session.add(new_job)
                     await session.flush()
@@ -121,7 +122,9 @@ class NormalizationService:
                     outcome = "discovered"
 
                     if not valid_extra_desc:
-                        to_enrich.append((candidate_id, url_capped, company_capped, title_capped))
+                        to_enrich[candidate_id] = (candidate_id, url_capped, company_capped, title_capped)
+                    else:
+                        enrichment_succeeded_count += 1
 
                 if candidate_id not in seen_candidate_ids_in_batch:
                     run_cand = RunCandidate(
@@ -136,8 +139,69 @@ class NormalizationService:
             await session.commit()
 
         if to_enrich:
-            asyncio.create_task(bg_enrich_candidates(to_enrich))
+            sem = asyncio.Semaphore(10)
 
-        return len(extracted_candidates), new_jobs_count
+            async def do_enrich(cand_tuple: Tuple[str, str, str, str]) -> bool:
+                cand_id, url, company, title = cand_tuple
+                async with sem:
+                    err_code = "description_missing"
+                    result = None
+                    try:
+                        result = await self.detail_extractor.fetch_and_enrich(
+                            public_apply_url=url,
+                            board_name=company,
+                            title=title,
+                            family=family,
+                            provider_config=provider_config,
+                        )
+                    except Exception as e:
+                        logger.info(f"Enrichment exception for {cand_id}: {e}")
+                        err_code = "enrichment_exception"
+
+                    async with self.session_factory() as session:
+                        res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == cand_id))
+                        job = res.scalar_one_or_none()
+                        if job:
+                            job.detail_enrichment_attempts = (job.detail_enrichment_attempts or 0) + 1
+                            if result and hasattr(result, "description") and result.description and description_is_valid(result.description, title=title):
+                                job.description = result.description[:40000]
+                                if result.location and result.location.strip() not in ("India", "in", "pageData", ""):
+                                    job.location = result.location.strip()[:200]
+                                if result.employment_type:
+                                    job.employment_type = result.employment_type[:200]
+                                if result.department:
+                                    job.department = result.department[:200]
+                                job.detail_enrichment_status = "succeeded"
+                                job.detail_enriched_at = datetime.now(timezone.utc)
+                                job.detail_enrichment_error_code = None
+                                logger.info(
+                                    f"Detail enrichment succeeded for candidate {cand_id}: "
+                                    f"board={board_id}, family={family}, source={getattr(result, 'source', None)}"
+                                )
+                                await session.commit()
+                                return True
+                            else:
+                                raw_err = getattr(result, "error_code", None)
+                                final_err_code = raw_err if isinstance(raw_err, str) else err_code
+                                job.detail_enrichment_status = "failed"
+                                job.detail_enrichment_error_code = final_err_code
+                                logger.info(
+                                    f"Detail enrichment failed for candidate {cand_id}: "
+                                    f"board={board_id}, family={family}, error_code={final_err_code}"
+                                )
+                                await session.commit()
+                                return False
+                        return False
+
+            results = await asyncio.gather(*[do_enrich(c) for c in to_enrich.values()])
+            enrichment_succeeded_count += sum(1 for r in results if r)
+            enrichment_failed_count += sum(1 for r in results if not r)
+
+        return IngestionResult(
+            observed_count=len(extracted_candidates),
+            created_count=new_jobs_count,
+            enrichment_succeeded=enrichment_succeeded_count,
+            enrichment_failed=enrichment_failed_count,
+        )
 
 normalization_service = NormalizationService()

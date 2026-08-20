@@ -722,10 +722,13 @@ class PipelineExecutionEngine:
                             selector_config=selector_config
                         )
 
-                    await normalization_service.ingest_candidates(
+                    provider_cfg = revision.config_json if revision and isinstance(revision.config_json, dict) else None
+                    ingest_res = await normalization_service.ingest_candidates(
                         board_id=board_id,
                         board_run_id=board_run.board_run_id,
-                        extracted_candidates=extracted_candidates
+                        extracted_candidates=extracted_candidates,
+                        family=family,
+                        provider_config=provider_cfg,
                     )
 
                     attempt_rec.stage = "completed"

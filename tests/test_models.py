@@ -76,6 +76,10 @@ async def test_candidate_job_and_outbox(db_session: AsyncSession):
     await db_session.refresh(candidate)
 
     assert candidate.candidate_id is not None
+    assert candidate.detail_enrichment_status == "pending"
+    assert candidate.detail_enrichment_attempts == 0
+    assert candidate.detail_enrichment_error_code is None
+    assert candidate.detail_enriched_at is None
 
     outbox = HandoffOutbox(
         candidate_id=candidate.candidate_id,

@@ -99,13 +99,14 @@ def extract_html_job_links(html: str, board_name: str, target_url: str) -> List[
         clean_text = ' '.join(clean_text.split())
 
         if 'highradius' in board_name.lower() or 'gh_jid=' in clean_url:
-            match_hr = re.search(r'(?:[A-Z][a-z]+\s+\d{4}|United States|India|State)\s+([A-Za-z0-9\s\-\/\,]+?)(?:<h3|&lt;h3|Summary|Job Description|$)', clean_text)
+            match_hr = re.search(r'(?:[A-Z][a-z]+\s+\d{4}|United States|India|State)\s+([A-Za-z0-9\s\-\/\,]+?)(?:<h3|&lt;h3| Summary | Job Description |$)', clean_text)
             if match_hr and len(match_hr.group(1).strip()) > 3:
                 title = match_hr.group(1).strip()
             else:
                 title = clean_text.split('Summary')[0].strip()
         elif clean_text and len(clean_text) > 3 and not any(x in clean_text.lower() for x in ['apply', 'view', 'read more', 'learn more', 'details', 'work_outline', 'results']):
-            title = clean_text.split(' ⋅ ')[0].split(' Bangalore')[0].split(' India')[0].split(' Engineering Hybrid')[0].split(' Hybrid -')[0].rstrip(' →').strip()
+            title = clean_text.split(' \b ')[0].split(' Bangalore')[0].split(' India')[0].split(' Engineering Hybrid')[0].split(' Hybrid -')[0].rstrip(' →').strip()
+            title = title.split(' ⋅ ')[0]  # Handle clean splitting if dot character is present
         else:
             slug = clean_url.rstrip('/').split('/')[-1]
             slug_clean = re.sub(r'^[0-9a-f\-]+[-_]', '', slug).replace('-', ' ').replace('_', ' ').title()
@@ -569,7 +570,7 @@ class EightfoldAdapter(BaseAdapter):
                 seen.add(clean_url)
 
                 title = f"{board_name} Job Requisition {job_id_str}"
-                
+
                 # Extract title from nearby text if available
                 title_match = re.search(r'>([^<]{3,100})</a>', part[:200])
                 if title_match:
@@ -578,7 +579,7 @@ class EightfoldAdapter(BaseAdapter):
                         title = t_cand
 
                 fp = generate_fingerprint(board_name, f"{title} {job_id_str}", "India")
-                
+
                 extra = {}
                 if json_ld_desc:
                     extra = {"description": json_ld_desc[:40000]}
@@ -698,4 +699,3 @@ class MetaCareersAdapter(BaseAdapter):
                 )
 
         return results
-

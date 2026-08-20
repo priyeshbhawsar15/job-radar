@@ -3,21 +3,123 @@ import json
 import html
 import re
 import httpx
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Iterator, List
 from job_radar.services.browser import BrowserServiceClient
 
 logger = logging.getLogger(__name__)
+
+REJECTION_MARKERS = [
+    "window.vanityurlenabled",
+    "page not found. - oracle careers",
+    "candidate experience page careers",
+    "accessibility assistance",
+    "sorry! we couldn’t find any jobs",
+    "sorry! we couldn't find any jobs",
+    "full job description for ",
+    "position for ",
+    ".job-details-wrapper",
+    "privacy policy",
+    "terms of use",
+]
+
+CONTENT_INDICATORS = [
+    "responsibilities",
+    "qualifications",
+    "requirements",
+    "experience",
+    "skills",
+    "what you will do",
+    "what you'll do",
+    "what you’ll do",
+    "what you will need",
+    "what you'll need",
+    "what you’ll need",
+    "about the role",
+    "job description",
+    "duties",
+    "role overview",
+]
+
+
+def _is_job_posting_type(value: Any) -> bool:
+    if isinstance(value, str):
+        return value.lower() == "jobposting"
+    return isinstance(value, list) and any(_is_job_posting_type(item) for item in value)
+
+
+def iter_json_ld_nodes(value: Any) -> Iterator[Dict[str, Any]]:
+    if isinstance(value, list):
+        for item in value:
+            yield from iter_json_ld_nodes(item)
+    elif isinstance(value, dict):
+        yield value
+        graph = value.get("@graph")
+        if isinstance(graph, (dict, list)):
+            yield from iter_json_ld_nodes(graph)
+
+
+def extract_job_posting(raw_html: str) -> Optional[Dict[str, Any]]:
+    if not raw_html:
+        return None
+    unescaped = html.unescape(raw_html)
+    script_blocks = re.findall(
+        r'<script\b[^>]*\btype=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+        unescaped,
+        re.DOTALL | re.IGNORECASE,
+    )
+    for raw in script_blocks:
+        try:
+            data = json.loads(raw.strip())
+            for node in iter_json_ld_nodes(data):
+                if _is_job_posting_type(node.get("@type")):
+                    if node.get("description"):
+                        return node
+        except Exception:
+            pass
+    return None
+
+
+def description_is_valid(text: Optional[str], *, title: str = "") -> bool:
+    if not text or not isinstance(text, str):
+        return False
+    cleaned = text.strip()
+    if not cleaned or len(cleaned) < 200:
+        return False
+
+    low = cleaned.lower()
+    if any(marker in low for marker in REJECTION_MARKERS):
+        return False
+
+    lines = [l.strip() for l in cleaned.splitlines() if l.strip()]
+    has_boundaries = len(lines) >= 3 or "\n\n" in cleaned or "<p>" in text.lower() or "<li>" in text.lower()
+    indicator_count = sum(1 for ind in CONTENT_INDICATORS if ind in low)
+
+    return has_boundaries and indicator_count >= 2
+
 
 def clean_html_to_text(raw_html_str: str) -> str:
     if not raw_html_str:
         return ""
     text = html.unescape(raw_html_str)
     # Strip script, style, svg, iframe, noscript, nav, footer, header
-    clean = re.sub(r'<(script|style|svg|iframe|noscript|nav|footer|header)\b[^>]*>[\s\S]*?</\1>', ' ', text, flags=re.IGNORECASE)
-    plain = re.sub(r'<[^>]+>', chr(10), clean)
+    clean = re.sub(
+        r'<(script|style|svg|iframe|noscript|nav|footer|header)\b[^>]*>[\s\S]*?</\1>',
+        ' ',
+        text,
+        flags=re.IGNORECASE,
+    )
+    plain = re.sub(r'<[^>]+>', '\n', clean)
     lines = [l.strip() for l in plain.splitlines() if len(l.strip()) > 8]
-    filtered = [l for l in lines if not any(x in l.lower() for x in ['cookie', 'gtag', 'datalayer', 'window.', 'self.', 'scrollrestoration', '--bprogress', 'privacy policy', 'terms of use', 'sign in', 'apply now', 'all rights reserved', 'javascript:'])]
-    return (chr(10) + chr(10)).join(filtered)
+    filtered = [
+        l for l in lines
+        if not any(x in l.lower() for x in [
+            'cookie', 'gtag', 'datalayer', 'window.', 'self.', 'scrollrestoration',
+            '--bprogress', 'privacy policy', 'terms of use', 'sign in', 'apply now',
+            'all rights reserved', 'javascript:'
+        ])
+    ]
+    return "\n\n".join(filtered)
+
 
 class DetailExtractor:
     """Service to fetch full job detail content and parse description, salary, department & employment type."""
@@ -37,7 +139,7 @@ class DetailExtractor:
                 gh_id = public_apply_url.split('gh_jid=')[-1].split('&')[0]
             elif '/jobs/' in public_apply_url:
                 gh_id = public_apply_url.split('/jobs/')[-1].split('?')[0]
-            
+
             if gh_id and gh_id.isdigit():
                 slug = "abnormalsecurity" if 'abnormal' in board_name.lower() else ("cognite" if 'cognite' in board_name.lower() else board_name.lower().replace(' ', ''))
                 api_url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs/{gh_id}"
@@ -56,9 +158,9 @@ class DetailExtractor:
                                 loc_clean = loc_name.strip()[:200]
                             else:
                                 loc_clean = "Bangalore, India" if 'abnormal' in board_name.lower() else "India"
-                            
+
                             return {
-                                "description": desc_clean if len(desc_clean) > 100 else f"Position for {title[:500]} at {board_name[:500]}.",
+                                "description": desc_clean if description_is_valid(desc_clean, title=title) else None,
                                 "location": loc_clean[:200],
                                 "employment_type": "Full-time",
                                 "department": "Engineering",
@@ -74,10 +176,9 @@ class DetailExtractor:
             async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:
                 resp = await client.get(public_apply_url)
                 if resp.status_code == 200 and len(resp.text) > 800:
-                    if 'application/ld+json' in resp.text or 'jobPostingDescription' in resp.text or 'ats-description' in resp.text:
-                        parsed = self.parse_detail_html(resp.text, board_name, title, public_apply_url)
-                        if parsed.get("location") and parsed.get("location") != "India" and len(parsed.get("description", "")) > 300:
-                            return parsed
+                    parsed = self.parse_detail_html(resp.text, board_name, title, public_apply_url)
+                    if parsed.get("description") or parsed.get("location"):
+                        return parsed
         except Exception:
             pass
 
@@ -87,7 +188,7 @@ class DetailExtractor:
         except Exception as e:
             logger.info(f"Failed to fetch detail page for {public_apply_url}: {e}")
             return {
-                "description": f"Position for {title[:500]} at {board_name[:500]}. Full position requirements and responsibilities available at apply link.",
+                "description": None,
                 "location": "Bangalore, India" if 'abnormal' in board_name.lower() else "India",
                 "salary_raw": "Competitive / Not specified",
                 "salary_min": None,
@@ -99,19 +200,8 @@ class DetailExtractor:
 
     def parse_detail_html(self, raw_html_text: str, board_name: str, title: str, apply_url: str) -> Dict[str, Any]:
         raw_html_text = html.unescape(raw_html_text)
-        
-        ld_matches = re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', raw_html_text, re.DOTALL | re.IGNORECASE)
-        ld_data = None
-        for raw in ld_matches:
-            try:
-                data = json.loads(raw.strip())
-                if isinstance(data, list) and data:
-                    data = data[0]
-                if isinstance(data, dict) and data.get('@type') == 'JobPosting':
-                    ld_data = data
-                    break
-            except Exception:
-                pass
+
+        ld_data = extract_job_posting(raw_html_text)
 
         description = None
         location = None
@@ -120,7 +210,7 @@ class DetailExtractor:
         if ld_data:
             raw_desc = str(ld_data.get("description", ""))
             clean_desc = clean_html_to_text(raw_desc)[:40000]
-            if clean_desc and len(clean_desc) > 50:
+            if description_is_valid(clean_desc, title=title):
                 description = clean_desc
 
             job_loc = ld_data.get("jobLocation")
@@ -167,25 +257,18 @@ class DetailExtractor:
                         location = loc_t
 
             if not location or location.lower() in ('india', 'in', ''):
-                city_dom_match = re.search(r'(Hyderabad|Bangalore|Bengaluru|Chennai|Noida|Mumbai|Pune|Gurgaon|Gurugram|Delhi)', raw_html_text + ' ' + title + ' ' + apply_url, re.IGNORECASE)
+                city_dom_match = re.search(r'\b(Hyderabad|Bangalore|Bengaluru|Chennai|Noida|Mumbai|Pune|Gurgaon|Gurugram|Delhi)\b', raw_html_text + ' ' + title + ' ' + apply_url, re.IGNORECASE)
                 if city_dom_match:
                     city_found = city_dom_match.group(1).capitalize()
                     if city_found == 'Bengaluru': city_found = 'Bangalore'
                     location = f"{city_found}, India"
 
-        if not description or len(description) < 100:
-            desc_match = re.search(r'<(?:div|section)[^>]*class=["\'][^"\']*(?:ats-description|job-description|job-details|content|section)[^"\']*["\'][^>]*>(.*?)</(?:div|section)>', raw_html_text, re.DOTALL | re.IGNORECASE)
+        if not description:
+            desc_match = re.search(r'<(?:div|section)[^>]*class=["\'][^"\']*(?:ats-description|job-description|job-details)[^"\']*["\'][^>]*>(.*?)</(?:div|section)>', raw_html_text, re.DOTALL | re.IGNORECASE)
             if desc_match:
                 clean_desc_text = clean_html_to_text(desc_match.group(1))[:40000]
-                if clean_desc_text and len(clean_desc_text) > 50:
+                if description_is_valid(clean_desc_text, title=title):
                     description = clean_desc_text
-
-            if not description or len(description) < 100:
-                clean_full = clean_html_to_text(raw_html_text)[:40000]
-                if clean_full and len(clean_full) > 100:
-                    description = clean_full
-                else:
-                    description = f"Full job description for {title[:500]} at {board_name[:500]}. Responsibilities include software development, system architecture design, and technical delivery."
 
         if not location or location.lower() == 'india':
             if 'abnormal' in board_name.lower():
@@ -194,7 +277,7 @@ class DetailExtractor:
                 location = "India"
 
         if not employment_type:
-            type_match = re.search(r'(Full-time|Part-time|Contract|Temporary|Internship)', raw_html_text, re.IGNORECASE)
+            type_match = re.search(r'\b(Full-time|Part-time|Contract|Temporary|Internship)\b', raw_html_text, re.IGNORECASE)
             employment_type = type_match.group(1).capitalize() if type_match else "Full-time"
 
         dept_match = re.search(r'(?:Department|Team|Function):\s*([A-Za-z0-9\s&]+)', raw_html_text, re.IGNORECASE)
@@ -242,5 +325,6 @@ class DetailExtractor:
             "salary_max": salary_max,
             "salary_currency": salary_currency
         }
+
 
 detail_extractor = DetailExtractor()

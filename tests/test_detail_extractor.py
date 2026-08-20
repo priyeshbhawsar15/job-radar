@@ -6,6 +6,7 @@ from job_radar.services.detail_extractor import (
     iter_json_ld_nodes,
     extract_job_posting,
     description_is_valid,
+    extract_oracle_description,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures" / "descriptions"
@@ -87,6 +88,41 @@ def test_description_is_valid_acceptances():
     posting = extract_job_posting(philips_detail)
     assert posting is not None
     assert description_is_valid(posting["description"])
+
+
+def test_extract_oracle_description():
+    oracle_json = json.loads((FIXTURES / "oracle_requisition.json").read_text())
+    jpmc_json = json.loads((FIXTURES / "jpmc_requisition.json").read_text())
+    amex_json = json.loads((FIXTURES / "amex_requisition.json").read_text())
+
+    oracle_desc = extract_oracle_description(oracle_json, "123456")
+    assert oracle_desc is not None
+    assert "ORACLE_FULL_DESCRIPTION_TOKEN" in oracle_desc
+    assert "SHORT_DESCRIPTION_TOKEN" not in oracle_desc
+    assert description_is_valid(oracle_desc)
+
+    jpmc_desc = extract_oracle_description(jpmc_json, "234567")
+    assert jpmc_desc is not None
+    assert "JPMC_FULL_DESCRIPTION_TOKEN" in jpmc_desc
+    assert "SHORT_DESCRIPTION_TOKEN" not in jpmc_desc
+    assert description_is_valid(jpmc_desc)
+
+    amex_desc = extract_oracle_description(amex_json, "345678")
+    assert amex_desc is not None
+    assert "AMEX_FULL_DESCRIPTION_TOKEN" in amex_desc
+    assert "SHORT_DESCRIPTION_TOKEN" not in amex_desc
+    assert description_is_valid(amex_desc)
+
+    # Mismatched Requisition ID
+    assert extract_oracle_description(oracle_json, "999999") is None
+
+    # Invalid wrapper shape
+    assert extract_oracle_description({"items": []}, "123456") is None
+    assert extract_oracle_description({}, "123456") is None
+
+    # Short description only
+    short_json = {"items": [{"RequisitionId": 123456, "ShortDescription": "SHORT_DESCRIPTION_TOKEN"}]}
+    assert extract_oracle_description(short_json, "123456") is None
 
 
 def test_python_sources_contain_no_backspace_characters():

@@ -79,6 +79,37 @@ def extract_job_posting(raw_html: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def extract_oracle_description(record: Dict[str, Any], requisition_id: str) -> Optional[str]:
+    if not isinstance(record, dict):
+        return None
+
+    items = record.get("items")
+    if not isinstance(items, list):
+        return None
+
+    target_item = None
+    req_str = str(requisition_id).strip()
+    for item in items:
+        if isinstance(item, dict):
+            item_req_id = str(item.get("RequisitionId") or item.get("requisitionId") or "").strip()
+            if item_req_id == req_str:
+                target_item = item
+                break
+
+    if not target_item:
+        return None
+
+    raw_desc = target_item.get("Description") or target_item.get("description")
+    if not raw_desc:
+        return None
+
+    cleaned = clean_html_to_text(str(raw_desc))[:40000]
+    if description_is_valid(cleaned):
+        return cleaned
+
+    return None
+
+
 def description_is_valid(text: Optional[str], *, title: str = "") -> bool:
     if not text or not isinstance(text, str):
         return False
@@ -171,6 +202,32 @@ class DetailExtractor:
                             }
                 except Exception:
                     pass
+
+        # Oracle Candidate Experience path
+        oracle_match = re.search(r'/job/(\d+)', public_apply_url)
+        if oracle_match:
+            req_id = oracle_match.group(1)
+            try:
+                record = await self.browser_client.fetch_oracle_detail_record(public_apply_url)
+                if record:
+                    oracle_desc = extract_oracle_description(record, req_id)
+                    if oracle_desc:
+                        loc = None
+                        items = record.get("items", [])
+                        if items and isinstance(items[0], dict):
+                            loc = items[0].get("PrimaryLocation") or items[0].get("primaryLocation")
+                        return {
+                            "description": oracle_desc[:40000],
+                            "location": loc[:200] if loc else "India",
+                            "employment_type": "Full-time",
+                            "department": "Engineering",
+                            "salary_raw": "Competitive / Not specified",
+                            "salary_min": None,
+                            "salary_max": None,
+                            "salary_currency": None
+                        }
+            except Exception as e:
+                logger.info(f"Oracle record enrichment failed for {public_apply_url}: {e}")
 
         try:
             async with httpx.AsyncClient(timeout=6.0, follow_redirects=True, headers=headers) as client:

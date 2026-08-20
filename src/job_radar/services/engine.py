@@ -567,6 +567,7 @@ class PipelineExecutionEngine:
 
             max_attempts = 2
             run_success = False
+            run_partial = False
             error_msg: Optional[str] = None
             extracted_candidates = []
 
@@ -732,10 +733,11 @@ class PipelineExecutionEngine:
                     )
 
                     attempt_rec.stage = "completed"
-                    attempt_rec.outcome = "success"
+                    attempt_rec.outcome = "partial" if ingest_res.enrichment_failed else "success"
                     attempt_rec.terminal_at = datetime.now(timezone.utc)
                     board_run.extracted_count = len(extracted_candidates)
                     run_success = True
+                    run_partial = bool(ingest_res.enrichment_failed)
                     await session.commit()
                     break
 
@@ -759,7 +761,7 @@ class PipelineExecutionEngine:
             board_run.terminal_at = datetime.now(timezone.utc)
             board_run.stage = "completed"
             if run_success:
-                board_run.outcome = "success"
+                board_run.outcome = "partial" if run_partial else "success"
                 board.consecutive_parser_failures = 0
             else:
                 board_run.outcome = "provider_failure"

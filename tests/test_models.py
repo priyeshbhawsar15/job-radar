@@ -110,3 +110,16 @@ async def test_audit_event_logging(db_session: AsyncSession):
 
     assert event.event_id is not None
     assert event.role == "admin"
+
+
+@pytest.mark.asyncio
+async def test_philips_seed_configuration(db_session: AsyncSession):
+    from job_radar.db.seed import INITIAL_BOARDS
+    philips_items = [b for b in INITIAL_BOARDS if b[0] == "board-philips"]
+    assert len(philips_items) == 1
+    philips_item = philips_items[0]
+    assert len(philips_item) == 5
+    b_id, name, family, target_url, phenom_cfg = philips_item
+    assert family == "phenom"
+    assert "allowed_origins" in phenom_cfg
+    assert phenom_cfg["allowed_origins"] == ["https://www.careers.philips.com"]

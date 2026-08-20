@@ -140,6 +140,12 @@ class DetailExtractor:
         client: Optional[httpx.AsyncClient] = None,
     ) -> DetailResult:
         provider_config = provider_config or {}
+        if isinstance(provider_config, dict):
+            if family == "oracle" and "oracle_detail" in provider_config and isinstance(provider_config["oracle_detail"], dict):
+                provider_config = provider_config["oracle_detail"]
+            elif family == "phenom" and "phenom_detail" in provider_config and isinstance(provider_config["phenom_detail"], dict):
+                provider_config = provider_config["phenom_detail"]
+
         req = DetailRequest(
             family=family,
             public_url=public_apply_url,

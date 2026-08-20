@@ -54,7 +54,11 @@ INITIAL_BOARDS = [
             "https://eeho.fa.us2.oraclecloud.com"
         ]
     }),
-    ("board-philips", "Philips", "phenom", "https://www.careers.philips.com/in/en/search-results"),
+    ("board-philips", "Philips", "phenom", "https://www.careers.philips.com/in/en/search-results", {
+        "allowed_origins": [
+            "https://www.careers.philips.com"
+        ]
+    }),
     ("board-plane", "Plane", "ashby", "https://jobs.ashbyhq.com/plane?departmentId=0421d677-7dfa-49f4-ab71-57d3cf54cc94&locationId=fe009c8d-2efb-4677-994b-768c71c63d58&utm_medium=organic&utm_source=startup.jobs"),
     ("board-qualcomm", "Qualcomm", "eightfold", "https://careers.qualcomm.com/careers?start=0&location=india&pid=446719653366&sort_by=timestamp&filter_include_remote=0&filter_include_relocation=0&filter_job_family=software+engineering&filter_seniority=Entry%2CMid-Level"),
     ("board-rbctech", "RBCTech", "stratsy", "https://www.rbctechsolutions.com/rbctech/careers/"),
@@ -78,10 +82,10 @@ async def seed_database():
     async with AsyncSessionLocal() as session:
         for item in INITIAL_BOARDS:
             if len(item) == 5:
-                b_id, name, family, target_url, oracle_cfg = item
+                b_id, name, family, target_url, family_cfg = item
             else:
                 b_id, name, family, target_url = item
-                oracle_cfg = None
+                family_cfg = None
 
             board = Board(
                 board_id=b_id,
@@ -98,8 +102,11 @@ async def seed_database():
                 "max_pages": 3,
                 "schedule_cron": "0 */6 * * *"
             }
-            if oracle_cfg:
-                cfg_json["oracle_detail"] = oracle_cfg
+            if family_cfg:
+                if family == "oracle":
+                    cfg_json["oracle_detail"] = family_cfg
+                elif family == "phenom":
+                    cfg_json["phenom_detail"] = family_cfg
 
             rev = BoardRevision(
                 board_id=b_id,

@@ -174,6 +174,36 @@ async def test_family_aware_dispatch_routing():
     assert res.error_code == ERR_BOUNDARY_VIOLATION or res.description is not None or res.error_code is not None
 
 
+@pytest.mark.asyncio
+async def test_fetch_and_enrich_extracts_nested_family_config():
+    extractor = DetailExtractor()
+    philips_url = "https://www.careers.philips.com/in/en/job/581004/Senior-Software-Technologist-Rust"
+
+    # When provider_config contains nested 'phenom_detail' dictionary:
+    nested_config = {
+        "target_url": "https://www.careers.philips.com/in/en/search-results",
+        "phenom_detail": {
+            "allowed_origins": ["https://www.careers.philips.com"]
+        }
+    }
+    # Mocking or calling directly should unwrap phenom_detail rather than failing with ERR_INVALID_PROVIDER_CONFIG
+    mock_client = AsyncMock()
+    mock_client.get.return_value.status_code = 200
+    mock_client.get.return_value.url = philips_url
+    mock_client.get.return_value.content = b"<html></html>"
+    mock_client.get.return_value.text = "<html></html>"
+
+    res = await extractor.fetch_and_enrich(
+        philips_url,
+        "Philips",
+        "Senior Software Technologist",
+        family="phenom",
+        provider_config=nested_config,
+        client=mock_client,
+    )
+    assert res.error_code != "invalid_provider_config"
+
+
 def test_python_sources_contain_no_backspace_characters():
     source_root = Path(__file__).parents[1] / "src"
     offenders = [path for path in source_root.rglob("*.py") if "\x08" in path.read_text()]

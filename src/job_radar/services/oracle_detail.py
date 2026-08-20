@@ -23,6 +23,40 @@ from job_radar.services.detail_contracts import (
 )
 
 
+def validate_oracle_config(config: Mapping[str, Any]) -> bool:
+    if not isinstance(config, dict):
+        return False
+    api_origin = config.get("api_origin")
+    allowed_origins = config.get("allowed_origins")
+    if not api_origin or not isinstance(api_origin, str) or not allowed_origins or not isinstance(allowed_origins, list):
+        return False
+
+    def is_valid_https_origin(origin: str) -> bool:
+        if not isinstance(origin, str) or not origin.startswith("https://"):
+            return False
+        parsed = urlparse(origin)
+        if parsed.scheme != "https" or not parsed.netloc or parsed.path not in ("", "/") or parsed.params or parsed.query or parsed.fragment or parsed.username or parsed.password:
+            return False
+        host = parsed.netloc.split(":")[0]
+        if host in ("localhost", "127.0.0.1") or host.startswith("192.168.") or host.startswith("10."):
+            return False
+        if "*" in host:
+            return False
+        return True
+
+    if not is_valid_https_origin(api_origin):
+        return False
+
+    for origin in allowed_origins:
+        if not is_valid_https_origin(origin):
+            return False
+
+    if api_origin not in allowed_origins:
+        return False
+
+    return True
+
+
 def extract_oracle_public_id(public_url: str) -> Optional[str]:
     if not public_url:
         return None
@@ -115,17 +149,13 @@ def compose_oracle_description(item: Mapping[str, Any]) -> Optional[str]:
 
 async def fetch_oracle_detail(request: DetailRequest, client: httpx.AsyncClient) -> DetailResult:
     config = request.provider_config or {}
-    api_origin = config.get("api_origin")
-    allowed_origins = config.get("allowed_origins", [])
-
-    if not api_origin or not allowed_origins:
+    oracle_config = config.get("oracle_detail") if isinstance(config.get("oracle_detail"), dict) else config
+    if not validate_oracle_config(oracle_config):
         return DetailResult.empty(ERR_INVALID_PROVIDER_CONFIG)
 
-    api_host = urlparse(api_origin).netloc
-    allowed_hosts = {urlparse(o if o.startswith("http") else f"https://{o}").netloc for o in allowed_origins}
-
-    if api_host not in allowed_hosts:
-        return DetailResult.empty(ERR_INVALID_PROVIDER_CONFIG)
+    api_origin = oracle_config["api_origin"]
+    allowed_origins = oracle_config["allowed_origins"]
+    allowed_hosts = {urlparse(o).netloc for o in allowed_origins}
 
     public_id = extract_oracle_public_id(request.public_url)
     if not public_id:
@@ -136,7 +166,7 @@ async def fetch_oracle_detail(request: DetailRequest, client: httpx.AsyncClient)
         return DetailResult.empty(ERR_BOUNDARY_VIOLATION)
 
     endpoint = f"{api_origin}/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails"
-    site_number = config.get("site_number")
+    site_number = oracle_config.get("site_number")
     finder_val = f'ById;Id="{public_id}"'
     if site_number:
         finder_val += f',siteNumber={site_number}'

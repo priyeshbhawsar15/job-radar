@@ -17,7 +17,28 @@ from job_radar.services.oracle_detail import (
     find_oracle_item,
     compose_oracle_description,
     fetch_oracle_detail,
+    validate_oracle_config,
 )
+
+
+def test_validate_oracle_config():
+    valid = {
+        "api_origin": "https://eeho.fa.us2.oraclecloud.com",
+        "allowed_origins": ["https://careers.oracle.com", "https://eeho.fa.us2.oraclecloud.com"],
+    }
+    assert validate_oracle_config(valid) is True
+
+    # HTTP scheme is invalid
+    assert validate_oracle_config({"api_origin": "http://eeho.fa.us2.oraclecloud.com", "allowed_origins": ["http://eeho.fa.us2.oraclecloud.com"]}) is False
+
+    # Path or query in origin is invalid
+    assert validate_oracle_config({"api_origin": "https://eeho.fa.us2.oraclecloud.com/path", "allowed_origins": ["https://eeho.fa.us2.oraclecloud.com/path"]}) is False
+
+    # Localhost / private IP is invalid
+    assert validate_oracle_config({"api_origin": "https://localhost", "allowed_origins": ["https://localhost"]}) is False
+
+    # api_origin not in allowed_origins is invalid
+    assert validate_oracle_config({"api_origin": "https://eeho.fa.us2.oraclecloud.com", "allowed_origins": ["https://careers.oracle.com"]}) is False
 
 FIXTURES = Path(__file__).parent / "fixtures" / "descriptions"
 
@@ -101,7 +122,7 @@ async def test_fetch_oracle_detail_http_mock_success():
             title="Software Developer 4",
             provider_config={
                 "api_origin": "https://eeho.fa.us2.oraclecloud.com",
-                "allowed_origins": ["eeho.fa.us2.oraclecloud.com"],
+                "allowed_origins": ["https://eeho.fa.us2.oraclecloud.com"],
             },
         )
         res = await fetch_oracle_detail(req, client)
@@ -130,7 +151,7 @@ async def test_fetch_oracle_detail_with_site_number():
             provider_config={
                 "api_origin": "https://eeho.fa.us2.oraclecloud.com",
                 "site_number": "CX_45001",
-                "allowed_origins": ["eeho.fa.us2.oraclecloud.com"],
+                "allowed_origins": ["https://eeho.fa.us2.oraclecloud.com"],
             },
         )
         res = await fetch_oracle_detail(req, client)
@@ -147,7 +168,7 @@ async def test_fetch_oracle_detail_boundary_violation():
             title="Dev",
             provider_config={
                 "api_origin": "https://eeho.fa.us2.oraclecloud.com",
-                "allowed_origins": ["eeho.fa.us2.oraclecloud.com"],
+                "allowed_origins": ["https://eeho.fa.us2.oraclecloud.com"],
             },
         )
         res = await fetch_oracle_detail(req, client)

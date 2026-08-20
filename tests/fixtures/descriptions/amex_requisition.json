@@ -1,11 +1,16 @@
 {
   "items": [
     {
-      "RequisitionId": 345678,
-      "Title": "Staff Software Engineer",
-      "ShortDescription": "SHORT_DESCRIPTION_TOKEN American Express introduction summary...",
-      "Description": "<p>AMEX_FULL_DESCRIPTION_TOKEN</p><p>RESPONSIBILITIES:</p><ul><li>Drive platform core services development.</li><li>Ensure compliance, security, and high reliability standards.</li></ul><p>QUALIFICATIONS:</p><ul><li>7+ years experience in enterprise software.</li><li>Expertise in API design and microservices architecture.</li></ul>",
-      "PrimaryLocation": "Phoenix, AZ, United States"
+      "Id": "26012235",
+      "RequisitionId": 900000000000003,
+      "Title": "Software Engineer II",
+      "ExternalDescriptionStr": "<p>AMEX_FULL_DESCRIPTION_TOKEN</p><p>American Express is a global services company. You will join our software engineering team to build scalable financial applications.</p>",
+      "ExternalResponsibilitiesStr": "<p>AMEX_RESPONSIBILITIES_TOKEN</p><ul><li>Drive platform core services development.</li><li>Ensure compliance and security.</li></ul>",
+      "ExternalQualificationsStr": "<p>AMEX_QUALIFICATIONS_TOKEN</p><ul><li>7+ years experience in enterprise software.</li><li>Expertise in API design and microservices architecture.</li></ul>",
+      "ShortDescriptionStr": "AMEX_SHORT_TOKEN",
+      "CorporateDescriptionStr": "<p>AMEX_CORPORATE_BOILERPLATE_TOKEN About American Express corporate history...</p>",
+      "OrganizationDescriptionStr": "<p>AMEX_ORGANIZATION_BOILERPLATE_TOKEN Organization details...</p>",
+      "PrimaryLocation": "Sunrise, FL, United States"
     }
   ]
 }

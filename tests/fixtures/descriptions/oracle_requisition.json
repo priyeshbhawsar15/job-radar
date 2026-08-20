@@ -1,11 +1,16 @@
 {
   "items": [
     {
-      "RequisitionId": 123456,
-      "Title": "Senior Software Engineer",
-      "ShortDescription": "SHORT_DESCRIPTION_TOKEN Overview short summary",
-      "Description": "<p>ORACLE_FULL_DESCRIPTION_TOKEN</p><p>RESPONSIBILITIES:</p><ul><li>Design and build scalable microservices.</li><li>Collaborate with cross-functional technical teams.</li></ul><p>QUALIFICATIONS:</p><ul><li>5+ years of experience in Java or Python.</li><li>BS in Computer Science or equivalent.</li></ul>",
-      "PrimaryLocation": "Austin, TX, United States"
+      "Id": "337440",
+      "RequisitionId": 900000000000001,
+      "Title": "Software Developer 4",
+      "ExternalDescriptionStr": "<p>ORACLE_FULL_DESCRIPTION_TOKEN</p><p>Building off our Cloud momentum, Oracle has formed a new organization. We are looking for hands-on engineers with expertise and passion in solving difficult problems in software engineering.</p>",
+      "ExternalResponsibilitiesStr": "<p>RESPONSIBILITIES</p><ul><li>ORACLE_RESPONSIBILITIES_TOKEN: Design and build scalable microservices.</li><li>Collaborate with cross-functional technical teams.</li></ul>",
+      "ExternalQualificationsStr": "",
+      "ShortDescriptionStr": "ORACLE_SHORT_TOKEN",
+      "CorporateDescriptionStr": "ORACLE_CORPORATE_TOKEN",
+      "OrganizationDescriptionStr": "",
+      "PrimaryLocation": "BENGALURU, KARNATAKA, India"
     }
   ]
 }

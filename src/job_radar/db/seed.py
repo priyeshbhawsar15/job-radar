@@ -12,7 +12,14 @@ INITIAL_BOARDS = [
     ("board-adobe", "Adobe", "workday", "https://adobe.wd5.myworkdayjobs.com/en-US/external_experienced?Job_Application_ID=cf0155a2a4659000ad6ec95db1160000&workerSubType=3ba4ecdf4893100b2f8d06b0870c6c8b&jobFamilyGroup=591af8b812fa10737b0e880e0e3eeee9&jobFamilyGroup=591af8b812fa10737af39db3d96eed9f&locationCountry=c4f78be1a8f14da0ab49ce1162348a5e"),
     ("board-amazon", "Amazon", "amazon_jobs", "https://www.amazon.jobs/en/search?offset=0&result_limit=10&sort=recent&category[]=software-development&distanceType=Mi&radius=24km&latitude=&longitude=&loc_group_id=&loc_query=India&base_query=software&city=&country=IND&region=&county=&query_options=&"),
     ("board-ameriprise", "Ameriprise", "ameriprise", "https://careers.ameriprise.com/search-jobs/?search=software&country=India&team=Technology&type=Full+Time&pagesize=20#results"),
-    ("board-amex", "AMEX", "oracle", "https://egug.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs?keyword=Software"),
+    ("board-amex", "AMEX", "oracle", "https://egug.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs?keyword=Software", {
+        "api_origin": "https://egug.fa.us2.oraclecloud.com",
+        "site_number": "CX_1",
+        "allowed_origins": [
+            "https://egug.fa.us2.oraclecloud.com",
+            "https://americanexpress.wd5.myworkdayjobs.com"
+        ]
+    }),
     ("board-apple", "Apple", "apple_jobs", "https://jobs.apple.com/en-in/search?search=Software&sort=newest&location=bangalore-metro-BANG"),
     ("board-aspora", "Aspora", "ashby", "https://jobs.ashbyhq.com/Aspora?departmentId=3790eb6b-6f6f-4d71-ad69-6a1a9fea6066&employmentType=FullTime&utm_medium=organic&utm_source=startup.jobs"),
     ("board-celonis", "Celonis", "celonis_dxp", "https://careers.celonis.com/join-us/open-positions?team=Engineering&seniority=Experienced+Professional&groupedLocation=Bangalore%2C+India"),
@@ -25,13 +32,28 @@ INITIAL_BOARDS = [
     ("board-highradius", "HighRadius", "custom", "https://www.highradius.com/about/career/"),
     ("board-hp", "HP", "eightfold", "https://hp.eightfold.ai/careers?query=software&start=0&location=india&pid=41541191&sort_by=timestamp&filter_include_remote=1&filter_include_relocation=0&filter_seniority=experienced"),
     ("board-jiostar", "JioStar", "workday", "https://jiostar.wd102.myworkdayjobs.com/en-US/JioStar?source=jobfound.org&jobFamilyGroup=8df5dc1586541000539b236955f10000"),
-    ("board-jpmc", "JPMC", "oracle", "https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/jobs?lastSelectedFacet=POSTING_DATES&location=India&locationId=300000000289360&locationLevel=country&mode=location&selectedCategoriesFacet=300000086152753&selectedPostingDatesFacet=30%3B7"),
+    ("board-jpmc", "JPMC", "oracle", "https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/jobs?lastSelectedFacet=POSTING_DATES&location=India&locationId=300000000289360&locationLevel=country&mode=location&selectedCategoriesFacet=300000086152753&selectedPostingDatesFacet=30%3B7", {
+        "api_origin": "https://jpmc.fa.oraclecloud.com",
+        "site_number": "CX_1001",
+        "allowed_origins": [
+            "https://jpmc.fa.oraclecloud.com",
+            "https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001",
+            "https://careers.jpmorganchase.com"
+        ]
+    }),
     ("board-mattel", "Mattel", "custom", "https://jobs.mattel.com/en/search-jobs/software/Hyderabad%2C+Telangana/2015/1/4/1269750-1254788-1269844-1269843/17x38405/78x45636/35/2"),
     ("board-meta", "Meta", "meta_careers", "https://www.metacareers.com/jobsearch/?sort_by_new=true&offices[0]=Bangalore%2C%20India&offices[1]=Hyderabad%2C%20India&offices[2]=Mumbai%2C%20India&offices[3]=New%20Delhi%2C%20India&offices[4]=Gurgaon%2C%20India&roles[0]=Full%20time%20employment"),
     ("board-microsoft", "Microsoft", "eightfold", "https://apply.careers.microsoft.com/careers?query=Software&start=0&location=india&pid=1970393556955275&sort_by=relevance&filter_include_remote=1&filter_include_relocation=0&filter_profession=software+engineering&filter_seniority=Mid-Level"),
     ("board-motorola", "Motorola Solutions", "workday", "https://motorolasolutions.wd5.myworkdayjobs.com/en-US/Careers?timeType=14bb6aa2c25e4a218b2a3faaa951e44c&jobFamilyGroup=2161bef685534428b91fad96fc9069b4&jobFamilyGroup=c3fc17b768e842e39b7192f0bf4cb0f1&locationCountry=c4f78be1a8f14da0ab49ce1162348a5e"),
     ("board-novartis", "Novartis", "custom", "https://www.novartis.com/in-en/careers/career-search?search_api_fulltext=software&country[0]=LOC_IN&op=Submit&field_job_posted_date=3"),
-    ("board-oracle", "Oracle", "oracle", "https://careers.oracle.com/en/sites/jobsearch/jobs?keyword=Software+Engineer&location=India"),
+    ("board-oracle", "Oracle", "oracle", "https://careers.oracle.com/en/sites/jobsearch/jobs?keyword=Software+Engineer&location=India", {
+        "api_origin": "https://eeho.fa.us2.oraclecloud.com",
+        "site_number": "CX_1",
+        "allowed_origins": [
+            "https://careers.oracle.com",
+            "https://eeho.fa.us2.oraclecloud.com"
+        ]
+    }),
     ("board-philips", "Philips", "phenom", "https://www.careers.philips.com/in/en/search-results"),
     ("board-plane", "Plane", "ashby", "https://jobs.ashbyhq.com/plane?departmentId=0421d677-7dfa-49f4-ab71-57d3cf54cc94&locationId=fe009c8d-2efb-4677-994b-768c71c63d58&utm_medium=organic&utm_source=startup.jobs"),
     ("board-qualcomm", "Qualcomm", "eightfold", "https://careers.qualcomm.com/careers?start=0&location=india&pid=446719653366&sort_by=timestamp&filter_include_remote=0&filter_include_relocation=0&filter_job_family=software+engineering&filter_seniority=Entry%2CMid-Level"),
@@ -54,7 +76,13 @@ async def seed_database():
         await conn.run_sync(Base.metadata.create_all)
 
     async with AsyncSessionLocal() as session:
-        for b_id, name, family, target_url in INITIAL_BOARDS:
+        for item in INITIAL_BOARDS:
+            if len(item) == 5:
+                b_id, name, family, target_url, oracle_cfg = item
+            else:
+                b_id, name, family, target_url = item
+                oracle_cfg = None
+
             board = Board(
                 board_id=b_id,
                 name=name,
@@ -65,15 +93,19 @@ async def seed_database():
             session.add(board)
             await session.flush()
 
+            cfg_json = {
+                "target_url": target_url,
+                "max_pages": 3,
+                "schedule_cron": "0 */6 * * *"
+            }
+            if oracle_cfg:
+                cfg_json["oracle_detail"] = oracle_cfg
+
             rev = BoardRevision(
                 board_id=b_id,
                 revision_number=1,
                 status="reviewed",
-                config_json={
-                    "target_url": target_url,
-                    "max_pages": 3,
-                    "schedule_cron": "0 */6 * * *"
-                }
+                config_json=cfg_json
             )
             session.add(rev)
             await session.flush()

@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "RequisitionId": 345678,
+      "Title": "Staff Software Engineer",
+      "ShortDescription": "SHORT_DESCRIPTION_TOKEN American Express introduction summary...",
+      "Description": "<p>AMEX_FULL_DESCRIPTION_TOKEN</p><p>RESPONSIBILITIES:</p><ul><li>Drive platform core services development.</li><li>Ensure compliance, security, and high reliability standards.</li></ul><p>QUALIFICATIONS:</p><ul><li>7+ years experience in enterprise software.</li><li>Expertise in API design and microservices architecture.</li></ul>",
+      "PrimaryLocation": "Phoenix, AZ, United States"
+    }
+  ]
+}

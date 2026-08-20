@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "RequisitionId": 234567,
+      "Title": "Lead Software Engineer",
+      "ShortDescription": "SHORT_DESCRIPTION_TOKEN Carry out critical tech solutions...",
+      "Description": "<p>JPMC_FULL_DESCRIPTION_TOKEN</p><p>RESPONSIBILITIES:</p><ul><li>Lead architectural design for high-throughput payment systems.</li><li>Manage technical delivery and mentor junior developers.</li></ul><p>QUALIFICATIONS:</p><ul><li>8+ years in software engineering role.</li><li>Strong background in distributed systems and cloud infrastructure.</li></ul>",
+      "PrimaryLocation": "Plano, TX, United States"
+    }
+  ]
+}

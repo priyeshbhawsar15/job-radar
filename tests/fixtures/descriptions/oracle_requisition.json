@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "RequisitionId": 123456,
+      "Title": "Senior Software Engineer",
+      "ShortDescription": "SHORT_DESCRIPTION_TOKEN Overview short summary",
+      "Description": "<p>ORACLE_FULL_DESCRIPTION_TOKEN</p><p>RESPONSIBILITIES:</p><ul><li>Design and build scalable microservices.</li><li>Collaborate with cross-functional technical teams.</li></ul><p>QUALIFICATIONS:</p><ul><li>5+ years of experience in Java or Python.</li><li>BS in Computer Science or equivalent.</li></ul>",
+      "PrimaryLocation": "Austin, TX, United States"
+    }
+  ]
+}

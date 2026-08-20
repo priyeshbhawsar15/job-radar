@@ -12,16 +12,15 @@ export const RunDetail: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-    Promise.all([
-      fetch('/api/v1/runs').then((res) => (res.ok ? res.json() : [])),
-      fetch('/api/v1/jobs').then((res) => (res.ok ? res.json() : []))
-    ])
-      .then(([runs, jobs]) => {
+    fetch('/api/v1/runs')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((runs) => {
         const foundRun = runs.find((r: any) => r.run_id === id || r.pipeline_id === id);
         if (foundRun) {
           setRun(foundRun);
-          const matchedJobs = jobs.filter((j: any) => j.board_id === foundRun.board_id);
-          setRunJobs(matchedJobs);
+          fetch('/api/v1/jobs?limit=5000&board_id=' + foundRun.board_id)
+            .then((res) => (res.ok ? res.json() : []))
+            .then((bJobs) => setRunJobs(bJobs));
         }
       })
       .catch((e) => console.error(e))

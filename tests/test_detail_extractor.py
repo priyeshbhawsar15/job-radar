@@ -4,14 +4,38 @@ import pytest
 
 from unittest.mock import AsyncMock
 
-from job_radar.services.detail_extractor import (
-    iter_json_ld_nodes,
-    extract_job_posting,
-    description_is_valid,
-    extract_oracle_description,
-    extract_phenom_description,
-    DetailExtractor,
-)
+from job_radar.services.detail_contracts import DetailRequest, DetailResult
+
+
+def test_detail_request_and_result_contracts():
+    req = DetailRequest(
+        family="oracle",
+        public_url="https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/337440/",
+        board_name="Oracle",
+        title="Software Developer 4",
+        provider_config={"api_origin": "https://eeho.fa.us2.oraclecloud.com"},
+    )
+    assert req.family == "oracle"
+    assert req.public_url.startswith("https://")
+    assert req.provider_config["api_origin"] == "https://eeho.fa.us2.oraclecloud.com"
+
+    res_empty = DetailResult.empty(error_code="description_missing")
+    assert res_empty.description is None
+    assert res_empty.location is None
+    assert res_empty.employment_type is None
+    assert res_empty.department is None
+    assert res_empty.salary_raw is None
+    assert res_empty.salary_min is None
+    assert res_empty.salary_max is None
+    assert res_empty.salary_currency is None
+    assert res_empty.source is None
+    assert res_empty.error_code == "description_missing"
+
+    update_dict = res_empty.as_update_dict()
+    assert "description" in update_dict
+    assert update_dict["description"] is None
+    assert update_dict["detail_enrichment_error_code"] == "description_missing"
+
 
 FIXTURES = Path(__file__).parent / "fixtures" / "descriptions"
 

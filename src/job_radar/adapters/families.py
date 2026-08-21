@@ -457,6 +457,10 @@ class OracleAdapter(BaseAdapter):
         if isinstance(payload, bytes):
             payload = payload.decode("utf-8")
 
+        json_results = self._parse_fusion_requisition_json(payload, board_name, target_url)
+        if json_results is not None:
+            return json_results
+
         html_text = html.unescape(payload)
         results: List[ExtractedCandidate] = []
         seen = set()
@@ -486,6 +490,80 @@ class OracleAdapter(BaseAdapter):
                         extra_payload={"public_job_id": job_id_str}
                     )
                 )
+
+        return results
+
+    def _parse_fusion_requisition_json(
+        self,
+        payload: str,
+        board_name: str,
+        target_url: str,
+    ) -> Optional[List[ExtractedCandidate]]:
+        """Parse the live-shaped Oracle Fusion listing JSON contract
+        (items[0].requisitionList). Returns None (not an empty list) when the
+        payload is not JSON or lacks the verified container, so the caller
+        can fall through to the existing HTML fallback.
+        """
+        try:
+            data = json.loads(payload)
+        except Exception:
+            return None
+
+        if not isinstance(data, dict):
+            return None
+
+        items = data.get("items")
+        if not isinstance(items, list) or not items:
+            return None
+
+        first_item = items[0]
+        if not isinstance(first_item, dict):
+            return None
+
+        requisition_list = first_item.get("requisitionList")
+        if not isinstance(requisition_list, list):
+            return None
+
+        results: List[ExtractedCandidate] = []
+        seen = set()
+
+        for record in requisition_list:
+            if not isinstance(record, dict):
+                continue
+
+            job_id_str = str(record.get("Id", "")).strip()
+            if not job_id_str.isdigit():
+                continue
+
+            title = (record.get("Title") or "").strip()
+            if not title:
+                continue
+
+            full_url = _build_oracle_job_url(target_url, job_id_str)
+            clean_url = canonicalize_job_url(full_url, board_name, target_url)
+            if not clean_url or clean_url in seen or job_id_str in seen:
+                continue
+            seen.add(clean_url)
+            seen.add(job_id_str)
+
+            location_str = (record.get("PrimaryLocation") or "").strip() or "India"
+
+            fp = generate_fingerprint(board_name, f"{title} {job_id_str}", location_str)
+            results.append(
+                ExtractedCandidate(
+                    title=title,
+                    company=board_name,
+                    location=location_str,
+                    department="Technology",
+                    employment_type="Full-time",
+                    raw_url=clean_url,
+                    fingerprint=fp,
+                    extra_payload={
+                        "public_job_id": job_id_str,
+                        "posted_date": record.get("PostedDate"),
+                    }
+                )
+            )
 
         return results
 

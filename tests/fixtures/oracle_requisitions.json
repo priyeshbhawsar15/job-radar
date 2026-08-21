@@ -1,0 +1,23 @@
+{
+  "items": [
+    {
+      "TotalJobsCount": 127,
+      "requisitionList": [
+        {
+          "Id": "337440",
+          "Title": "ORACLE_LISTING_TITLE_ONE",
+          "PrimaryLocation": "Bengaluru, Karnataka, India",
+          "PostedDate": "2026-08-20T00:00:00+00:00",
+          "secondaryLocations": []
+        },
+        {
+          "Id": "337477",
+          "Title": "ORACLE_LISTING_TITLE_TWO",
+          "PrimaryLocation": "Hyderabad, Telangana, India",
+          "PostedDate": "2026-08-19T00:00:00+00:00",
+          "secondaryLocations": []
+        }
+      ]
+    }
+  ]
+}

@@ -76,6 +76,99 @@ def test_oracle_adapter_html_fallback_builds_vanity_url_without_splitting_jobsea
     )
 
 
+def _load_fixture(name):
+    import os
+    fixture_path = os.path.join(os.path.dirname(__file__), "fixtures", name)
+    with open(fixture_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def test_oracle_adapter_parses_fusion_requisition_list():
+    adapter = adapter_registry.get("oracle")
+    assert adapter is not None
+
+    payload = _load_fixture("oracle_requisitions.json")
+    candidates = adapter.parse_raw_payload(
+        payload,
+        "Oracle",
+        "https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs",
+    )
+
+    assert len(candidates) == 2
+
+    by_id = {c.extra_payload.get("public_job_id"): c for c in candidates}
+    assert set(by_id.keys()) == {"337440", "337477"}
+
+    c1 = by_id["337440"]
+    assert c1.title == "ORACLE_LISTING_TITLE_ONE"
+    assert c1.location == "Bengaluru, Karnataka, India"
+    assert c1.raw_url == (
+        "https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/337440/"
+    )
+    assert c1.extra_payload.get("posted_date") == "2026-08-20T00:00:00+00:00"
+
+    c2 = by_id["337477"]
+    assert c2.title == "ORACLE_LISTING_TITLE_TWO"
+    assert c2.location == "Hyderabad, Telangana, India"
+    assert c2.raw_url == (
+        "https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/337477/"
+    )
+    assert c2.extra_payload.get("posted_date") == "2026-08-19T00:00:00+00:00"
+
+
+def test_oracle_adapter_skips_duplicate_or_malformed_fusion_records():
+    adapter = adapter_registry.get("oracle")
+    assert adapter is not None
+
+    payload = json.dumps({
+        "items": [
+            {
+                "TotalJobsCount": 4,
+                "requisitionList": [
+                    {
+                        "Id": "337440",
+                        "Title": "ORACLE_LISTING_TITLE_ONE",
+                        "PrimaryLocation": "Bengaluru, Karnataka, India",
+                        "PostedDate": "2026-08-20T00:00:00+00:00",
+                        "secondaryLocations": []
+                    },
+                    {
+                        "Id": "337440",
+                        "Title": "ORACLE_LISTING_TITLE_ONE_DUP",
+                        "PrimaryLocation": "Bengaluru, Karnataka, India",
+                        "PostedDate": "2026-08-20T00:00:00+00:00",
+                        "secondaryLocations": []
+                    },
+                    {
+                        "Id": "not-a-number",
+                        "Title": "ORACLE_LISTING_TITLE_BAD_ID",
+                        "PrimaryLocation": "Hyderabad, Telangana, India",
+                        "PostedDate": "2026-08-19T00:00:00+00:00",
+                        "secondaryLocations": []
+                    },
+                    {
+                        "Id": "337500",
+                        "Title": "",
+                        "PrimaryLocation": "Hyderabad, Telangana, India",
+                        "PostedDate": "2026-08-19T00:00:00+00:00",
+                        "secondaryLocations": []
+                    }
+                ]
+            }
+        ]
+    })
+
+    candidates = adapter.parse_raw_payload(
+        payload,
+        "Oracle",
+        "https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs",
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].extra_payload.get("public_job_id") == "337440"
+    assert candidates[0].title == "ORACLE_LISTING_TITLE_ONE"
+
+
 def test_phenom_adapter_registration_and_parsing():
     adapter = adapter_registry.get("phenom")
     assert adapter is not None

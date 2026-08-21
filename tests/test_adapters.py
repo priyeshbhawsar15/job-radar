@@ -169,6 +169,52 @@ def test_oracle_adapter_skips_duplicate_or_malformed_fusion_records():
     assert candidates[0].title == "ORACLE_LISTING_TITLE_ONE"
 
 
+def test_oracle_adapter_skips_fusion_records_with_non_string_field_types():
+    adapter = adapter_registry.get("oracle")
+    assert adapter is not None
+
+    payload = json.dumps({
+        "items": [
+            {
+                "TotalJobsCount": 3,
+                "requisitionList": [
+                    {
+                        "Id": "337440",
+                        "Title": "ORACLE_LISTING_TITLE_ONE",
+                        "PrimaryLocation": "Bengaluru, Karnataka, India",
+                        "PostedDate": "2026-08-20T00:00:00+00:00",
+                        "secondaryLocations": []
+                    },
+                    {
+                        "Id": "337501",
+                        "Title": 12345,
+                        "PrimaryLocation": "Hyderabad, Telangana, India",
+                        "PostedDate": "2026-08-19T00:00:00+00:00",
+                        "secondaryLocations": []
+                    },
+                    {
+                        "Id": "337502",
+                        "Title": "ORACLE_LISTING_TITLE_BAD_LOCATION",
+                        "PrimaryLocation": ["Hyderabad, Telangana, India"],
+                        "PostedDate": "2026-08-19T00:00:00+00:00",
+                        "secondaryLocations": []
+                    }
+                ]
+            }
+        ]
+    })
+
+    candidates = adapter.parse_raw_payload(
+        payload,
+        "Oracle",
+        "https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs",
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].extra_payload.get("public_job_id") == "337440"
+    assert candidates[0].title == "ORACLE_LISTING_TITLE_ONE"
+
+
 def test_phenom_adapter_registration_and_parsing():
     adapter = adapter_registry.get("phenom")
     assert adapter is not None

@@ -535,7 +535,10 @@ class OracleAdapter(BaseAdapter):
             if not job_id_str.isdigit():
                 continue
 
-            title = (record.get("Title") or "").strip()
+            raw_title = record.get("Title")
+            if raw_title is not None and not isinstance(raw_title, str):
+                continue
+            title = (raw_title or "").strip()
             if not title:
                 continue
 
@@ -546,7 +549,10 @@ class OracleAdapter(BaseAdapter):
             seen.add(clean_url)
             seen.add(job_id_str)
 
-            location_str = (record.get("PrimaryLocation") or "").strip() or "India"
+            raw_location = record.get("PrimaryLocation")
+            if raw_location is not None and not isinstance(raw_location, str):
+                continue
+            location_str = (raw_location or "").strip() or "India"
 
             fp = generate_fingerprint(board_name, f"{title} {job_id_str}", location_str)
             results.append(

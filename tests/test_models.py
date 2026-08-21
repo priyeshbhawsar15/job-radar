@@ -155,6 +155,68 @@ def test_oracle_seed_uses_live_site_number_cx_45001():
     assert oracle_cfg["site_number"] == "CX_45001"
 
 
+def test_build_initial_revision_config_adds_listing_only_for_oracle_board():
+    from job_radar.db.seed import INITIAL_BOARDS, build_initial_revision_config
+
+    by_id = {item[0]: item for item in INITIAL_BOARDS}
+    oracle_item = by_id["board-oracle"]
+    jpmc_item = by_id["board-jpmc"]
+    amex_item = by_id["board-amex"]
+    philips_item = by_id["board-philips"]
+
+    oracle_revision = build_initial_revision_config(oracle_item)
+    jpmc_revision = build_initial_revision_config(jpmc_item)
+    amex_revision = build_initial_revision_config(amex_item)
+    philips_revision = build_initial_revision_config(philips_item)
+
+    assert oracle_revision["oracle_listing"] == {
+        "keyword": "Software Engineer",
+        "location": "India",
+        "limit": 10,
+    }
+    assert "oracle_listing" not in jpmc_revision
+    assert "oracle_listing" not in amex_revision
+    assert "oracle_listing" not in philips_revision
+
+    assert "oracle_detail" in jpmc_revision
+    assert "oracle_detail" in amex_revision
+    assert "oracle_detail" in oracle_revision
+    assert "phenom_detail" in philips_revision
+
+    for item, revision in (
+        (oracle_item, oracle_revision),
+        (jpmc_item, jpmc_revision),
+        (amex_item, amex_revision),
+        (philips_item, philips_revision),
+    ):
+        assert revision["target_url"] == item[3]
+        assert revision["max_pages"] == 3
+        assert revision["schedule_cron"] == "0 */6 * * *"
+
+
+def test_build_initial_revision_config_rejects_bad_tuple_length():
+    from job_radar.db.seed import build_initial_revision_config
+
+    for bad_item in (("a",), ("a", "b", "c"), ("a", "b", "c", "d", "e", "f", "g")):
+        with pytest.raises(ValueError):
+            build_initial_revision_config(bad_item)
+
+
+def test_build_initial_revision_config_does_not_mutate_input():
+    from job_radar.db.seed import INITIAL_BOARDS, build_initial_revision_config
+
+    by_id = {item[0]: item for item in INITIAL_BOARDS}
+    oracle_item = by_id["board-oracle"]
+    original_detail_cfg = dict(oracle_item[4])
+
+    revision = build_initial_revision_config(oracle_item)
+    revision["oracle_detail"]["site_number"] = "MUTATED"
+    revision["oracle_listing"]["keyword"] = "MUTATED"
+
+    assert oracle_item[4] == original_detail_cfg
+    assert oracle_item[4]["site_number"] == "CX_45001"
+
+
 def test_jpmc_seed_oracle_detail_config_contains_only_strict_origins():
     from urllib.parse import urlparse
     from job_radar.db.seed import INITIAL_BOARDS

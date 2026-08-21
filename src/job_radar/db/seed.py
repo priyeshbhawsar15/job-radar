@@ -52,6 +52,12 @@ INITIAL_BOARDS = [
             "https://careers.oracle.com",
             "https://eeho.fa.us2.oraclecloud.com"
         ]
+    }, {
+        "oracle_listing": {
+            "keyword": "Software Engineer",
+            "location": "India",
+            "limit": 10
+        }
     }),
     ("board-philips", "Philips", "phenom", "https://www.careers.philips.com/in/en/search-results", {
         "allowed_origins": [
@@ -72,6 +78,38 @@ INITIAL_BOARDS = [
     ("board-wynploy", "Wynploy", "zoho", "https://wynploy.zohorecruit.in/jobs/Careers")
 ]
 
+def build_initial_revision_config(item: tuple) -> dict:
+    """Build one initial BoardRevision config without database I/O."""
+    if len(item) == 4:
+        b_id, name, family, target_url = item
+        family_cfg = None
+        revision_extras = None
+    elif len(item) == 5:
+        b_id, name, family, target_url, family_cfg = item
+        revision_extras = None
+    elif len(item) == 6:
+        b_id, name, family, target_url, family_cfg, revision_extras = item
+    else:
+        raise ValueError(f"Unsupported INITIAL_BOARDS tuple length: {len(item)}")
+
+    cfg_json = {
+        "target_url": target_url,
+        "max_pages": 3,
+        "schedule_cron": "0 */6 * * *"
+    }
+    if family_cfg:
+        if family == "oracle":
+            cfg_json["oracle_detail"] = dict(family_cfg)
+        elif family == "phenom":
+            cfg_json["phenom_detail"] = dict(family_cfg)
+
+    if revision_extras:
+        for key, value in revision_extras.items():
+            cfg_json[key] = dict(value) if isinstance(value, dict) else value
+
+    return cfg_json
+
+
 async def seed_database():
     print("Resetting database schema...")
     async with engine.begin() as conn:
@@ -80,11 +118,7 @@ async def seed_database():
 
     async with AsyncSessionLocal() as session:
         for item in INITIAL_BOARDS:
-            if len(item) == 5:
-                b_id, name, family, target_url, family_cfg = item
-            else:
-                b_id, name, family, target_url = item
-                family_cfg = None
+            b_id, name, family = item[0], item[1], item[2]
 
             board = Board(
                 board_id=b_id,
@@ -96,16 +130,7 @@ async def seed_database():
             session.add(board)
             await session.flush()
 
-            cfg_json = {
-                "target_url": target_url,
-                "max_pages": 3,
-                "schedule_cron": "0 */6 * * *"
-            }
-            if family_cfg:
-                if family == "oracle":
-                    cfg_json["oracle_detail"] = family_cfg
-                elif family == "phenom":
-                    cfg_json["phenom_detail"] = family_cfg
+            cfg_json = build_initial_revision_config(item)
 
             rev = BoardRevision(
                 board_id=b_id,

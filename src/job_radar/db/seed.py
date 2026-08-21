@@ -37,7 +37,6 @@ INITIAL_BOARDS = [
         "site_number": "CX_1001",
         "allowed_origins": [
             "https://jpmc.fa.oraclecloud.com",
-            "https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001",
             "https://careers.jpmorganchase.com"
         ]
     }),

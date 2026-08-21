@@ -123,3 +123,28 @@ async def test_philips_seed_configuration(db_session: AsyncSession):
     assert family == "phenom"
     assert "allowed_origins" in phenom_cfg
     assert phenom_cfg["allowed_origins"] == ["https://www.careers.philips.com"]
+
+
+def test_jpmc_seed_oracle_detail_config_contains_only_strict_origins():
+    from urllib.parse import urlparse
+    from job_radar.db.seed import INITIAL_BOARDS
+    from job_radar.services.oracle_detail import validate_oracle_config
+
+    jpmc_items = [b for b in INITIAL_BOARDS if b[0] == "board-jpmc"]
+    assert len(jpmc_items) == 1
+    jpmc_item = jpmc_items[0]
+    assert len(jpmc_item) == 5
+    b_id, name, family, target_url, jpmc_cfg = jpmc_item
+    assert family == "oracle"
+
+    assert jpmc_cfg["api_origin"] in jpmc_cfg["allowed_origins"]
+    assert validate_oracle_config(jpmc_cfg) is True
+
+    for origin in jpmc_cfg["allowed_origins"]:
+        parsed = urlparse(origin)
+        assert parsed.scheme == "https"
+        assert not parsed.username
+        assert not parsed.password
+        assert not parsed.query
+        assert not parsed.fragment
+        assert parsed.path in ("", "/")

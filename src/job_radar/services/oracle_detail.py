@@ -215,8 +215,12 @@ async def fetch_oracle_detail(request: DetailRequest, client: httpx.AsyncClient)
         if re.fullmatch(r"\d+(?:, India)?", location):
             location = None
 
+    raw_title = item.get("Title")
+    detail_title = raw_title.strip() if isinstance(raw_title, str) and raw_title.strip() else None
+
     return DetailResult(
         description=description,
         location=location,
         source="oracle_hcm_detail",
+        title=detail_title,
     )

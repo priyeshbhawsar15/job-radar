@@ -159,3 +159,253 @@ async def test_normalization_valid_extra_desc_does_not_fetch(test_session_factor
         assert job.description == valid_desc
         assert job.detail_enrichment_status == "succeeded"
         assert job.detail_enriched_at is not None
+
+
+@pytest.mark.asyncio
+async def test_jpmc_detail_title_replaces_exact_oracle_html_placeholder(test_session_factory):
+    mock_extractor = AsyncMock()
+    mock_extractor.fetch_and_enrich.return_value = DetailResult(
+        title="Lead Software Engineer - Sales",
+        description="<p>Responsibilities include building backend services for JPMC processing systems.</p>\n<p>Qualifications include 8+ years experience in Java and Python microservices.</p>\n<p>Requirements include strong knowledge of SQL databases.</p>",
+        location="Hyderabad, Telangana, India",
+        source="oracle_hcm_detail",
+        error_code=None,
+    )
+    norm_svc = NormalizationService(session_factory=test_session_factory, detail_extractor=mock_extractor)
+
+    async with test_session_factory() as session:
+        board = Board(board_id="board-jpmc", name="JPMC", family="oracle", status="active")
+        p_run = PipelineRun(pipeline_id="p-01", trigger="manual", status="running")
+        b_run = BoardRun(board_run_id="br-01", pipeline_id="p-01", board_id="board-jpmc", stage="running", outcome="in_progress")
+        session.add_all([board, p_run, b_run])
+        await session.commit()
+
+    candidate = ExtractedCandidate(
+        title="JPMC Job Requisition 210729984",
+        company="JPMC",
+        location="Hyderabad, Telangana, India",
+        raw_url="https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/210729984/",
+        fingerprint="fp_jpmc_210729984",
+        extra_payload={"public_job_id": "210729984"},
+    )
+
+    res = await norm_svc.ingest_candidates("board-jpmc", "br-01", [candidate], family="oracle")
+    assert res.enrichment_succeeded == 1
+
+    async with test_session_factory() as session:
+        db_res = await session.execute(select(CandidateJob))
+        job = db_res.scalar_one()
+        assert job.title == "Lead Software Engineer - Sales"
+        assert job.detail_enrichment_status == "succeeded"
+        assert job.description is not None
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "listing_title, company, family, public_id, detail_title",
+    [
+        ("Software Developer 4", "Oracle", "oracle", "337440", "Software Developer IV - Backend"),
+        ("Software Engineer II", "AMEX", "oracle", "210001", "Lead Software Engineer"),
+        ("Software Engineer - Java", "JPMC", "oracle", "210729984", "Sr Software Engineer - Java"),
+    ],
+)
+async def test_detail_title_does_not_replace_valid_listing_title(
+    test_session_factory, listing_title, company, family, public_id, detail_title
+):
+    valid_test_description = (
+        "<p>Responsibilities include building backend services for software processing systems across multiple domains.</p>\n"
+        "<p>Qualifications include 5+ years experience in Java and Python microservices and distributed systems.</p>\n"
+        "<p>Requirements include strong knowledge of SQL databases and async performance tuning.</p>"
+    )
+
+    mock_extractor = AsyncMock()
+    mock_extractor.fetch_and_enrich.return_value = DetailResult(
+        title=detail_title,
+        description=valid_test_description,
+        location="Bengaluru, Karnataka, India",
+        source="oracle_hcm_detail",
+        error_code=None,
+    )
+    norm_svc = NormalizationService(session_factory=test_session_factory, detail_extractor=mock_extractor)
+
+    board_id = f"board-{company.lower()}"
+    async with test_session_factory() as session:
+        board = Board(board_id=board_id, name=company, family=family, status="active")
+        p_run = PipelineRun(pipeline_id="p-01", trigger="manual", status="running")
+        b_run = BoardRun(board_run_id=f"br-{company.lower()}", pipeline_id="p-01", board_id=board_id, stage="running", outcome="in_progress")
+        session.add_all([board, p_run, b_run])
+        await session.commit()
+
+    candidate = ExtractedCandidate(
+        title=listing_title,
+        company=company,
+        location="Bengaluru, Karnataka, India",
+        raw_url=f"https://{company.lower()}.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/{public_id}/",
+        fingerprint=f"fp_{company.lower()}_{public_id}",
+        extra_payload={"public_job_id": public_id},
+    )
+
+    res = await norm_svc.ingest_candidates(board_id, f"br-{company.lower()}", [candidate], family=family)
+    assert res.enrichment_succeeded == 1
+
+    async with test_session_factory() as session:
+        db_res = await session.execute(select(CandidateJob).where(CandidateJob.board_id == board_id))
+        job = db_res.scalar_one()
+        assert job.title == listing_title
+        assert job.detail_enrichment_status == "succeeded"
+        assert job.description is not None
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "cand_title, detail_title_arg",
+    [
+        ("JPMC Job Requisition 210729984", None),
+        ("JPMC Job Requisition 210729984", ""),
+        ("JPMC Job Requisition 210729984", "   "),
+        ("JPMC Job Requisition 210729984", 12345),
+        ("JPMC Job Requisition 210729984", ["Lead Engineer"]),
+        ("JPMC Job Requisition 210729984", {"t": "Lead Engineer"}),
+        ("JPMC Job Requisition 999999999", "Lead Software Engineer - Sales"),
+        ("JPMC Job Requisition 210729984 (Updated)", "Lead Software Engineer - Sales"),
+        ("JP Morgan Job Requisition 210729984", "Lead Software Engineer - Sales"),
+        ("JPMC Job Requisition210729984", "Lead Software Engineer - Sales"),
+    ],
+)
+async def test_detail_title_invalid_and_near_match_safety(test_session_factory, cand_title, detail_title_arg):
+    valid_test_description = (
+        "<p>Responsibilities include building backend services for software processing systems across multiple domains.</p>\n"
+        "<p>Qualifications include 5+ years experience in Java and Python microservices and distributed systems.</p>\n"
+        "<p>Requirements include strong knowledge of SQL databases and async performance tuning.</p>"
+    )
+
+    mock_extractor = AsyncMock()
+    mock_extractor.fetch_and_enrich.return_value = DetailResult(
+        title=detail_title_arg,
+        description=valid_test_description,
+        location="Hyderabad, Telangana, India",
+        source="oracle_hcm_detail",
+        error_code=None,
+    )
+    norm_svc = NormalizationService(session_factory=test_session_factory, detail_extractor=mock_extractor)
+
+    async with test_session_factory() as session:
+        board = Board(board_id="board-jpmc-safety", name="JPMC", family="oracle", status="active")
+        p_run = PipelineRun(pipeline_id="p-safety", trigger="manual", status="running")
+        b_run = BoardRun(board_run_id="br-safety", pipeline_id="p-safety", board_id="board-jpmc-safety", stage="running", outcome="in_progress")
+        session.add_all([board, p_run, b_run])
+        await session.commit()
+
+    candidate = ExtractedCandidate(
+        title=cand_title,
+        company="JPMC",
+        location="Hyderabad, Telangana, India",
+        raw_url="https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/210729984/",
+        fingerprint=f"fp_jpmc_safety_{hash(cand_title)}",
+        extra_payload={"public_job_id": "210729984"},
+    )
+
+    res = await norm_svc.ingest_candidates("board-jpmc-safety", "br-safety", [candidate], family="oracle")
+    assert res.enrichment_succeeded == 1
+
+    async with test_session_factory() as session:
+        db_res = await session.execute(select(CandidateJob).where(CandidateJob.board_id == "board-jpmc-safety"))
+        job = db_res.scalar_one()
+        assert job.title == cand_title
+        assert job.detail_enrichment_status == "succeeded"
+
+
+@pytest.mark.asyncio
+async def test_detail_title_failed_enrichment_leaves_title_and_records_failure(test_session_factory):
+    mock_extractor = AsyncMock()
+    mock_extractor.fetch_and_enrich.return_value = DetailResult.empty(error_code="invalid_payload")
+    norm_svc = NormalizationService(session_factory=test_session_factory, detail_extractor=mock_extractor)
+
+    async with test_session_factory() as session:
+        board = Board(board_id="board-jpmc-fail", name="JPMC", family="oracle", status="active")
+        p_run = PipelineRun(pipeline_id="p-fail", trigger="manual", status="running")
+        b_run = BoardRun(board_run_id="br-fail", pipeline_id="p-fail", board_id="board-jpmc-fail", stage="running", outcome="in_progress")
+        session.add_all([board, p_run, b_run])
+        await session.commit()
+
+    candidate = ExtractedCandidate(
+        title="JPMC Job Requisition 210729984",
+        company="JPMC",
+        location="Hyderabad, Telangana, India",
+        raw_url="https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/210729984/",
+        fingerprint="fp_jpmc_fail_210729984",
+    )
+
+    res = await norm_svc.ingest_candidates("board-jpmc-fail", "br-fail", [candidate], family="oracle")
+    assert res.enrichment_failed == 1
+
+    async with test_session_factory() as session:
+        db_res = await session.execute(select(CandidateJob).where(CandidateJob.board_id == "board-jpmc-fail"))
+        job = db_res.scalar_one()
+        assert job.title == "JPMC Job Requisition 210729984"
+        assert job.detail_enrichment_status == "failed"
+        assert job.detail_enrichment_error_code == "invalid_payload"
+
+
+@pytest.mark.asyncio
+async def test_detail_title_replacement_persistence_invariants(test_session_factory):
+    valid_test_description = (
+        "<p>Responsibilities include building backend services for software processing systems across multiple domains.</p>\n"
+        "<p>Qualifications include 5+ years experience in Java and Python microservices and distributed systems.</p>\n"
+        "<p>Requirements include strong knowledge of SQL databases and async performance tuning.</p>"
+    )
+
+    mock_extractor = AsyncMock()
+    mock_extractor.fetch_and_enrich.return_value = DetailResult(
+        title="Lead Software Engineer - Sales",
+        description=valid_test_description,
+        location="Hyderabad, Telangana, India",
+        source="oracle_hcm_detail",
+        error_code=None,
+    )
+    norm_svc = NormalizationService(session_factory=test_session_factory, detail_extractor=mock_extractor)
+
+    async with test_session_factory() as session:
+        board = Board(board_id="board-jpmc-inv", name="JPMC", family="oracle", status="active")
+        p_run = PipelineRun(pipeline_id="p-inv", trigger="manual", status="running")
+        b_run = BoardRun(board_run_id="br-inv", pipeline_id="p-inv", board_id="board-jpmc-inv", stage="running", outcome="in_progress")
+        b_run2 = BoardRun(board_run_id="br-inv-2", pipeline_id="p-inv", board_id="board-jpmc-inv", stage="running", outcome="in_progress")
+        session.add_all([board, p_run, b_run, b_run2])
+        await session.commit()
+
+    candidate = ExtractedCandidate(
+        title="JPMC Job Requisition 210729984",
+        company="JPMC",
+        location="Hyderabad, Telangana, India",
+        raw_url="https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/210729984/",
+        fingerprint="fp_jpmc_inv_210729984",
+    )
+
+    res = await norm_svc.ingest_candidates("board-jpmc-inv", "br-inv", [candidate], family="oracle")
+    assert res.enrichment_succeeded == 1
+
+    async with test_session_factory() as session:
+        db_res = await session.execute(select(CandidateJob).where(CandidateJob.board_id == "board-jpmc-inv"))
+        job = db_res.scalar_one()
+        initial_identity_key = job.identity_key
+        initial_url_hash = job.canonical_url_hash
+        assert job.title == "Lead Software Engineer - Sales"
+
+    # Re-observe candidate with fallback title when existing row has already corrected title
+    re_candidate = ExtractedCandidate(
+        title="JPMC Job Requisition 210729984",
+        company="JPMC",
+        location="Hyderabad, Telangana, India",
+        raw_url="https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/210729984/",
+        fingerprint="fp_jpmc_inv_210729984",
+    )
+
+    res2 = await norm_svc.ingest_candidates("board-jpmc-inv", "br-inv-2", [re_candidate], family="oracle")
+    assert res2.observed_count == 1
+
+    async with test_session_factory() as session:
+        db_res = await session.execute(select(CandidateJob).where(CandidateJob.board_id == "board-jpmc-inv"))
+        job2 = db_res.scalar_one()
+        assert job2.title == "Lead Software Engineer - Sales"
+        assert job2.identity_key == initial_identity_key
+        assert job2.canonical_url_hash == initial_url_hash

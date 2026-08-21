@@ -14,6 +14,7 @@ from job_radar.db.models.run import PipelineRun, BoardRun, ExecutionAttempt
 from job_radar.adapters.base import ExtractedCandidate
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
 from job_radar.services.detail_contracts import DetailResult
+from job_radar.services.oracle_detail import extract_oracle_public_id
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,30 @@ class IngestionResult:
     created_count: int
     enrichment_succeeded: int
     enrichment_failed: int
+
+
+def oracle_detail_title_replacement(
+    *,
+    current_title: str,
+    company: str,
+    public_url: str,
+    detail_title: object,
+) -> Optional[str]:
+    """Return a capped detail title only for this URL's exact Oracle fallback title."""
+    if not isinstance(current_title, str) or not isinstance(company, str) or not isinstance(public_url, str):
+        return None
+    if not isinstance(detail_title, str):
+        return None
+    stripped_detail = detail_title.strip()
+    if not stripped_detail:
+        return None
+    public_id = extract_oracle_public_id(public_url)
+    if not public_id:
+        return None
+    expected_fallback = f"{company} Job Requisition {public_id}"
+    if current_title == expected_fallback:
+        return stripped_detail[:255]
+    return None
 
 
 def _description_looks_bad(text: str, title: str = "") -> bool:
@@ -171,6 +196,15 @@ class NormalizationService:
                                     job.employment_type = result.employment_type[:200]
                                 if result.department:
                                     job.department = result.department[:200]
+                                if family == "oracle":
+                                    new_title = oracle_detail_title_replacement(
+                                        current_title=job.title,
+                                        company=job.company,
+                                        public_url=job.public_apply_url,
+                                        detail_title=getattr(result, "title", None),
+                                    )
+                                    if new_title:
+                                        job.title = new_title
                                 job.detail_enrichment_status = "succeeded"
                                 job.detail_enriched_at = datetime.now(timezone.utc)
                                 job.detail_enrichment_error_code = None

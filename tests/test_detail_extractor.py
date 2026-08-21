@@ -36,12 +36,17 @@ def test_detail_request_and_result_contracts():
     assert res_empty.salary_max is None
     assert res_empty.salary_currency is None
     assert res_empty.source is None
+    assert res_empty.title is None
     assert res_empty.error_code == "description_missing"
+
+    res_with_title = DetailResult(title="Real title")
+    assert res_with_title.title == "Real title"
 
     update_dict = res_empty.as_update_dict()
     assert "description" in update_dict
     assert update_dict["description"] is None
     assert update_dict["detail_enrichment_error_code"] == "description_missing"
+    assert "title" not in update_dict
 
 
 FIXTURES = Path(__file__).parent / "fixtures" / "descriptions"

@@ -50,6 +50,7 @@ def test_oracle_adapter_registration_and_parsing():
     candidates = adapter.parse_raw_payload(html_payload, "Oracle", "https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs")
     assert len(candidates) == 1
     c = candidates[0]
+    assert c.title == "Oracle Job Requisition 337440"
     assert c.extra_payload.get("public_job_id") == "337440"
 
 

@@ -131,6 +131,7 @@ async def test_fetch_oracle_detail_http_mock_success():
         assert res.source == "oracle_hcm_detail"
         assert res.error_code is None
         assert res.location == "BENGALURU, KARNATAKA, India"
+        assert res.title == "Software Developer 4"
 
 
 @pytest.mark.asyncio
@@ -156,6 +157,77 @@ async def test_fetch_oracle_detail_with_site_number():
         )
         res = await fetch_oracle_detail(req, client)
         assert res.description is not None
+
+
+@pytest.mark.asyncio
+async def test_fetch_oracle_detail_returns_jpmc_title():
+    jpmc_fixture = (FIXTURES / "jpmc_requisition.json").read_bytes()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, content=jpmc_fixture, headers={"Content-Type": "application/json"})
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport) as client:
+        req = DetailRequest(
+            family="oracle",
+            public_url="https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/210729984/",
+            board_name="JPMC",
+            title="JPMC Job Requisition 210729984",
+            provider_config={
+                "api_origin": "https://jpmc.fa.oraclecloud.com",
+                "allowed_origins": ["https://jpmc.fa.oraclecloud.com"],
+            },
+        )
+        res = await fetch_oracle_detail(req, client)
+        assert res.title == "Lead Software Engineer - Sales"
+        assert res.description is not None
+        assert "JPMC_FULL_DESCRIPTION_TOKEN" in res.description
+        assert res.location == "Hyderabad, Telangana, India"
+        assert res.error_code is None
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "raw_title, expected_title",
+    [
+        ("MISSING_KEY", None),
+        (None, None),
+        ("", None),
+        ("   ", None),
+        (12345, None),
+        (["Lead Engineer"], None),
+        ({"name": "Lead Engineer"}, None),
+        ("  Lead Software Engineer - Sales  \n", "Lead Software Engineer - Sales"),
+    ],
+)
+async def test_fetch_oracle_detail_title_parsing_variations(raw_title, expected_title):
+    base_item = {
+        "Id": "210729984",
+        "ExternalDescriptionStr": "<p>JPMC_FULL_DESCRIPTION_TOKEN</p><p>As a Lead Software Engineer at JPMorgan Chase, you carry out critical tech solutions across broad business domains.</p><p>RESPONSIBILITIES:</p><ul><li>Lead architectural design for payment systems.</li></ul><p>QUALIFICATIONS:</p><ul><li>8+ years in software engineering.</li></ul>",
+        "PrimaryLocation": "Hyderabad, Telangana, India",
+    }
+    if raw_title != "MISSING_KEY":
+        base_item["Title"] = raw_title
+
+    payload = {"items": [base_item]}
+
+    transport = httpx.MockTransport(lambda req: httpx.Response(200, json=payload))
+    async with httpx.AsyncClient(transport=transport) as client:
+        req = DetailRequest(
+            family="oracle",
+            public_url="https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/210729984/",
+            board_name="JPMC",
+            title="JPMC Job Requisition 210729984",
+            provider_config={
+                "api_origin": "https://jpmc.fa.oraclecloud.com",
+                "allowed_origins": ["https://jpmc.fa.oraclecloud.com"],
+            },
+        )
+        res = await fetch_oracle_detail(req, client)
+        assert res.title == expected_title
+        assert res.description is not None
+        assert "JPMC_FULL_DESCRIPTION_TOKEN" in res.description
+        assert res.error_code is None
 
 
 @pytest.mark.asyncio

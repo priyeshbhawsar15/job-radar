@@ -36,6 +36,7 @@ class DetailResult:
     salary_currency: Optional[str] = None
     source: Optional[str] = None
     error_code: Optional[str] = None
+    title: Optional[str] = None
 
     @classmethod
     def empty(cls, error_code: Optional[str] = None) -> "DetailResult":

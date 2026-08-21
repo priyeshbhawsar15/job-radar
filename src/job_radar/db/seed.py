@@ -47,7 +47,7 @@ INITIAL_BOARDS = [
     ("board-novartis", "Novartis", "custom", "https://www.novartis.com/in-en/careers/career-search?search_api_fulltext=software&country[0]=LOC_IN&op=Submit&field_job_posted_date=3"),
     ("board-oracle", "Oracle", "oracle", "https://careers.oracle.com/en/sites/jobsearch/jobs?keyword=Software+Engineer&location=India", {
         "api_origin": "https://eeho.fa.us2.oraclecloud.com",
-        "site_number": "CX_1",
+        "site_number": "CX_45001",
         "allowed_origins": [
             "https://careers.oracle.com",
             "https://eeho.fa.us2.oraclecloud.com"

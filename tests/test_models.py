@@ -125,6 +125,36 @@ async def test_philips_seed_configuration(db_session: AsyncSession):
     assert phenom_cfg["allowed_origins"] == ["https://www.careers.philips.com"]
 
 
+def test_amex_seed_configuration_literal():
+    from job_radar.db.seed import INITIAL_BOARDS
+    amex_items = [b for b in INITIAL_BOARDS if b[0] == "board-amex"]
+    assert len(amex_items) == 1
+    amex_item = amex_items[0]
+    assert amex_item == (
+        "board-amex",
+        "AMEX",
+        "oracle",
+        "https://egug.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs?keyword=Software",
+        {
+            "api_origin": "https://egug.fa.us2.oraclecloud.com",
+            "site_number": "CX_1",
+            "allowed_origins": [
+                "https://egug.fa.us2.oraclecloud.com",
+                "https://americanexpress.wd5.myworkdayjobs.com",
+            ],
+        },
+    )
+
+
+def test_oracle_seed_uses_live_site_number_cx_45001():
+    from job_radar.db.seed import INITIAL_BOARDS
+    oracle_items = [b for b in INITIAL_BOARDS if b[0] == "board-oracle"]
+    assert len(oracle_items) == 1
+    oracle_item = oracle_items[0]
+    oracle_cfg = oracle_item[4]
+    assert oracle_cfg["site_number"] == "CX_45001"
+
+
 def test_jpmc_seed_oracle_detail_config_contains_only_strict_origins():
     from urllib.parse import urlparse
     from job_radar.db.seed import INITIAL_BOARDS

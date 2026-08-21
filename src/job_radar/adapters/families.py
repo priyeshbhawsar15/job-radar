@@ -21,7 +21,7 @@ def canonicalize_job_url(full_url: str, board_name: str, target_url: str) -> str
 import hashlib
 import json
 import re
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 from typing import List, Dict, Any, Optional
 from job_radar.adapters.base import BaseAdapter, ExtractedCandidate
 
@@ -428,6 +428,20 @@ class AmeripriseAdapter(BaseAdapter):
 
         return results
 
+def _build_oracle_job_url(target_url: str, job_id: str) -> str:
+    """Build a same-origin canonical Oracle job URL, safely handling a
+    trailing "jobs" path segment (e.g. "/en/sites/jobsearch/jobs") without
+    truncating inside unrelated segments like "jobsearch".
+    """
+    parsed = urlparse(target_url)
+    segments = [segment for segment in parsed.path.split("/") if segment]
+    if segments and segments[-1] == "jobs":
+        segments = segments[:-1]
+    segments.extend(["job", job_id])
+    new_path = "/" + "/".join(segments) + "/"
+    return urlunparse((parsed.scheme, parsed.netloc, new_path, "", "", ""))
+
+
 class OracleAdapter(BaseAdapter):
     @property
     def family(self) -> str:
@@ -452,7 +466,7 @@ class OracleAdapter(BaseAdapter):
         for part in parts[1:]:
             job_id_str = part.split("/")[0].split("?")[0].split('"')[0].split("'")[0].strip()
             if job_id_str.isdigit():
-                full_url = target_url.split("/jobs")[0] + f"/job/{job_id_str}/"
+                full_url = _build_oracle_job_url(target_url, job_id_str)
                 clean_url = canonicalize_job_url(full_url, board_name, target_url)
                 if not clean_url or clean_url in seen:
                     continue

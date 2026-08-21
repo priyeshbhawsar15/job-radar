@@ -54,6 +54,28 @@ def test_oracle_adapter_registration_and_parsing():
     assert c.extra_payload.get("public_job_id") == "337440"
 
 
+def test_oracle_adapter_html_fallback_builds_vanity_url_without_splitting_jobsearch():
+    adapter = adapter_registry.get("oracle")
+    assert adapter is not None
+
+    html_payload = """
+    <html>
+        <body>
+            <a href="https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/337440/">Job 337440</a>
+        </body>
+    </html>
+    """
+    candidates = adapter.parse_raw_payload(
+        html_payload,
+        "Oracle",
+        "https://careers.oracle.com/en/sites/jobsearch/jobs?keyword=Software+Engineer&location=India",
+    )
+    assert len(candidates) == 1
+    assert candidates[0].raw_url == (
+        "https://careers.oracle.com/en/sites/jobsearch/job/337440/"
+    )
+
+
 def test_phenom_adapter_registration_and_parsing():
     adapter = adapter_registry.get("phenom")
     assert adapter is not None

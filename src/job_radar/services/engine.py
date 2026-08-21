@@ -18,6 +18,7 @@ from job_radar.adapters.base import ExtractedCandidate
 from job_radar.adapters.families import generate_fingerprint, canonicalize_job_url
 from job_radar.services.browser import BrowserServiceClient, TargetBoundaryViolation
 from job_radar.services.normalization import normalization_service
+from job_radar.services import oracle_listing
 
 logger = logging.getLogger(__name__)
 
@@ -701,10 +702,28 @@ class PipelineExecutionEngine:
                                 except Exception as g_err:
                                     logger.info(f"Google detail fetch failed for {c.raw_url}: {g_err}")
                     elif family == "oracle":
-                        raw_payload = await self.browser_client.fetch_board_html(
-                            target_url=target_url,
-                            registered_target_url=target_url
+                        revision_config = (
+                            revision.config_json
+                            if revision and isinstance(revision.config_json, dict)
+                            else {}
                         )
+                        listing_config = revision_config.get("oracle_listing")
+                        if isinstance(listing_config, dict):
+                            oracle_config = revision_config.get("oracle_detail")
+                            async with httpx.AsyncClient(
+                                timeout=20.0,
+                                follow_redirects=True,
+                            ) as client:
+                                raw_payload = await oracle_listing.fetch_oracle_listing_payload(
+                                    listing_config,
+                                    oracle_config,
+                                    client,
+                                )
+                        else:
+                            raw_payload = await self.browser_client.fetch_board_html(
+                                target_url=target_url,
+                                registered_target_url=target_url
+                            )
                         extracted_candidates = adapter.parse_raw_payload(
                             payload=raw_payload,
                             board_name=board.name,

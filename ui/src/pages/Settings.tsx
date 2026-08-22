@@ -102,7 +102,15 @@ export const Settings: React.FC = () => {
 
   const handleTestConnection = () => {
     setConnectionStatus('testing');
-    fetch('/api/v1/settings/test-jobops', { method: 'POST' })
+    fetch('/api/v1/settings/test-jobops', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jobops_endpoint: jobopsEndpoint,
+        jobops_username: jobopsUsername,
+        jobops_password: jobopsPassword,
+      }),
+    })
       .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
         if (!ok) {
@@ -117,7 +125,11 @@ export const Settings: React.FC = () => {
   const handleTestWebhook = () => {
     setWebhookTestStatus('testing');
     setWebhookTestMessage('');
-    fetch('/api/v1/settings/test-discord-webhook', { method: 'POST' })
+    fetch('/api/v1/settings/test-discord-webhook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ discord_webhook_url: discordWebhookUrl }),
+    })
       .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
         if (!ok || !data.ok) {

@@ -44,6 +44,16 @@ class TestDiscordWebhookResponse(BaseModel):
     message: str
 
 
+class TestJobOpsRequest(BaseModel):
+    jobops_endpoint: Optional[str] = None
+    jobops_username: Optional[str] = None
+    jobops_password: Optional[str] = None
+
+
+class TestDiscordWebhookRequest(BaseModel):
+    discord_webhook_url: Optional[str] = None
+
+
 def _to_response(stored) -> SettingsResponse:
     return SettingsResponse(
         scheduler_enabled=stored.scheduler_enabled,
@@ -79,11 +89,12 @@ async def update_settings(req: UpdateSettingsRequest):
 
 
 @router.post("/test-jobops", response_model=TestJobOpsResponse)
-async def test_jobops_connection():
+async def test_jobops_connection(req: Optional[TestJobOpsRequest] = None):
     stored = load_settings()
-    endpoint = stored.jobops_endpoint or app_config.JOBOPS_ENDPOINT
-    username = stored.jobops_username or app_config.JOBOPS_USERNAME
-    password = stored.jobops_password or app_config.JOBOPS_PASSWORD
+    req = req or TestJobOpsRequest()
+    endpoint = req.jobops_endpoint or stored.jobops_endpoint or app_config.JOBOPS_ENDPOINT
+    username = req.jobops_username or stored.jobops_username or app_config.JOBOPS_USERNAME
+    password = req.jobops_password or stored.jobops_password or app_config.JOBOPS_PASSWORD
     if not endpoint:
         raise HTTPException(status_code=400, detail="Job Ops endpoint not configured")
 
@@ -101,19 +112,25 @@ async def test_jobops_connection():
     except ValueError:
         body = {}
 
-    if resp.status_code == 200 and body.get("ok") is True:
+    if (
+        resp.status_code == 200
+        and body.get("ok") is True
+        and body.get("data", {}).get("token")
+    ):
         return TestJobOpsResponse(status="connected", detail="Authentication successful")
-    if resp.status_code in (401, 403) or body.get("ok") is False:
+    if resp.status_code in (400, 401, 403) or body.get("ok") is False:
         return TestJobOpsResponse(status="unauthorized", detail="Invalid credentials")
-    if resp.status_code >= 500 or resp.status_code == 404:
+    if resp.status_code == 404 or resp.status_code >= 500:
         return TestJobOpsResponse(status="unreachable", detail=f"HTTP {resp.status_code}")
-    return TestJobOpsResponse(status="connected")
+    return TestJobOpsResponse(status="unreachable", detail=f"HTTP {resp.status_code}")
 
 
 @router.post("/test-discord-webhook", response_model=TestDiscordWebhookResponse)
-async def test_discord_webhook():
+async def test_discord_webhook(req: Optional[TestDiscordWebhookRequest] = None):
     stored = load_settings()
-    if not stored.discord_webhook_url:
+    req = req or TestDiscordWebhookRequest()
+    webhook_url = req.discord_webhook_url or stored.discord_webhook_url
+    if not webhook_url:
         return TestDiscordWebhookResponse(
             ok=False, message="Discord Webhook URL is empty. Please enter a valid URL."
         )
@@ -130,7 +147,7 @@ async def test_discord_webhook():
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as http_client:
-            response = await http_client.post(stored.discord_webhook_url, json=payload)
+            response = await http_client.post(webhook_url, json=payload)
             response.raise_for_status()
     except httpx.HTTPStatusError as exc:
         return TestDiscordWebhookResponse(

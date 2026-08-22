@@ -114,7 +114,9 @@ async def test_jobops_connection():
 async def test_discord_webhook():
     stored = load_settings()
     if not stored.discord_webhook_url:
-        raise HTTPException(status_code=400, detail="Discord webhook URL not configured")
+        return TestDiscordWebhookResponse(
+            ok=False, message="Discord Webhook URL is empty. Please enter a valid URL."
+        )
 
     payload = {
         "embeds": [
@@ -130,7 +132,11 @@ async def test_discord_webhook():
         async with httpx.AsyncClient(timeout=10.0) as http_client:
             response = await http_client.post(stored.discord_webhook_url, json=payload)
             response.raise_for_status()
-    except httpx.HTTPError as exc:
-        return TestDiscordWebhookResponse(ok=False, message=f"Failed to reach Discord webhook: {exc}")
+    except httpx.HTTPStatusError as exc:
+        return TestDiscordWebhookResponse(
+            ok=False, message=f"Webhook test failed: HTTP {exc.response.status_code}"
+        )
+    except httpx.RequestError as exc:
+        return TestDiscordWebhookResponse(ok=False, message=f"Webhook test failed: {exc}")
 
     return TestDiscordWebhookResponse(ok=True, message="Test notification delivered to Discord successfully!")

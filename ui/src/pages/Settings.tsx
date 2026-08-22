@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, CheckCircle, Cog, Wifi } from 'lucide-react';
+import { Save, CheckCircle, Cog, Wifi, Send } from 'lucide-react';
 
 interface AppSettings {
   scheduler_enabled: boolean;
@@ -7,6 +7,10 @@ interface AppSettings {
   selected_board_ids: string[];
   handoff_enabled: boolean;
   jobops_endpoint: string | null;
+  jobops_username: string | null;
+  jobops_password: string | null;
+  discord_webhook_enabled: boolean;
+  discord_webhook_url: string;
 }
 
 interface BoardOption {
@@ -15,6 +19,7 @@ interface BoardOption {
 }
 
 type ConnectionStatus = 'idle' | 'testing' | 'connected' | 'unauthorized' | 'unreachable';
+type WebhookTestStatus = 'idle' | 'testing' | 'success' | 'failure';
 
 export const Settings: React.FC = () => {
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -24,7 +29,13 @@ export const Settings: React.FC = () => {
   const [selectedBoardIds, setSelectedBoardIds] = useState<string[]>([]);
   const [handoffEnabled, setHandoffEnabled] = useState<boolean>(false);
   const [jobopsEndpoint, setJobopsEndpoint] = useState<string>('');
+  const [jobopsUsername, setJobopsUsername] = useState<string>('');
+  const [jobopsPassword, setJobopsPassword] = useState<string>('');
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('idle');
+  const [discordWebhookEnabled, setDiscordWebhookEnabled] = useState<boolean>(false);
+  const [discordWebhookUrl, setDiscordWebhookUrl] = useState<string>('');
+  const [webhookTestStatus, setWebhookTestStatus] = useState<WebhookTestStatus>('idle');
+  const [webhookTestMessage, setWebhookTestMessage] = useState<string>('');
   const [savedMsg, setSavedMsg] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -43,6 +54,10 @@ export const Settings: React.FC = () => {
           setSelectedBoardIds(settingsData.selected_board_ids || []);
           setHandoffEnabled(settingsData.handoff_enabled);
           setJobopsEndpoint(settingsData.jobops_endpoint || '');
+          setJobopsUsername(settingsData.jobops_username || '');
+          setJobopsPassword(settingsData.jobops_password || '');
+          setDiscordWebhookEnabled(settingsData.discord_webhook_enabled || false);
+          setDiscordWebhookUrl(settingsData.discord_webhook_url || '');
         }
         setBoards((boardsData || []).map((b) => ({ board_id: b.board_id, name: b.name })));
       })
@@ -70,6 +85,10 @@ export const Settings: React.FC = () => {
         selected_board_ids: selectedBoardIds,
         handoff_enabled: handoffEnabled,
         jobops_endpoint: jobopsEndpoint || null,
+        jobops_username: jobopsUsername || null,
+        jobops_password: jobopsPassword || null,
+        discord_webhook_enabled: discordWebhookEnabled,
+        discord_webhook_url: discordWebhookUrl,
       }),
     })
       .then((res) => res.json())
@@ -93,6 +112,26 @@ export const Settings: React.FC = () => {
         setConnectionStatus(data.status as ConnectionStatus);
       })
       .catch(() => setConnectionStatus('unreachable'));
+  };
+
+  const handleTestWebhook = () => {
+    setWebhookTestStatus('testing');
+    setWebhookTestMessage('');
+    fetch('/api/v1/settings/test-discord-webhook', { method: 'POST' })
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok || !data.ok) {
+          setWebhookTestStatus('failure');
+          setWebhookTestMessage(data.detail || data.message || 'Failed to send test notification.');
+          return;
+        }
+        setWebhookTestStatus('success');
+        setWebhookTestMessage(data.message);
+      })
+      .catch((err) => {
+        setWebhookTestStatus('failure');
+        setWebhookTestMessage(String(err));
+      });
   };
 
   if (loading || !settings) {
@@ -258,6 +297,35 @@ export const Settings: React.FC = () => {
             />
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label htmlFor="jobopsUsername" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                Job Ops username
+              </label>
+              <input
+                id="jobopsUsername"
+                type="text"
+                value={jobopsUsername}
+                onChange={(e) => setJobopsUsername(e.target.value)}
+                placeholder="priyesh"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="jobopsPassword" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                Job Ops password
+              </label>
+              <input
+                id="jobopsPassword"
+                type="password"
+                value={jobopsPassword}
+                onChange={(e) => setJobopsPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+          </div>
+
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -276,6 +344,73 @@ export const Settings: React.FC = () => {
               </span>
             )}
           </div>
+        </section>
+
+        <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">Discord Webhook Integration</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Send an automated summary to a Discord channel whenever a pipeline run completes.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Enable Discord notifications</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={discordWebhookEnabled}
+              onClick={() => setDiscordWebhookEnabled((prev) => !prev)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                discordWebhookEnabled ? 'bg-teal-600' : 'bg-slate-300 dark:bg-slate-700'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  discordWebhookEnabled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="discordWebhookUrl" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Discord webhook URL
+            </label>
+            <input
+              id="discordWebhookUrl"
+              type="text"
+              value={discordWebhookUrl}
+              onChange={(e) => setDiscordWebhookUrl(e.target.value)}
+              placeholder="https://discord.com/api/webhooks/..."
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleTestWebhook}
+              disabled={webhookTestStatus === 'testing' || !discordWebhookUrl}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" />
+              <span>{webhookTestStatus === 'testing' ? 'Testing...' : 'Test Webhook'}</span>
+            </button>
+            {webhookTestStatus === 'success' && (
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/30">
+                Sent
+              </span>
+            )}
+            {webhookTestStatus === 'failure' && (
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/30">
+                Failed
+              </span>
+            )}
+          </div>
+          {webhookTestMessage && (
+            <p className="text-xs text-slate-500 dark:text-slate-400">{webhookTestMessage}</p>
+          )}
         </section>
 
         <button

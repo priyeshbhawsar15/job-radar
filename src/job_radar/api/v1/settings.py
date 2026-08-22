@@ -16,6 +16,10 @@ class SettingsResponse(BaseModel):
     selected_board_ids: List[str] = []
     handoff_enabled: bool
     jobops_endpoint: Optional[str] = None
+    jobops_username: Optional[str] = None
+    jobops_password: Optional[str] = None
+    discord_webhook_enabled: bool = False
+    discord_webhook_url: str = ""
 
 
 class UpdateSettingsRequest(BaseModel):
@@ -24,11 +28,20 @@ class UpdateSettingsRequest(BaseModel):
     selected_board_ids: Optional[List[str]] = None
     handoff_enabled: Optional[bool] = None
     jobops_endpoint: Optional[str] = None
+    jobops_username: Optional[str] = None
+    jobops_password: Optional[str] = None
+    discord_webhook_enabled: Optional[bool] = None
+    discord_webhook_url: Optional[str] = None
 
 
 class TestJobOpsResponse(BaseModel):
     status: str
     detail: Optional[str] = None
+
+
+class TestDiscordWebhookResponse(BaseModel):
+    ok: bool
+    message: str
 
 
 def _to_response(stored) -> SettingsResponse:
@@ -38,6 +51,10 @@ def _to_response(stored) -> SettingsResponse:
         selected_board_ids=stored.selected_board_ids,
         handoff_enabled=stored.handoff_enabled,
         jobops_endpoint=stored.jobops_endpoint or app_config.JOBOPS_ENDPOINT,
+        jobops_username=stored.jobops_username,
+        jobops_password=stored.jobops_password,
+        discord_webhook_enabled=stored.discord_webhook_enabled,
+        discord_webhook_url=stored.discord_webhook_url,
     )
 
 
@@ -80,3 +97,29 @@ async def test_jobops_connection():
     if resp.status_code >= 500 or resp.status_code == 404:
         return TestJobOpsResponse(status="unreachable", detail=f"HTTP {resp.status_code}")
     return TestJobOpsResponse(status="connected")
+
+
+@router.post("/test-discord-webhook", response_model=TestDiscordWebhookResponse)
+async def test_discord_webhook():
+    stored = load_settings()
+    if not stored.discord_webhook_url:
+        raise HTTPException(status_code=400, detail="Discord webhook URL not configured")
+
+    payload = {
+        "embeds": [
+            {
+                "title": "🎯 Job Radar Discord Webhook Test Connection",
+                "color": 0x10B981,
+                "description": "This is a test notification from Job Radar's Settings page.",
+            }
+        ]
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as http_client:
+            response = await http_client.post(stored.discord_webhook_url, json=payload)
+            response.raise_for_status()
+    except httpx.HTTPError as exc:
+        return TestDiscordWebhookResponse(ok=False, message=f"Failed to reach Discord webhook: {exc}")
+
+    return TestDiscordWebhookResponse(ok=True, message="Test notification delivered to Discord successfully!")

@@ -5,11 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from job_radar.db.session import get_db_session
+from job_radar.db.session import get_db_session, AsyncSessionLocal
 from job_radar.db.models.board import Board
 from job_radar.db.models.run import PipelineRun, BoardRun
 from job_radar.db.models.candidate import CandidateJob, RunCandidate
 from job_radar.services.engine import execution_engine
+from job_radar.services.discord_notifier import send_pipeline_summary_notification
 
 router = APIRouter(prefix="/runs", tags=["Pipeline Runs"])
 
@@ -27,6 +28,12 @@ async def run_pipeline_task(board_ids: List[str], pipeline_id: str):
             await execution_engine.execute_board_run(board_id=b_id, pipeline_id=pipeline_id)
         except Exception as e:
             print(f"Error executing board run for {b_id}: {e}")
+
+    async with AsyncSessionLocal() as session:
+        try:
+            await send_pipeline_summary_notification(pipeline_id, session)
+        except Exception as e:
+            print(f"Error sending Discord pipeline summary notification for {pipeline_id}: {e}")
 
 @router.post("/trigger", response_model=TriggerRunResponse)
 async def trigger_run(

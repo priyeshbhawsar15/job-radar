@@ -10,6 +10,7 @@ export const Jobs: React.FC = () => {
   const [boardFilter, setBoardFilter] = useState<string>('all');
   const [adapterFilter, setAdapterFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [enrichmentFilter, setEnrichmentFilter] = useState<string>('all');
   const [jobs, setJobs] = useState<any[]>([]);
   const [boards, setBoards] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -42,7 +43,10 @@ export const Jobs: React.FC = () => {
       const boardMatch = boardFilter === 'all' || j.board_id.toLowerCase() === boardFilter.toLowerCase();
       const adapterMatch = adapterFilter === 'all' || jobAdapter.toLowerCase() === adapterFilter.toLowerCase();
       const statusMatch = statusFilter === 'all' || (j.job_ops_status || 'accepted').toLowerCase() === statusFilter.toLowerCase();
-      return textMatch && boardMatch && adapterMatch && statusMatch;
+      const enrichmentMatch =
+        enrichmentFilter === 'all' ||
+        (j.detail_enrichment_status || 'pending').toLowerCase() === enrichmentFilter.toLowerCase();
+      return textMatch && boardMatch && adapterMatch && statusMatch && enrichmentMatch;
     })
     .sort((a, b) => {
       const timeA = a.first_seen_at || '';
@@ -78,7 +82,7 @@ export const Jobs: React.FC = () => {
 
       {/* Filter Control Box */}
       <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
           {/* Search Input */}
           <div className="space-y-1">
             <label htmlFor="jobSearch" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -169,6 +173,24 @@ export const Jobs: React.FC = () => {
               <option value="held">Held</option>
             </select>
           </div>
+
+          {/* Enrichment Status Filter Dropdown */}
+          <div className="space-y-1">
+            <label htmlFor="jobEnrichment" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Enrichment status
+            </label>
+            <select
+              id="jobEnrichment"
+              value={enrichmentFilter}
+              onChange={(e) => setEnrichmentFilter(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="all">All enrichment</option>
+              <option value="succeeded">Succeeded only</option>
+              <option value="failed">Failed only</option>
+              <option value="pending">Pending only</option>
+            </select>
+          </div>
         </div>
 
         {/* Job Cards List */}
@@ -193,6 +215,13 @@ export const Jobs: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
+                    {j.detail_enrichment_status === 'failed' && (
+                      <StatusBadge
+                        status="failed"
+                        label={`Failed enrichment: ${j.detail_enrichment_error_code || 'unknown'}`}
+                        size="sm"
+                      />
+                    )}
                     <StatusBadge status={j.job_ops_status || 'accepted'} size="sm" />
                     <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
                   </div>

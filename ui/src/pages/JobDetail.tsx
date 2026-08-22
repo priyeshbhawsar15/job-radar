@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
-import { ArrowLeft, Copy, Check, ExternalLink, Code2 } from 'lucide-react';
+import { ArrowLeft, Copy, Check, ExternalLink, Code2, AlertTriangle } from 'lucide-react';
 
 export const JobDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +36,8 @@ export const JobDetail: React.FC = () => {
             receipt: 'OPS-' + id,
             description: found.description || ('Position for ' + found.title + ' at ' + (found.company || found.company_name) + '. Full position details and responsibilities available at apply link.'),
             salary_raw: found.salary_raw || 'Competitive / Not specified',
+            detail_enrichment_status: found.detail_enrichment_status || 'pending',
+            detail_enrichment_error_code: found.detail_enrichment_error_code || null,
           });
         }
       })
@@ -96,6 +98,8 @@ export const JobDetail: React.FC = () => {
     { key: 'source', label: 'Source Board', value: job.board },
     { key: 'sourceJobId', label: 'Source Job ID', value: job.id },
     { key: 'discovered_at', label: 'Discovered at', value: job.discovered },
+    { key: 'detail_enrichment_status', label: 'Detail Enrichment Status', value: job.detail_enrichment_status },
+    { key: 'detail_enrichment_error_code', label: 'Enrichment Error Code', value: job.detail_enrichment_error_code || 'None' },
   ];
 
   return (
@@ -128,6 +132,19 @@ export const JobDetail: React.FC = () => {
       <p className="text-xs text-slate-500 dark:text-slate-400">
         <Link to="/jobs" className="hover:underline">Extracted jobs</Link> / {job.id}
       </p>
+
+      {/* Enrichment Failure Warning Banner */}
+      {job.detail_enrichment_status === 'failed' && (
+        <section className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold text-rose-700 dark:text-rose-400">Detail enrichment failed</p>
+            <p className="text-xs text-rose-600 dark:text-rose-300 mt-0.5">
+              Error code: <span className="font-mono">{job.detail_enrichment_error_code || 'unknown'}</span>. Description and detail fields may be incomplete.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Job Description Card */}
       <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">

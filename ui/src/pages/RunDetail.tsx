@@ -142,6 +142,13 @@ export const RunDetail: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
+                  {j.detail_enrichment_status === 'failed' && (
+                    <StatusBadge
+                      status="failed"
+                      label={`Enrichment failed: ${j.detail_enrichment_error_code || 'unknown'}`}
+                      size="sm"
+                    />
+                  )}
                   <StatusBadge status={j.job_ops_status || 'accepted'} size="sm" />
                   <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
                 </div>

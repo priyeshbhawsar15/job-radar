@@ -13,6 +13,7 @@ import { BoardRunLog } from './pages/BoardRunLog';
 import { Jobs } from './pages/Jobs';
 import { JobDetail } from './pages/JobDetail';
 import { Dashboard } from './pages/Dashboard';
+import { Settings } from './pages/Settings';
 import { useSSE } from './hooks/useSSE';
 
 export function App() {
@@ -62,6 +63,7 @@ export function App() {
               <Route path="/board-runs/:id" element={<BoardRunLog />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/jobs/:id" element={<JobDetail />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/runs" replace />} />
             </Routes>
           </main>

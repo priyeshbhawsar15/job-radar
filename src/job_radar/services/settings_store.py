@@ -13,6 +13,10 @@ class AppSettingsModel(BaseModel):
     selected_board_ids: List[str] = []
     handoff_enabled: bool = False
     jobops_endpoint: Optional[str] = None
+    jobops_username: Optional[str] = None
+    jobops_password: Optional[str] = None
+    discord_webhook_enabled: bool = False
+    discord_webhook_url: str = ""
 
 
 def load_settings(path: Path = None) -> AppSettingsModel:

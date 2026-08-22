@@ -82,18 +82,29 @@ async def update_settings(req: UpdateSettingsRequest):
 async def test_jobops_connection():
     stored = load_settings()
     endpoint = stored.jobops_endpoint or app_config.JOBOPS_ENDPOINT
+    username = stored.jobops_username or app_config.JOBOPS_USERNAME
+    password = stored.jobops_password or app_config.JOBOPS_PASSWORD
     if not endpoint:
         raise HTTPException(status_code=400, detail="Job Ops endpoint not configured")
 
-    url = f"{endpoint.rstrip('/')}/api/manual-jobs/import"
+    url = f"{endpoint.rstrip('/')}/api/auth/login"
     try:
         async with httpx.AsyncClient(timeout=5.0) as http_client:
-            resp = await http_client.get(url)
+            resp = await http_client.post(
+                url, json={"username": username, "password": password}
+            )
     except httpx.RequestError as exc:
         return TestJobOpsResponse(status="unreachable", detail=str(exc))
 
-    if resp.status_code in (401, 403):
-        return TestJobOpsResponse(status="unauthorized", detail=f"HTTP {resp.status_code}")
+    try:
+        body = resp.json()
+    except ValueError:
+        body = {}
+
+    if resp.status_code == 200 and body.get("ok") is True:
+        return TestJobOpsResponse(status="connected", detail="Authentication successful")
+    if resp.status_code in (401, 403) or body.get("ok") is False:
+        return TestJobOpsResponse(status="unauthorized", detail="Invalid credentials")
     if resp.status_code >= 500 or resp.status_code == 404:
         return TestJobOpsResponse(status="unreachable", detail=f"HTTP {resp.status_code}")
     return TestJobOpsResponse(status="connected")

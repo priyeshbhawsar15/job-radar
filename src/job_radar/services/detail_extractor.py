@@ -292,14 +292,36 @@ class DetailExtractor:
         if not stripped_text:
             return None
 
-        auth = None
-        if settings.JOBOPS_USERNAME and settings.JOBOPS_PASSWORD:
-            auth = (settings.JOBOPS_USERNAME, settings.JOBOPS_PASSWORD)
-
         infer_url = f"{settings.JOBOPS_ENDPOINT.rstrip('/')}/api/manual-jobs/infer"
+        headers = {}
+
+        if settings.JOBOPS_USERNAME and settings.JOBOPS_PASSWORD:
+            login_url = f"{settings.JOBOPS_ENDPOINT.rstrip('/')}/api/auth/login"
+            try:
+                login_resp = await client.post(
+                    login_url,
+                    json={
+                        "username": settings.JOBOPS_USERNAME,
+                        "password": settings.JOBOPS_PASSWORD,
+                    },
+                )
+                if login_resp.status_code == 200:
+                    login_data = login_resp.json()
+                    token = (
+                        login_data.get("data", {}).get("token")
+                        or login_data.get("token")
+                    )
+                    if token:
+                        headers["Authorization"] = f"Bearer {token}"
+            except Exception as e:
+                logger.info(f"Job Ops auth login failed: {e}")
 
         try:
-            resp = await client.post(infer_url, json={"jobDescription": stripped_text}, auth=auth)
+            resp = await client.post(
+                infer_url,
+                json={"jobDescription": stripped_text},
+                headers=headers,
+            )
         except Exception as e:
             logger.info(f"Job Ops infer fallback request failed: {e}")
             return None
@@ -314,19 +336,22 @@ class DetailExtractor:
             logger.info(f"Job Ops infer fallback returned invalid JSON: {e}")
             return None
 
-        inferred_description = data.get("jobDescription")
+        payload_data = data.get("data") if isinstance(data.get("data"), dict) else data
+        job_data = payload_data.get("job") if isinstance(payload_data.get("job"), dict) else payload_data
+
+        inferred_description = job_data.get("jobDescription")
         if not description_is_valid(inferred_description):
             return None
 
-        salary_raw = data.get("salary")
+        salary_raw = job_data.get("salary")
 
         return DetailResult(
             description=inferred_description[:40000],
-            location=(data.get("location") or None),
-            employment_type=(data.get("jobType") or None),
-            department=(data.get("department") or None),
+            location=(job_data.get("location") or None),
+            employment_type=(job_data.get("jobType") or None),
+            department=(job_data.get("department") or None),
             salary_raw=salary_raw,
-            title=(data.get("title") or None),
+            title=(job_data.get("title") or None),
             source="jobops_infer_fallback",
         )
 

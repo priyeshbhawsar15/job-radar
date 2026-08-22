@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
-import { ArrowLeft, Copy, Check, ExternalLink, Code2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Copy, Check, ExternalLink, Code2, AlertTriangle, RefreshCw } from 'lucide-react';
 
 export const JobDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -9,6 +9,9 @@ export const JobDetail: React.FC = () => {
   const [job, setJob] = useState<any | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [retrying, setRetrying] = useState<boolean>(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
+  const [retrySucceeded, setRetrySucceeded] = useState<boolean>(false);
 
   useEffect(() => {
     if (!id) return;
@@ -87,6 +90,35 @@ export const JobDetail: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleRetryEnrichment = () => {
+    if (!job || retrying) return;
+    setRetrying(true);
+    setRetryError(null);
+    setRetrySucceeded(false);
+    fetch(`/api/v1/jobs/${job.id}/retry-enrichment`, { method: 'POST' })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`Retry failed with status ${res.status}`);
+        const updated = await res.json();
+        setJob((prev: any) => ({
+          ...prev,
+          description: updated.description || prev.description,
+          location: updated.location || prev.location,
+          type: updated.employment_type || prev.type,
+          department: updated.department || prev.department,
+          salary_raw: updated.salary_raw || prev.salary_raw,
+          detail_enrichment_status: updated.detail_enrichment_status,
+          detail_enrichment_error_code: updated.detail_enrichment_error_code || null,
+        }));
+        if (updated.detail_enrichment_status === 'succeeded') {
+          setRetrySucceeded(true);
+        } else {
+          setRetryError(updated.detail_enrichment_error_code || 'Enrichment retry failed');
+        }
+      })
+      .catch((e) => setRetryError(e.message || 'Enrichment retry failed'))
+      .finally(() => setRetrying(false));
+  };
+
   const kvFields = [
     { key: 'title', label: 'Title', value: job.title },
     { key: 'employer', label: 'Employer (Company)', value: job.company },
@@ -118,6 +150,16 @@ export const JobDetail: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {job.detail_enrichment_status === 'failed' && (
+            <button
+              onClick={handleRetryEnrichment}
+              disabled={retrying}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-teal-300 dark:border-teal-700 bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-xs font-semibold hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`w-4 h-4 ${retrying ? 'animate-spin' : ''}`} />
+              <span>{retrying ? 'Retrying enrichment...' : 'Retry Enrichment'}</span>
+            </button>
+          )}
           <button
             onClick={() => navigate('/jobs')}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
@@ -137,12 +179,30 @@ export const JobDetail: React.FC = () => {
       {job.detail_enrichment_status === 'failed' && (
         <section className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
-          <div>
+          <div className="flex-1">
             <p className="text-sm font-bold text-rose-700 dark:text-rose-400">Detail enrichment failed</p>
             <p className="text-xs text-rose-600 dark:text-rose-300 mt-0.5">
               Error code: <span className="font-mono">{job.detail_enrichment_error_code || 'unknown'}</span>. Description and detail fields may be incomplete.
             </p>
+            {retryError && (
+              <p className="text-xs text-rose-700 dark:text-rose-300 mt-1 font-mono">{retryError}</p>
+            )}
           </div>
+          <button
+            onClick={handleRetryEnrichment}
+            disabled={retrying}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${retrying ? 'animate-spin' : ''}`} />
+            <span>{retrying ? 'Retrying enrichment...' : 'Retry Enrichment'}</span>
+          </button>
+        </section>
+      )}
+
+      {retrySucceeded && (
+        <section className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-3">
+          <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Detail enrichment succeeded</p>
         </section>
       )}
 

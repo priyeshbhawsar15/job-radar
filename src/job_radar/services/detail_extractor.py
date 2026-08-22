@@ -9,6 +9,7 @@ from job_radar.services.detail_contracts import DetailRequest, DetailResult, ERR
 from job_radar.services.oracle_detail import fetch_oracle_detail
 from job_radar.services.phenom_detail import fetch_phenom_detail
 from job_radar.services.workday_detail import fetch_workday_detail
+from job_radar.services.zoho_detail import fetch_zoho_detail_from_html
 
 logger = logging.getLogger(__name__)
 
@@ -170,6 +171,11 @@ class DetailExtractor:
                 if result.error_code is None:
                     return result
                 # Fall through to generic HTML fallback below on CXS failure.
+            elif family == "zoho":
+                raw_html = await self.browser_client.fetch_board_html(
+                    public_apply_url, wait_for_selector="div.cw-jobdescription"
+                )
+                return fetch_zoho_detail_from_html(raw_html, public_apply_url)
 
             # Greenhouse or Generic fallback logic
             headers = {

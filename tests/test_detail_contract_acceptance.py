@@ -9,6 +9,7 @@ from job_radar.db.models.board import Board
 from job_radar.db.models.candidate import CandidateJob
 from job_radar.services.detail_contracts import DetailRequest
 from job_radar.services.workday_detail import fetch_workday_detail
+from job_radar.services.zoho_detail import fetch_zoho_detail_from_html
 
 FIXTURES = Path(__file__).parent / "fixtures" / "descriptions"
 
@@ -68,3 +69,45 @@ async def test_workday_jiostar_detail_persists_clean_description(db_session: Asy
     assert "<p>" not in persisted.description
     assert "<li>" not in persisted.description
     assert "• Design and build responsive web applications" in persisted.description
+
+
+@pytest.mark.asyncio
+async def test_zoho_wynploy_detail_persists_clean_description(db_session: AsyncSession):
+    """Isolated persistence test: parse a rendered Zoho Recruit detail page and
+    persist the enriched fields onto an in-memory CandidateJob row, using
+    only the test session's sqlite:///:memory: database (never canonical)."""
+    raw_html = (FIXTURES / "zoho_detail.html").read_text()
+    public_url = "https://wynploy.zohorecruit.in/jobs/Careers/185195000000348001/Front-End-Developer-React-Next-Js-"
+
+    result = fetch_zoho_detail_from_html(raw_html, public_url)
+    assert result.error_code is None
+
+    board = Board(name="Wynploy", family="zoho", status="enabled")
+    db_session.add(board)
+    await db_session.flush()
+
+    candidate = CandidateJob(
+        board_id=board.board_id,
+        identity_key="wynploy|185195000000348001",
+        canonical_url_hash="testhash-wynploy-348001",
+        title="Front End Developer (React, Next Js)",
+        company="Wynploy",
+        location=result.location,
+        public_apply_url=public_url,
+        description=result.description,
+        detail_enrichment_status="enriched",
+    )
+    db_session.add(candidate)
+    await db_session.commit()
+
+    persisted = await db_session.get(CandidateJob, candidate.candidate_id)
+    assert persisted is not None
+    assert persisted.detail_enrichment_status == "enriched"
+    assert persisted.location == "Pune City"
+    assert "ZOHO_DETAIL_FIXTURE_FULL_DESCRIPTION_TOKEN" in persisted.description
+    assert "cdnPathForStaticFiles" not in persisted.description
+    assert "<script>" not in persisted.description
+    assert "<style>" not in persisted.description
+    assert "<p>" not in persisted.description
+    assert "<li>" not in persisted.description
+    assert "• Design and implement" in persisted.description

@@ -42,7 +42,12 @@ class BrowserServiceClient:
             self._browser = await self._playwright.chromium.launch(headless=True)
         return self._browser
 
-    async def fetch_board_html(self, target_url: str, registered_target_url: Optional[str] = None) -> str:
+    async def fetch_board_html(
+        self,
+        target_url: str,
+        registered_target_url: Optional[str] = None,
+        wait_for_selector: Optional[str] = None,
+    ) -> str:
         validate_target_url(target_url, registered_target_url)
 
         headers = {
@@ -57,6 +62,8 @@ class BrowserServiceClient:
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
             )
             await page.goto(target_url, wait_until="domcontentloaded", timeout=18000)
+            if wait_for_selector:
+                await page.wait_for_selector(wait_for_selector, timeout=15000)
             await page.wait_for_timeout(4500)
             content = await page.content()
             await page.close()

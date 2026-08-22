@@ -12,15 +12,12 @@ export const RunDetail: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-    fetch('/api/v1/runs')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((runs) => {
-        const foundRun = runs.find((r: any) => r.run_id === id || r.pipeline_id === id);
-        if (foundRun) {
-          setRun(foundRun);
-          fetch('/api/v1/jobs?board_id=' + foundRun.board_id)
-            .then((res) => (res.ok ? res.json() : []))
-            .then((bJobs) => setRunJobs(bJobs));
+    fetch('/api/v1/runs/board-runs/' + id)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setRun(data.board_run);
+          setRunJobs(data.extracted_jobs || []);
         }
       })
       .catch((e) => console.error(e))
@@ -77,6 +74,22 @@ export const RunDetail: React.FC = () => {
 
       {/* Top Metrics Summary Bar */}
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">New Discovered</span>
+          <b className="block text-2xl font-bold font-mono text-teal-600 dark:text-teal-400 mt-1">
+            {run.new_discovered_count ?? 0}
+          </b>
+          <span className="block text-[11px] text-slate-400 mt-0.5">first-seen jobs</span>
+        </div>
+
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Re-observed</span>
+          <b className="block text-2xl font-bold font-mono text-slate-600 dark:text-slate-300 mt-1">
+            {run.re_observed_count ?? 0}
+          </b>
+          <span className="block text-[11px] text-slate-400 mt-0.5">duplicate jobs</span>
+        </div>
+
         <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium">Board Target</span>
           <b className="block text-lg font-bold text-slate-900 dark:text-white mt-1">
@@ -142,6 +155,16 @@ export const RunDetail: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
+                  {j.observation_outcome === 'discovered' && (
+                    <span className="px-2 py-1 rounded-md text-[11px] font-semibold bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
+                      Discovered
+                    </span>
+                  )}
+                  {j.observation_outcome === 're_observed' && (
+                    <span className="px-2 py-1 rounded-md text-[11px] font-semibold bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      Re-observed
+                    </span>
+                  )}
                   {j.detail_enrichment_status === 'failed' && (
                     <StatusBadge
                       status="failed"

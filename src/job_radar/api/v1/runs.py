@@ -102,21 +102,27 @@ async def get_board_run_detail(run_id: str, db: AsyncSession = Depends(get_db_se
         raise HTTPException(status_code=404, detail="Board run log not found")
 
     cj_res = await db.execute(
-        select(CandidateJob)
+        select(CandidateJob, RunCandidate.observation_outcome)
         .join(RunCandidate, CandidateJob.candidate_id == RunCandidate.candidate_id)
         .where(RunCandidate.run_id == br.board_run_id)
     )
-    linked_jobs = cj_res.scalars().all()
+    linked_rows = cj_res.all()
 
-    if not linked_jobs:
+    if not linked_rows:
         cj_res2 = await db.execute(
             select(CandidateJob)
             .where(CandidateJob.board_id == br.board_id)
         )
-        linked_jobs = cj_res2.scalars().all()
+        linked_rows = [(j, None) for j in cj_res2.scalars().all()]
 
     jobs_out = []
-    for j in linked_jobs:
+    new_discovered_count = 0
+    re_observed_count = 0
+    for j, observation_outcome in linked_rows:
+        if observation_outcome == "discovered":
+            new_discovered_count += 1
+        elif observation_outcome == "re_observed":
+            re_observed_count += 1
         jobs_out.append({
             "candidate_id": j.candidate_id,
             "board_id": j.board_id,
@@ -128,7 +134,8 @@ async def get_board_run_detail(run_id: str, db: AsyncSession = Depends(get_db_se
             "public_apply_url": j.public_apply_url,
             "description": j.description,
             "salary_raw": j.salary_raw,
-            "created_at": j.discovered_at.isoformat() if j.discovered_at else None
+            "created_at": j.discovered_at.isoformat() if j.discovered_at else None,
+            "observation_outcome": observation_outcome
         })
 
     return {
@@ -141,6 +148,8 @@ async def get_board_run_detail(run_id: str, db: AsyncSession = Depends(get_db_se
             "stage": br.stage,
             "outcome": br.outcome,
             "extracted_count": br.extracted_count,
+            "new_discovered_count": new_discovered_count,
+            "re_observed_count": re_observed_count,
             "created_at": br.started_at.isoformat() if br.started_at else None,
             "terminal_at": br.terminal_at.isoformat() if br.terminal_at else None
         },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { PlaySquare, Layers, Briefcase, ChevronLeft, ChevronRight, X, LayoutDashboard } from 'lucide-react';
+import { PlaySquare, Layers, Briefcase, ChevronLeft, ChevronRight, X, LayoutDashboard, Cog } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -20,6 +20,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { to: '/runs', label: 'Run History', icon: PlaySquare },
     { to: '/boards', label: 'Boards', icon: Layers },
     { to: '/jobs', label: 'Extracted Jobs', icon: Briefcase },
+    { to: '/settings', label: 'Settings', icon: Cog },
   ];
 
   return (

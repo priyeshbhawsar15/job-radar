@@ -100,7 +100,7 @@ def description_is_valid(text: Optional[str], *, title: str = "") -> bool:
     has_boundaries = len(lines) >= 3 or "\n\n" in cleaned or "<p>" in text.lower() or "<li>" in text.lower()
     indicator_count = sum(1 for ind in CONTENT_INDICATORS if ind in low)
 
-    return has_boundaries and indicator_count >= 2
+    return (has_boundaries or len(cleaned) > 500) and indicator_count >= 2
 
 
 def clean_html_to_text(raw_html_str: str) -> str:

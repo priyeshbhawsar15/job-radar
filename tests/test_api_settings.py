@@ -3,7 +3,7 @@ import json
 import pytest
 import httpx
 from httpx import AsyncClient
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 from job_radar.services import settings_store
 from job_radar.config import settings as app_config
@@ -74,32 +74,59 @@ async def test_patch_settings_partial_update_preserves_other_fields(client: Asyn
     assert data["handoff_enabled"] is True
 
 
+_ORIGINAL_ASYNC_CLIENT_POST = httpx.AsyncClient.post
+
+
+def _login_post_patch(mock_response=None, side_effect=None):
+    """Only intercepts calls to the Job Ops login endpoint; other AsyncClient.post
+    calls (e.g. the test client's own requests) are forwarded to the real method."""
+
+    async def _fake_post(self, url, *args, **kwargs):
+        if "auth/login" in str(url):
+            if side_effect is not None:
+                raise side_effect
+            return mock_response
+        return await _ORIGINAL_ASYNC_CLIENT_POST(self, url, *args, **kwargs)
+
+    return _fake_post
+
+
 @pytest.mark.asyncio
 async def test_test_jobops_endpoint_connected(client: AsyncClient):
     await client.patch("/api/v1/settings", json={"jobops_endpoint": "http://mock-jobops.local"})
 
-    mock_response = httpx.Response(status_code=200, request=httpx.Request("GET", "http://mock-jobops.local"))
+    mock_response = httpx.Response(
+        status_code=200,
+        json={"ok": True},
+        request=httpx.Request("POST", "http://mock-jobops.local/api/auth/login"),
+    )
     with patch(
-        "job_radar.api.v1.settings.httpx.AsyncClient.get",
-        new=AsyncMock(return_value=mock_response),
+        "job_radar.api.v1.settings.httpx.AsyncClient.post",
+        new=_login_post_patch(mock_response=mock_response),
     ):
         resp = await client.post("/api/v1/settings/test-jobops")
     assert resp.status_code == 200
     assert resp.json()["status"] == "connected"
+    assert resp.json()["detail"] == "Authentication successful"
 
 
 @pytest.mark.asyncio
 async def test_test_jobops_endpoint_unauthorized(client: AsyncClient):
     await client.patch("/api/v1/settings", json={"jobops_endpoint": "http://mock-jobops.local"})
 
-    mock_response = httpx.Response(status_code=401, request=httpx.Request("GET", "http://mock-jobops.local"))
+    mock_response = httpx.Response(
+        status_code=401,
+        json={"ok": False},
+        request=httpx.Request("POST", "http://mock-jobops.local/api/auth/login"),
+    )
     with patch(
-        "job_radar.api.v1.settings.httpx.AsyncClient.get",
-        new=AsyncMock(return_value=mock_response),
+        "job_radar.api.v1.settings.httpx.AsyncClient.post",
+        new=_login_post_patch(mock_response=mock_response),
     ):
         resp = await client.post("/api/v1/settings/test-jobops")
     assert resp.status_code == 200
     assert resp.json()["status"] == "unauthorized"
+    assert resp.json()["detail"] == "Invalid credentials"
 
 
 @pytest.mark.asyncio
@@ -107,8 +134,8 @@ async def test_test_jobops_endpoint_unreachable(client: AsyncClient):
     await client.patch("/api/v1/settings", json={"jobops_endpoint": "http://mock-jobops.local"})
 
     with patch(
-        "job_radar.api.v1.settings.httpx.AsyncClient.get",
-        new=AsyncMock(side_effect=httpx.ConnectError("connection refused")),
+        "job_radar.api.v1.settings.httpx.AsyncClient.post",
+        new=_login_post_patch(side_effect=httpx.ConnectError("connection refused")),
     ):
         resp = await client.post("/api/v1/settings/test-jobops")
     assert resp.status_code == 200

@@ -4,6 +4,7 @@ import html
 import re
 import httpx
 from typing import Optional, Dict, Any, Iterator, List, Mapping
+from job_radar.config import settings
 from job_radar.services.browser import BrowserServiceClient
 from job_radar.services.detail_contracts import DetailRequest, DetailResult, ERR_INVALID_DETAIL_URL
 from job_radar.services.oracle_detail import fetch_oracle_detail
@@ -125,6 +126,18 @@ def clean_html_to_text(raw_html_str: str) -> str:
     return "\n\n".join(filtered)
 
 
+def strip_to_plain_text(raw_html_str: str) -> str:
+    """Strip all JS/CSS/HTML tags, returning bare plain text (last-resort before Job Ops inference)."""
+    if not raw_html_str:
+        return ""
+    text = html.unescape(raw_html_str)
+    text = re.sub(r'<(script|style)\b[^>]*>[\s\S]*?</\1>', ' ', text, flags=re.IGNORECASE)
+    text = re.sub(r'<[^>]+>', ' ', text)
+    text = re.sub(r'[ \t]+', ' ', text)
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    return "\n".join(lines)
+
+
 class DetailExtractor:
     """Service to fetch full job detail content and parse description, salary, department & employment type."""
 
@@ -238,6 +251,7 @@ class DetailExtractor:
             except Exception:
                 pass
 
+            raw_html = None
             try:
                 raw_html = await self.browser_client.fetch_board_html(public_apply_url)
                 parsed = self.parse_detail_html(raw_html, board_name, title, public_apply_url)
@@ -256,11 +270,65 @@ class DetailExtractor:
             except Exception as e:
                 logger.info(f"Failed to fetch detail page for {public_apply_url}: {e}")
 
+            if raw_html:
+                infer_result = await self.fetch_jobops_infer_fallback(raw_html, client)
+                if infer_result is not None:
+                    return infer_result
+
             return DetailResult.empty(ERR_INVALID_DETAIL_URL)
 
         finally:
             if close_client:
                 await client.aclose()
+
+    async def fetch_jobops_infer_fallback(
+        self, raw_html_or_text: str, client: httpx.AsyncClient
+    ) -> Optional[DetailResult]:
+        """Fall back to Job Ops' /api/manual-jobs/infer when local deterministic parsing fails."""
+        if not settings.JOBOPS_ENDPOINT:
+            return None
+
+        stripped_text = strip_to_plain_text(raw_html_or_text)[:35000]
+        if not stripped_text:
+            return None
+
+        auth = None
+        if settings.JOBOPS_USERNAME and settings.JOBOPS_PASSWORD:
+            auth = (settings.JOBOPS_USERNAME, settings.JOBOPS_PASSWORD)
+
+        infer_url = f"{settings.JOBOPS_ENDPOINT.rstrip('/')}/api/manual-jobs/infer"
+
+        try:
+            resp = await client.post(infer_url, json={"jobDescription": stripped_text}, auth=auth)
+        except Exception as e:
+            logger.info(f"Job Ops infer fallback request failed: {e}")
+            return None
+
+        if resp.status_code != 200:
+            logger.info(f"Job Ops infer fallback returned status {resp.status_code}")
+            return None
+
+        try:
+            data = resp.json()
+        except Exception as e:
+            logger.info(f"Job Ops infer fallback returned invalid JSON: {e}")
+            return None
+
+        inferred_description = data.get("jobDescription")
+        if not description_is_valid(inferred_description):
+            return None
+
+        salary_raw = data.get("salary")
+
+        return DetailResult(
+            description=inferred_description[:40000],
+            location=(data.get("location") or None),
+            employment_type=(data.get("jobType") or None),
+            department=(data.get("department") or None),
+            salary_raw=salary_raw,
+            title=(data.get("title") or None),
+            source="jobops_infer_fallback",
+        )
 
     def parse_detail_html(self, raw_html_text: str, board_name: str, title: str, apply_url: str) -> Dict[str, Any]:
         raw_html_text = html.unescape(raw_html_text)

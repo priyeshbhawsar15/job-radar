@@ -8,6 +8,7 @@ from job_radar.services.browser import BrowserServiceClient
 from job_radar.services.detail_contracts import DetailRequest, DetailResult, ERR_INVALID_DETAIL_URL
 from job_radar.services.oracle_detail import fetch_oracle_detail
 from job_radar.services.phenom_detail import fetch_phenom_detail
+from job_radar.services.workday_detail import fetch_workday_detail
 
 logger = logging.getLogger(__name__)
 
@@ -164,6 +165,11 @@ class DetailExtractor:
                 return await fetch_oracle_detail(req, client)
             elif family == "phenom":
                 return await fetch_phenom_detail(req, client)
+            elif family == "workday":
+                result = await fetch_workday_detail(req, client)
+                if result.error_code is None:
+                    return result
+                # Fall through to generic HTML fallback below on CXS failure.
 
             # Greenhouse or Generic fallback logic
             headers = {

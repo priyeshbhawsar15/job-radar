@@ -19,6 +19,7 @@ from job_radar.adapters.families import generate_fingerprint, canonicalize_job_u
 from job_radar.services.browser import BrowserServiceClient, TargetBoundaryViolation
 from job_radar.services.normalization import normalization_service
 from job_radar.services import oracle_listing
+from job_radar.services.workday_detail import clean_workday_html
 
 logger = logging.getLogger(__name__)
 
@@ -454,7 +455,7 @@ class PipelineExecutionEngine:
                                             d_info = dr.json().get("jobPostingInfo", {})
                                             raw_desc = d_info.get("jobDescription", "")
                                             if raw_desc:
-                                                clean_desc = html.unescape(re.sub(r"<[^>]+>", " ", raw_desc)).strip()
+                                                clean_desc = clean_workday_html(raw_desc)
                                                 c.extra_payload = {"description": clean_desc[:40000]}
                                 except Exception as de_err:
                                     logger.info(f"CXS detail fetch exception for {c.raw_url}: {de_err}")

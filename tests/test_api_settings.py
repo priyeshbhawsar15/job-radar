@@ -97,7 +97,7 @@ async def test_test_jobops_endpoint_connected(client: AsyncClient):
 
     mock_response = httpx.Response(
         status_code=200,
-        json={"ok": True},
+        json={"ok": True, "data": {"token": "abc123"}},
         request=httpx.Request("POST", "http://mock-jobops.local/api/auth/login"),
     )
     with patch(
@@ -108,6 +108,56 @@ async def test_test_jobops_endpoint_connected(client: AsyncClient):
     assert resp.status_code == 200
     assert resp.json()["status"] == "connected"
     assert resp.json()["detail"] == "Authentication successful"
+
+
+@pytest.mark.asyncio
+async def test_test_jobops_endpoint_ok_without_token_is_unreachable(client: AsyncClient):
+    await client.patch("/api/v1/settings", json={"jobops_endpoint": "http://mock-jobops.local"})
+
+    mock_response = httpx.Response(
+        status_code=200,
+        json={"ok": True},
+        request=httpx.Request("POST", "http://mock-jobops.local/api/auth/login"),
+    )
+    with patch(
+        "job_radar.api.v1.settings.httpx.AsyncClient.post",
+        new=_login_post_patch(mock_response=mock_response),
+    ):
+        resp = await client.post("/api/v1/settings/test-jobops")
+    assert resp.status_code == 200
+    assert resp.json()["status"] != "connected"
+
+
+@pytest.mark.asyncio
+async def test_test_jobops_endpoint_uses_request_payload_over_stored(client: AsyncClient):
+    await client.patch("/api/v1/settings", json={"jobops_endpoint": "http://stored.local"})
+
+    mock_response = httpx.Response(
+        status_code=200,
+        json={"ok": True, "data": {"token": "abc123"}},
+        request=httpx.Request("POST", "http://override.local/api/auth/login"),
+    )
+
+    seen_urls = []
+
+    async def _fake_post(self, url, *args, **kwargs):
+        if "override.local" in str(url):
+            seen_urls.append(str(url))
+            return mock_response
+        return await _ORIGINAL_ASYNC_CLIENT_POST(self, url, *args, **kwargs)
+
+    with patch("job_radar.api.v1.settings.httpx.AsyncClient.post", new=_fake_post):
+        resp = await client.post(
+            "/api/v1/settings/test-jobops",
+            json={
+                "jobops_endpoint": "http://override.local",
+                "jobops_username": "user",
+                "jobops_password": "pass",
+            },
+        )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "connected"
+    assert seen_urls == ["http://override.local/api/auth/login"]
 
 
 @pytest.mark.asyncio

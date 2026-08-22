@@ -87,6 +87,26 @@ async def test_test_discord_webhook_http_status_error(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_test_discord_webhook_uses_request_payload_without_saved_settings(client: AsyncClient):
+    mock_response = httpx.Response(
+        status_code=204,
+        request=httpx.Request("POST", "https://discord.com/api/webhooks/999/unsaved"),
+    )
+    with patch(
+        "job_radar.api.v1.settings.httpx.AsyncClient.post",
+        new=_webhook_post_patch(mock_response=mock_response),
+    ):
+        resp = await client.post(
+            "/api/v1/settings/test-discord-webhook",
+            json={"discord_webhook_url": "https://discord.com/api/webhooks/999/unsaved"},
+        )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["ok"] is True
+    assert data["message"] == "Test notification delivered to Discord successfully!"
+
+
+@pytest.mark.asyncio
 async def test_test_discord_webhook_request_error(client: AsyncClient):
     await client.patch(
         "/api/v1/settings",

@@ -78,15 +78,29 @@ async def send_pipeline_summary_notification(pipeline_id: str, db_session: Async
 
     color = COLOR_ERROR if error_lines else COLOR_SUCCESS
 
+    # Discord embed field values are hard-capped at 1024 characters.
+    # Format per-board breakdown safely within limits.
+    if len(board_breakdown) > 15:
+        truncated_items = board_breakdown[:15]
+        breakdown_val = "\n".join(truncated_items) + f"\n*...and {len(board_breakdown) - 15} more boards*"
+    else:
+        breakdown_val = "\n".join(board_breakdown) if board_breakdown else "No boards run"
+
+    if len(breakdown_val) > 1024:
+        breakdown_val = breakdown_val[:1000] + "\n*...truncated*"
+
     fields = [
         {"name": "Total Jobs Extracted", "value": str(total_extracted), "inline": True},
         {"name": "New Jobs Discovered", "value": str(new_discovered), "inline": True},
         {"name": "Duplicate Jobs Re-observed", "value": str(re_observed), "inline": True},
         {"name": "Sent to Job Ops", "value": str(sent_to_jobops), "inline": True},
-        {"name": "Per-Board Breakdown", "value": "\n".join(board_breakdown) or "No boards run", "inline": False},
+        {"name": "Per-Board Breakdown", "value": breakdown_val, "inline": False},
     ]
     if error_lines:
-        fields.append({"name": "Errors", "value": "\n".join(error_lines), "inline": False})
+        err_text = "\n".join(error_lines)
+        if len(err_text) > 1024:
+            err_text = err_text[:1000] + "\n...truncated"
+        fields.append({"name": "Errors", "value": err_text, "inline": False})
 
     embed = {
         "title": "🎯 Job Radar Pipeline Run Summary",

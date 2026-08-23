@@ -9,12 +9,21 @@ from sqlalchemy.orm import selectinload
 from job_radar.db.session import get_db_session
 from job_radar.db.models.board import Board
 from job_radar.db.models.candidate import CandidateJob
+from job_radar.db.models.handoff import HandoffOutbox
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
+from job_radar.services.handoff import handoff_processor, JobOpsClient
 
 router = APIRouter(prefix="/jobs", tags=["Normalized Jobs"])
 
 
-def _serialize_job(j: CandidateJob) -> dict:
+def _serialize_job(j: CandidateJob, job_ops_status: Optional[str] = None) -> dict:
+    state = job_ops_status
+    if not state:
+        try:
+            if hasattr(j, "handoff_outbox") and j.handoff_outbox:
+                state = j.handoff_outbox.state
+        except Exception:
+            state = "untracked"
     return {
         "candidate_id": j.candidate_id,
         "board_id": j.board_id,
@@ -34,6 +43,7 @@ def _serialize_job(j: CandidateJob) -> dict:
         "last_seen_at": j.last_seen_at.isoformat() if j.last_seen_at else None,
         "detail_enrichment_status": j.detail_enrichment_status,
         "detail_enrichment_error_code": j.detail_enrichment_error_code,
+        "job_ops_status": state or "untracked",
     }
 
 @router.get("", response_model=List[dict])
@@ -41,7 +51,7 @@ async def list_jobs(
     board_id: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session)
 ):
-    query = select(CandidateJob).order_by(CandidateJob.discovered_at.desc())
+    query = select(CandidateJob).options(selectinload(CandidateJob.handoff_outbox)).order_by(CandidateJob.discovered_at.desc())
     if board_id:
         query = query.where(CandidateJob.board_id == board_id)
 
@@ -109,3 +119,40 @@ async def retry_enrichment(
     await db.refresh(candidate)
 
     return _serialize_job(candidate)
+
+
+class PushJobOpsResponse(BaseModel):
+    status: str
+    detail: Optional[str] = None
+
+
+@router.post("/{candidate_id}/push-jobops", response_model=PushJobOpsResponse)
+async def push_candidate_to_jobops(
+    candidate_id: str,
+    db: AsyncSession = Depends(get_db_session)
+):
+    res = await db.execute(select(CandidateJob).where(CandidateJob.candidate_id == candidate_id))
+    candidate = res.scalar_one_or_none()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate job not found")
+
+    outbox = await handoff_processor.enqueue_candidate_handoff(candidate_id)
+    if not outbox:
+        outbox_res = await db.execute(select(HandoffOutbox).where(HandoffOutbox.candidate_id == candidate_id))
+        outbox = outbox_res.scalar_one_or_none()
+
+    if outbox:
+        outbox.state = "queued"
+        outbox.next_retry_at = datetime.now(timezone.utc)
+        await db.commit()
+
+    processed = await handoff_processor.process_pending_outbox(max_batch=1, loop_until_empty=False)
+
+    outbox_res = await db.execute(select(HandoffOutbox).where(HandoffOutbox.candidate_id == candidate_id))
+    updated_outbox = outbox_res.scalar_one_or_none()
+
+    final_state = updated_outbox.state if updated_outbox else "failed"
+    if final_state == "accepted":
+        return PushJobOpsResponse(status="imported", detail="Job successfully imported to Job Ops")
+    return PushJobOpsResponse(status=final_state, detail=f"Handoff status: {final_state}")
+

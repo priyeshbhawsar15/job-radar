@@ -26,10 +26,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label, size = 
   let styles = "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700";
   let dotColor = "bg-slate-400";
 
-  if (['healthy', 'success', 'completed', 'active'].includes(normalized)) {
+  if (['healthy', 'success', 'completed', 'active', 'accepted', 'imported'].includes(normalized)) {
     styles = "bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400 border-teal-200 dark:border-teal-800/60";
     dotColor = "bg-teal-500 dark:bg-teal-400";
-  } else if (['attention', 'held', 'draft', 'warning'].includes(normalized)) {
+  } else if (['attention', 'held', 'draft', 'warning', 'queued', 'dispatching', 'uncertain', 'untracked'].includes(normalized)) {
     styles = "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200 dark:border-amber-800/60";
     dotColor = "bg-amber-500 dark:bg-amber-400";
   } else if (['failed', 'error'].includes(normalized)) {

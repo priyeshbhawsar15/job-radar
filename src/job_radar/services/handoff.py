@@ -104,13 +104,14 @@ class HandoffProcessor:
             await session.refresh(outbox)
             return outbox
 
-    async def process_pending_outbox(self, max_batch: int = 50, loop_until_empty: bool = True) -> int:
+    async def process_pending_outbox(self, max_batch: Optional[int] = None, loop_until_empty: bool = True) -> int:
         stored = load_settings()
         is_enabled = stored.handoff_enabled or settings.HANDOFF_ENABLED
         if not is_enabled:
             logger.debug("Handoff feature disabled in settings. Skipping outbox processing.")
             return 0
 
+        actual_batch = max_batch or stored.jobops_import_batch_size or 50
         total_processed = 0
 
         while True:
@@ -123,7 +124,7 @@ class HandoffProcessor:
                     .options(selectinload(HandoffOutbox.attempts))
                     .where(HandoffOutbox.state.in_(["queued", "uncertain"]))
                     .where(HandoffOutbox.next_retry_at <= now)
-                    .limit(max_batch)
+                    .limit(actual_batch)
                 )
                 pending_records = res.scalars().all()
 

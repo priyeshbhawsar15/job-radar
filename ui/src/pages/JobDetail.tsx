@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
-import { ArrowLeft, Copy, Check, ExternalLink, Code2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Copy, Check, ExternalLink, Code2, AlertTriangle, RefreshCw, Send } from 'lucide-react';
 
 export const JobDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +12,8 @@ export const JobDetail: React.FC = () => {
   const [retrying, setRetrying] = useState<boolean>(false);
   const [retryError, setRetryError] = useState<string | null>(null);
   const [retrySucceeded, setRetrySucceeded] = useState<boolean>(false);
+  const [importing, setImporting] = useState<boolean>(false);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -35,7 +37,7 @@ export const JobDetail: React.FC = () => {
             discovered: found.first_seen_at || new Date().toISOString(),
             normalization: 'accepted · norm-v3',
             eligibility: 'eligible · policy-11',
-            ops: 'accepted',
+            ops: found.job_ops_status || 'untracked',
             receipt: 'OPS-' + id,
             description: found.description || ('Position for ' + found.title + ' at ' + (found.company || found.company_name) + '. Full position details and responsibilities available at apply link.'),
             salary_raw: found.salary_raw || 'Competitive / Not specified',
@@ -66,7 +68,7 @@ export const JobDetail: React.FC = () => {
   }
 
   const payload = {
-    skipTailoring: false,
+    skipTailoring: true,
     job: {
       source: job.board,
       sourceJobId: job.id,
@@ -119,6 +121,24 @@ export const JobDetail: React.FC = () => {
       .finally(() => setRetrying(false));
   };
 
+  const handlePushJobOps = () => {
+    if (!job || importing) return;
+    setImporting(true);
+    setImportMessage(null);
+    fetch(`/api/v1/jobs/${job.id}/push-jobops`, { method: 'POST' })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || `Import failed with status ${res.status}`);
+        setJob((prev: any) => ({
+          ...prev,
+          ops: data.status === 'imported' ? 'accepted' : data.status,
+        }));
+        setImportMessage(data.detail || 'Job imported to Job Ops successfully!');
+      })
+      .catch((e) => setImportMessage(e.message || 'Manual import to Job Ops failed.'))
+      .finally(() => setImporting(false));
+  };
+
   const kvFields = [
     { key: 'title', label: 'Title', value: job.title },
     { key: 'employer', label: 'Employer (Company)', value: job.company },
@@ -130,6 +150,7 @@ export const JobDetail: React.FC = () => {
     { key: 'source', label: 'Source Board', value: job.board },
     { key: 'sourceJobId', label: 'Source Job ID', value: job.id },
     { key: 'discovered_at', label: 'Discovered at', value: job.discovered },
+    { key: 'job_ops_status', label: 'Job Ops Status', value: job.ops },
     { key: 'detail_enrichment_status', label: 'Detail Enrichment Status', value: job.detail_enrichment_status },
     { key: 'detail_enrichment_error_code', label: 'Enrichment Error Code', value: job.detail_enrichment_error_code || 'None' },
   ];
@@ -150,6 +171,15 @@ export const JobDetail: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handlePushJobOps}
+            disabled={importing}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <Send className={`w-4 h-4 ${importing ? 'animate-spin' : ''}`} />
+            <span>{importing ? 'Importing to Job Ops...' : 'Import to Job Ops'}</span>
+          </button>
+
           {job.detail_enrichment_status === 'failed' && (
             <button
               onClick={handleRetryEnrichment}
@@ -160,6 +190,7 @@ export const JobDetail: React.FC = () => {
               <span>{retrying ? 'Retrying enrichment...' : 'Retry Enrichment'}</span>
             </button>
           )}
+
           <button
             onClick={() => navigate('/jobs')}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
@@ -174,6 +205,16 @@ export const JobDetail: React.FC = () => {
       <p className="text-xs text-slate-500 dark:text-slate-400">
         <Link to="/jobs" className="hover:underline">Extracted jobs</Link> / {job.id}
       </p>
+
+      {/* Manual Import Feedback Banner */}
+      {importMessage && (
+        <section className="p-4 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-teal-900 dark:text-teal-300">
+            <Check className="w-4 h-4 text-teal-500 shrink-0" />
+            <span>{importMessage}</span>
+          </div>
+        </section>
+      )}
 
       {/* Enrichment Failure Warning Banner */}
       {job.detail_enrichment_status === 'failed' && (

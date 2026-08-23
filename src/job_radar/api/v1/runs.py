@@ -137,11 +137,7 @@ async def get_board_run_detail(run_id: str, db: AsyncSession = Depends(get_db_se
         elif observation_outcome == "re_observed":
             re_observed_count += 1
         
-        ops_status = "held"
-        if handoff_state == "accepted":
-            ops_status = "accepted"
-        elif handoff_state in ("queued", "dispatching", "uncertain"):
-            ops_status = "active"
+        ops_status = handoff_state if handoff_state else "untracked"
 
         jobs_out.append({
             "candidate_id": j.candidate_id,

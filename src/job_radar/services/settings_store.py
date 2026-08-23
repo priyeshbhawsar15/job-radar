@@ -26,6 +26,7 @@ class AppSettingsModel(BaseModel):
     discord_webhook_enabled: bool = False
     discord_webhook_url: str = ""
     global_browser_concurrency: int = 10
+    jobops_import_batch_size: int = 50
 
 
 def load_settings(path: Path = None) -> AppSettingsModel:

@@ -21,6 +21,7 @@ class SettingsResponse(BaseModel):
     discord_webhook_enabled: bool = False
     discord_webhook_url: str = ""
     global_browser_concurrency: int = 10
+    jobops_import_batch_size: int = 50
 
 
 class UpdateSettingsRequest(BaseModel):
@@ -34,6 +35,7 @@ class UpdateSettingsRequest(BaseModel):
     discord_webhook_enabled: Optional[bool] = None
     discord_webhook_url: Optional[str] = None
     global_browser_concurrency: Optional[int] = None
+    jobops_import_batch_size: Optional[int] = None
 
 
 class TestJobOpsResponse(BaseModel):
@@ -68,6 +70,7 @@ def _to_response(stored) -> SettingsResponse:
         discord_webhook_enabled=stored.discord_webhook_enabled,
         discord_webhook_url=stored.discord_webhook_url,
         global_browser_concurrency=stored.global_browser_concurrency,
+        jobops_import_batch_size=stored.jobops_import_batch_size,
     )
 
 

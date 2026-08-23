@@ -169,8 +169,11 @@ export const Jobs: React.FC = () => {
               className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-teal-500"
             >
               <option value="all">All outcomes</option>
-              <option value="accepted">Accepted</option>
-              <option value="held">Held</option>
+              <option value="accepted">Accepted (Imported)</option>
+              <option value="queued">Queued</option>
+              <option value="dispatching">Dispatching</option>
+              <option value="uncertain">Uncertain</option>
+              <option value="untracked">Untracked</option>
             </select>
           </div>
 

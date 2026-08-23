@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, CheckCircle, Cog, Wifi, Send, Cpu } from 'lucide-react';
+import { Save, CheckCircle, Cog, Wifi, Send, Cpu, Layers } from 'lucide-react';
 
 interface AppSettings {
   scheduler_enabled: boolean;
@@ -12,6 +12,7 @@ interface AppSettings {
   discord_webhook_enabled: boolean;
   discord_webhook_url: string;
   global_browser_concurrency: number;
+  jobops_import_batch_size: number;
 }
 
 interface BoardOption {
@@ -36,6 +37,7 @@ export const Settings: React.FC = () => {
   const [discordWebhookEnabled, setDiscordWebhookEnabled] = useState<boolean>(false);
   const [discordWebhookUrl, setDiscordWebhookUrl] = useState<string>('');
   const [globalBrowserConcurrency, setGlobalBrowserConcurrency] = useState<number>(10);
+  const [jobopsImportBatchSize, setJobopsImportBatchSize] = useState<number>(50);
   const [webhookTestStatus, setWebhookTestStatus] = useState<WebhookTestStatus>('idle');
   const [webhookTestMessage, setWebhookTestMessage] = useState<string>('');
   const [savedMsg, setSavedMsg] = useState<boolean>(false);
@@ -61,6 +63,7 @@ export const Settings: React.FC = () => {
           setDiscordWebhookEnabled(settingsData.discord_webhook_enabled || false);
           setDiscordWebhookUrl(settingsData.discord_webhook_url || '');
           setGlobalBrowserConcurrency(settingsData.global_browser_concurrency || 10);
+          setJobopsImportBatchSize(settingsData.jobops_import_batch_size || 50);
         }
         setBoards((boardsData || []).map((b) => ({ board_id: b.board_id, name: b.name })));
       })
@@ -93,6 +96,7 @@ export const Settings: React.FC = () => {
         discord_webhook_enabled: discordWebhookEnabled,
         discord_webhook_url: discordWebhookUrl,
         global_browser_concurrency: globalBrowserConcurrency,
+        jobops_import_batch_size: jobopsImportBatchSize,
       }),
     })
       .then((res) => res.json())
@@ -375,7 +379,31 @@ export const Settings: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between">
+              <label htmlFor="jobopsImportBatchSize" className="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Layers className="w-4 h-4 text-teal-500" />
+                <span>Job Ops Import Batch Size</span>
+              </label>
+              <span className="text-xs font-extrabold text-teal-600 dark:text-teal-400 font-mono">
+                {jobopsImportBatchSize} jobs / batch
+              </span>
+            </div>
+            <input
+              id="jobopsImportBatchSize"
+              type="number"
+              min="5"
+              max="500"
+              value={jobopsImportBatchSize}
+              onChange={(e) => setJobopsImportBatchSize(Math.max(1, Number(e.target.value)))}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            />
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Maximum number of candidate jobs imported in a single outbox dispatch batch. Default is 50.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 pt-2">
             <button
               type="button"
               onClick={handleTestConnection}

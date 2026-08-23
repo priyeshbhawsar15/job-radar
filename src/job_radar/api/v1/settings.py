@@ -20,6 +20,7 @@ class SettingsResponse(BaseModel):
     jobops_password: Optional[str] = None
     discord_webhook_enabled: bool = False
     discord_webhook_url: str = ""
+    global_browser_concurrency: int = 10
 
 
 class UpdateSettingsRequest(BaseModel):
@@ -32,6 +33,7 @@ class UpdateSettingsRequest(BaseModel):
     jobops_password: Optional[str] = None
     discord_webhook_enabled: Optional[bool] = None
     discord_webhook_url: Optional[str] = None
+    global_browser_concurrency: Optional[int] = None
 
 
 class TestJobOpsResponse(BaseModel):
@@ -65,6 +67,7 @@ def _to_response(stored) -> SettingsResponse:
         jobops_password=stored.jobops_password,
         discord_webhook_enabled=stored.discord_webhook_enabled,
         discord_webhook_url=stored.discord_webhook_url,
+        global_browser_concurrency=stored.global_browser_concurrency,
     )
 
 

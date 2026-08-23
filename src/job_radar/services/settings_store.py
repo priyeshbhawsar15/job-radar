@@ -25,6 +25,7 @@ class AppSettingsModel(BaseModel):
     jobops_password: Optional[str] = None
     discord_webhook_enabled: bool = False
     discord_webhook_url: str = ""
+    global_browser_concurrency: int = 10
 
 
 def load_settings(path: Path = None) -> AppSettingsModel:

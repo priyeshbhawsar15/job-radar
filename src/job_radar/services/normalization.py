@@ -164,7 +164,12 @@ class NormalizationService:
             await session.commit()
 
         if to_enrich:
-            sem = asyncio.Semaphore(10)
+            board_concurrency = 5
+            if provider_config and isinstance(provider_config, dict):
+                if "max_enrichment_concurrency" in provider_config and isinstance(provider_config["max_enrichment_concurrency"], int):
+                    board_concurrency = max(1, provider_config["max_enrichment_concurrency"])
+
+            sem = asyncio.Semaphore(board_concurrency)
 
             async def do_enrich(cand_tuple: Tuple[str, str, str, str]) -> bool:
                 cand_id, url, company, title = cand_tuple

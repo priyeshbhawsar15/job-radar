@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, CheckCircle, Cog, Wifi, Send } from 'lucide-react';
+import { Save, CheckCircle, Cog, Wifi, Send, Cpu } from 'lucide-react';
 
 interface AppSettings {
   scheduler_enabled: boolean;
@@ -11,6 +11,7 @@ interface AppSettings {
   jobops_password: string | null;
   discord_webhook_enabled: boolean;
   discord_webhook_url: string;
+  global_browser_concurrency: number;
 }
 
 interface BoardOption {
@@ -34,6 +35,7 @@ export const Settings: React.FC = () => {
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('idle');
   const [discordWebhookEnabled, setDiscordWebhookEnabled] = useState<boolean>(false);
   const [discordWebhookUrl, setDiscordWebhookUrl] = useState<string>('');
+  const [globalBrowserConcurrency, setGlobalBrowserConcurrency] = useState<number>(10);
   const [webhookTestStatus, setWebhookTestStatus] = useState<WebhookTestStatus>('idle');
   const [webhookTestMessage, setWebhookTestMessage] = useState<string>('');
   const [savedMsg, setSavedMsg] = useState<boolean>(false);
@@ -58,6 +60,7 @@ export const Settings: React.FC = () => {
           setJobopsPassword(settingsData.jobops_password || '');
           setDiscordWebhookEnabled(settingsData.discord_webhook_enabled || false);
           setDiscordWebhookUrl(settingsData.discord_webhook_url || '');
+          setGlobalBrowserConcurrency(settingsData.global_browser_concurrency || 10);
         }
         setBoards((boardsData || []).map((b) => ({ board_id: b.board_id, name: b.name })));
       })
@@ -89,6 +92,7 @@ export const Settings: React.FC = () => {
         jobops_password: jobopsPassword || null,
         discord_webhook_enabled: discordWebhookEnabled,
         discord_webhook_url: discordWebhookUrl,
+        global_browser_concurrency: globalBrowserConcurrency,
       }),
     })
       .then((res) => res.json())
@@ -167,7 +171,7 @@ export const Settings: React.FC = () => {
           <span>Settings</span>
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
-          Configure the automated pipeline scheduler and Job Ops hand-off integration.
+          Configure the automated pipeline scheduler, browser concurrency controls, and Job Ops integration.
         </p>
       </header>
 
@@ -179,6 +183,39 @@ export const Settings: React.FC = () => {
       )}
 
       <form onSubmit={handleSave} className="space-y-6">
+        <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">Browser Concurrency Controls</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Set the global maximum concurrent Chromium rendering instances across all active pipelines.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label htmlFor="globalBrowserConcurrency" className="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Cpu className="w-4 h-4 text-teal-500" />
+                <span>Global Browser Concurrency Limit</span>
+              </label>
+              <span className="text-xs font-extrabold text-teal-600 dark:text-teal-400 font-mono">
+                {globalBrowserConcurrency} active instances
+              </span>
+            </div>
+            <input
+              id="globalBrowserConcurrency"
+              type="number"
+              min="1"
+              max="50"
+              value={globalBrowserConcurrency}
+              onChange={(e) => setGlobalBrowserConcurrency(Math.max(1, Number(e.target.value)))}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            />
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Default is 10. Per-board default is 5 unless overridden in board configuration.
+            </p>
+          </div>
+        </section>
+
         <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <div>
             <h2 className="text-base font-bold text-slate-900 dark:text-white">Automated Pipeline Scheduler</h2>

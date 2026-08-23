@@ -55,7 +55,7 @@ async def trigger_run(
             raise HTTPException(status_code=404, detail="Board not found")
         board_ids = [req.board_id]
     else:
-        board_res = await db.execute(select(Board).where(Board.status == "active"))
+        board_res = await db.execute(select(Board).where(Board.status.in_(["active", "reviewed", "enabled"])))
         boards = board_res.scalars().all()
         board_ids = [b.board_id for b in boards]
 

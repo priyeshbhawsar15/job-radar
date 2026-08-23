@@ -15,6 +15,7 @@ from job_radar.adapters.base import ExtractedCandidate
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
 from job_radar.services.detail_contracts import DetailResult
 from job_radar.services.oracle_detail import extract_oracle_public_id
+from job_radar.services.handoff import handoff_processor
 
 logger = logging.getLogger(__name__)
 
@@ -150,6 +151,10 @@ class NormalizationService:
                         to_enrich[candidate_id] = (candidate_id, url_capped, company_capped, title_capped)
                     else:
                         enrichment_succeeded_count += 1
+                        try:
+                            await handoff_processor.enqueue_candidate_handoff(candidate_id)
+                        except Exception as h_err:
+                            logger.warning(f"Failed to enqueue handoff for {candidate_id}: {h_err}")
 
                 if candidate_id not in seen_candidate_ids_in_batch:
                     run_cand = RunCandidate(
@@ -217,6 +222,10 @@ class NormalizationService:
                                     f"Detail enrichment succeeded for candidate {cand_id}: "
                                     f"board={board_id}, family={family}, source={getattr(result, 'source', None)}"
                                 )
+                                try:
+                                    await handoff_processor.enqueue_candidate_handoff(cand_id)
+                                except Exception as h_err:
+                                    logger.warning(f"Failed to enqueue handoff for {cand_id}: {h_err}")
                                 await session.commit()
                                 return True
                             else:

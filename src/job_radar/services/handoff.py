@@ -13,30 +13,68 @@ from job_radar.db.session import AsyncSessionLocal
 from job_radar.db.models.handoff import HandoffOutbox, HandoffAttempt
 from job_radar.db.models.candidate import CandidateJob
 from job_radar.services.detail_extractor import description_is_valid
+from job_radar.services.settings_store import load_settings
 
 logger = logging.getLogger(__name__)
+
 
 class JobOpsClient:
     """Client for forwarding candidate jobs to Job Ops intake API (/api/manual-jobs/import)."""
 
     def __init__(self, endpoint: Optional[str] = None, username: Optional[str] = None, password: Optional[str] = None):
-        self.endpoint = endpoint or settings.JOBOPS_ENDPOINT or "http://127.0.0.1:8000/api/manual-jobs/import"
-        self.username = username or settings.JOBOPS_USERNAME
-        self.password = password or settings.JOBOPS_PASSWORD
+        stored = load_settings()
+        raw_ep = endpoint or stored.jobops_endpoint or settings.JOBOPS_ENDPOINT or "http://192.168.2.201:3005"
+        self.base_endpoint = raw_ep.rstrip("/")
+        if self.base_endpoint.endswith("/api/manual-jobs/import"):
+            self.import_endpoint = self.base_endpoint
+            self.base_endpoint = self.base_endpoint[:-23]
+        else:
+            self.import_endpoint = f"{self.base_endpoint}/api/manual-jobs/import"
+
+        self.username = username or stored.jobops_username or settings.JOBOPS_USERNAME
+        self.password = password or stored.jobops_password or settings.JOBOPS_PASSWORD
+        self._token: Optional[str] = None
+
+    async def _ensure_token(self, client: httpx.AsyncClient) -> Optional[str]:
+        if self._token:
+            return self._token
+        if not self.username or not self.password:
+            return None
+
+        login_url = f"{self.base_endpoint}/api/auth/login"
+        try:
+            resp = await client.post(login_url, json={"username": self.username, "password": self.password})
+            if resp.status_code == 200:
+                data = resp.json()
+                if data.get("ok") and data.get("data", {}).get("token"):
+                    self._token = data["data"]["token"]
+                    return self._token
+        except Exception as exc:
+            logger.warning(f"JobOps authentication failed: {exc}")
+        return None
 
     async def push_candidate(self, candidate_data: Dict[str, Any]) -> bool:
-        if not settings.HANDOFF_ENABLED and not settings.JOBOPS_ENDPOINT:
-            logger.info("JobOps endpoint not configured. Simulating successful handoff outbox dispatch.")
+        stored = load_settings()
+        is_enabled = stored.handoff_enabled or settings.HANDOFF_ENABLED
+        if not is_enabled:
+            logger.info("JobOps handoff disabled in settings. Simulating successful handoff outbox dispatch.")
             return True
-
-        auth = None
-        if self.username and self.password:
-            auth = (self.username, self.password)
 
         async with httpx.AsyncClient(timeout=15.0) as client:
-            response = await client.post(self.endpoint, json=candidate_data, auth=auth)
+            token = await self._ensure_token(client)
+            headers = {}
+            if token:
+                headers["Authorization"] = f"Bearer {token}"
+
+            response = await client.post(self.import_endpoint, json=candidate_data, headers=headers)
+            # If 409 Conflict, job is already present in Job Ops workspace -- count as success
+            if response.status_code == 409:
+                logger.info(f"Candidate already exists in Job Ops workspace: {candidate_data.get('job', {}).get('sourceJobId')}")
+                return True
+
             response.raise_for_status()
             return True
+
 
 class HandoffProcessor:
     """Transactional outbox processor for delivering candidate handoffs to Job Ops."""
@@ -45,8 +83,15 @@ class HandoffProcessor:
         self.session_factory = session_factory
         self.client = jobops_client or JobOpsClient()
 
-    async def enqueue_candidate_handoff(self, candidate_id: str, payload_json: Dict[str, Any]) -> HandoffOutbox:
+    async def enqueue_candidate_handoff(self, candidate_id: str, payload_json: Optional[Dict[str, Any]] = None) -> Optional[HandoffOutbox]:
         async with self.session_factory() as session:
+            # Avoid duplicate outbox queueing for the same candidate
+            existing_res = await session.execute(
+                select(HandoffOutbox).where(HandoffOutbox.candidate_id == candidate_id)
+            )
+            if existing_res.scalar_one_or_none():
+                return None
+
             idempotency_key = f"idem_{candidate_id}_{uuid.uuid4().hex[:8]}"
             outbox = HandoffOutbox(
                 candidate_id=candidate_id,
@@ -59,9 +104,11 @@ class HandoffProcessor:
             await session.refresh(outbox)
             return outbox
 
-    async def process_pending_outbox(self, max_batch: int = 10) -> int:
-        if not settings.HANDOFF_ENABLED and not settings.JOBOPS_ENDPOINT:
-            logger.debug("Handoff feature disabled or endpoint unconfigured. Skipping outbox processing.")
+    async def process_pending_outbox(self, max_batch: int = 20) -> int:
+        stored = load_settings()
+        is_enabled = stored.handoff_enabled or settings.HANDOFF_ENABLED
+        if not is_enabled:
+            logger.debug("Handoff feature disabled in settings. Skipping outbox processing.")
             return 0
 
         now = datetime.now(timezone.utc)
@@ -94,7 +141,7 @@ class HandoffProcessor:
                     cand = cand_res.scalar_one_or_none()
 
                     payload = {
-                        "skipTailoring": False,
+                        "skipTailoring": True,
                         "job": {
                             "source": (cand.board_id if cand else "job_radar")[:120],
                             "sourceJobId": (cand.candidate_id if cand else "unknown")[:500],
@@ -135,5 +182,6 @@ class HandoffProcessor:
                 await session.commit()
 
         return processed_count
+
 
 handoff_processor = HandoffProcessor()

@@ -10,12 +10,14 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:////home/priyesh/Work/job-radar/job_radar.db"
 
     SECRET_KEY: str = "dev-secret-key-change-in-production"
-    BROWSER_SERVICE_URL: str = "http://127.0.0.1:3013"
+    BROWSER_SERVICE_URL: str = "http://192.168.2.201:3013"
 
     JOBOPS_ENDPOINT: Optional[str] = None
     JOBOPS_USERNAME: Optional[str] = None
     JOBOPS_PASSWORD: Optional[str] = None
     HANDOFF_ENABLED: bool = False
+
+    SETTINGS_FILE_PATH: Optional[str] = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

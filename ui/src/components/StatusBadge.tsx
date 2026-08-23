@@ -42,10 +42,15 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label, size = 
 
   const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs font-medium';
 
+  let displayLabel = label || status.charAt(0).toUpperCase() + status.slice(1);
+  if (normalized === 'accepted') {
+    displayLabel = 'Imported';
+  }
+
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full border ${sizeClasses} ${styles}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
-      {label || status.charAt(0).toUpperCase() + status.slice(1)}
+      {displayLabel}
     </span>
   );
 };

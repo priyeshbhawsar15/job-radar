@@ -104,84 +104,95 @@ class HandoffProcessor:
             await session.refresh(outbox)
             return outbox
 
-    async def process_pending_outbox(self, max_batch: int = 20) -> int:
+    async def process_pending_outbox(self, max_batch: int = 50, loop_until_empty: bool = True) -> int:
         stored = load_settings()
         is_enabled = stored.handoff_enabled or settings.HANDOFF_ENABLED
         if not is_enabled:
             logger.debug("Handoff feature disabled in settings. Skipping outbox processing.")
             return 0
 
-        now = datetime.now(timezone.utc)
-        processed_count = 0
+        total_processed = 0
 
-        async with self.session_factory() as session:
-            res = await session.execute(
-                select(HandoffOutbox)
-                .options(selectinload(HandoffOutbox.attempts))
-                .where(HandoffOutbox.state.in_(["queued", "uncertain"]))
-                .where(HandoffOutbox.next_retry_at <= now)
-                .limit(max_batch)
-            )
-            pending_records = res.scalars().all()
+        while True:
+            now = datetime.now(timezone.utc)
+            processed_in_batch = 0
 
-            for record in pending_records:
-                record.state = "dispatching"
-                attempt_seq = len(record.attempts) + 1 if record.attempts else 1
-
-                attempt = HandoffAttempt(
-                    outbox_id=record.outbox_id,
-                    attempt_seq=attempt_seq,
-                    safe_outcome="in_progress"
+            async with self.session_factory() as session:
+                res = await session.execute(
+                    select(HandoffOutbox)
+                    .options(selectinload(HandoffOutbox.attempts))
+                    .where(HandoffOutbox.state.in_(["queued", "uncertain"]))
+                    .where(HandoffOutbox.next_retry_at <= now)
+                    .limit(max_batch)
                 )
-                session.add(attempt)
-                await session.flush()
+                pending_records = res.scalars().all()
 
-                try:
-                    cand_res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == record.candidate_id))
-                    cand = cand_res.scalar_one_or_none()
+                if not pending_records:
+                    break
 
-                    payload = {
-                        "skipTailoring": True,
-                        "job": {
-                            "source": (cand.board_id if cand else "job_radar")[:120],
-                            "sourceJobId": (cand.candidate_id if cand else "unknown")[:500],
-                            "title": (cand.title if cand else "Unknown Position")[:500],
-                            "employer": (cand.company if cand else "Unknown Company")[:500],
-                            "jobUrl": (cand.public_apply_url if cand else "")[:2000],
-                            "applicationLink": (cand.public_apply_url if cand else "")[:2000],
-                            "location": ((cand.location if (cand and cand.location) else "India") or "India")[:200],
-                            "salary": (cand.salary_raw if (cand and cand.salary_raw) else "Competitive / Not specified")[:200],
-                            "jobDescription": (cand.description if (cand and cand.description and description_is_valid(cand.description, title=cand.title if cand else "")) else f"Full position details and responsibilities for {cand.title if cand else 'Role'} at {cand.company if cand else 'Company'}.")[:40000],
-                            "jobType": (cand.employment_type if (cand and cand.employment_type) else "Full-time")[:200],
-                            "jobFunction": (cand.department if (cand and cand.department) else "Engineering")[:200]
+                for record in pending_records:
+                    record.state = "dispatching"
+                    attempt_seq = len(record.attempts) + 1 if record.attempts else 1
+
+                    attempt = HandoffAttempt(
+                        outbox_id=record.outbox_id,
+                        attempt_seq=attempt_seq,
+                        safe_outcome="in_progress"
+                    )
+                    session.add(attempt)
+                    await session.flush()
+
+                    try:
+                        cand_res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == record.candidate_id))
+                        cand = cand_res.scalar_one_or_none()
+
+                        payload = {
+                            "skipTailoring": True,
+                            "job": {
+                                "source": (cand.board_id if cand else "job_radar")[:120],
+                                "sourceJobId": (cand.candidate_id if cand else "unknown")[:500],
+                                "title": (cand.title if cand else "Unknown Position")[:500],
+                                "employer": (cand.company if cand else "Unknown Company")[:500],
+                                "jobUrl": (cand.public_apply_url if cand else "")[:2000],
+                                "applicationLink": (cand.public_apply_url if cand else "")[:2000],
+                                "location": ((cand.location if (cand and cand.location) else "India") or "India")[:200],
+                                "salary": (cand.salary_raw if (cand and cand.salary_raw) else "Competitive / Not specified")[:200],
+                                "jobDescription": (cand.description if (cand and cand.description and description_is_valid(cand.description, title=cand.title if cand else "")) else f"Full position details and responsibilities for {cand.title if cand else 'Role'} at {cand.company if cand else 'Company'}.")[:40000],
+                                "jobType": (cand.employment_type if (cand and cand.employment_type) else "Full-time")[:200],
+                                "jobFunction": (cand.department if (cand and cand.department) else "Engineering")[:200]
+                            }
                         }
-                    }
 
-                    await self.client.push_candidate(payload)
-                    record.state = "accepted"
-                    attempt.safe_outcome = "accepted"
-                    attempt.http_status = 200
-                    attempt.finished_at = datetime.now(timezone.utc)
-                    processed_count += 1
+                        await self.client.push_candidate(payload)
+                        record.state = "accepted"
+                        attempt.safe_outcome = "accepted"
+                        attempt.http_status = 200
+                        attempt.finished_at = datetime.now(timezone.utc)
+                        processed_in_batch += 1
 
-                except Exception as e:
-                    error_str = str(e)
-                    attempt.safe_outcome = "rejected"
-                    attempt.error_message = error_str
-                    attempt.finished_at = datetime.now(timezone.utc)
+                    except Exception as e:
+                        error_str = str(e)
+                        attempt.safe_outcome = "rejected"
+                        attempt.error_message = error_str
+                        attempt.finished_at = datetime.now(timezone.utc)
 
-                    if attempt_seq >= 5:
-                        record.state = "rejected"
-                        logger.error(f"Handoff record {record.outbox_id} failed 5 attempts. State set to REJECTED.")
-                    else:
-                        record.state = "uncertain"
-                        backoff_seconds = (2 ** attempt_seq) * 5
-                        record.next_retry_at = now + timedelta(seconds=backoff_seconds)
-                        logger.warning(f"Handoff attempt failed for {record.outbox_id}. Retrying in {backoff_seconds}s.")
+                        if attempt_seq >= 5:
+                            record.state = "rejected"
+                            logger.error(f"Handoff record {record.outbox_id} failed 5 attempts. State set to REJECTED.")
+                        else:
+                            record.state = "uncertain"
+                            backoff_seconds = (2 ** attempt_seq) * 5
+                            record.next_retry_at = now + timedelta(seconds=backoff_seconds)
+                            logger.warning(f"Handoff attempt failed for {record.outbox_id}. Retrying in {backoff_seconds}s.")
 
-                await session.commit()
+                    await session.commit()
 
-        return processed_count
+            total_processed += processed_in_batch
+
+            if not loop_until_empty or processed_in_batch == 0:
+                break
+
+        return total_processed
 
 
 handoff_processor = HandoffProcessor()

@@ -1,9 +1,14 @@
+from dataclasses import dataclass
+import hashlib
 import logging
-import json
+import asyncio
 import html
+import json
 import re
 import httpx
+from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any, Iterator, List, Mapping
+
 from job_radar.config import settings
 from job_radar.services.browser import BrowserServiceClient
 from job_radar.services.detail_contracts import DetailRequest, DetailResult, ERR_INVALID_DETAIL_URL
@@ -179,6 +184,15 @@ class DetailExtractor:
                 return await fetch_oracle_detail(req, client)
             elif family == "phenom":
                 return await fetch_phenom_detail(req, client)
+            elif family == "google_careers":
+                try:
+                    raw_html = await self.browser_client.fetch_board_html(public_apply_url)
+                    infer_result = await self.fetch_jobops_infer_fallback(raw_html, client)
+                    if infer_result is not None:
+                        return infer_result
+                except Exception as e:
+                    logger.info(f"Google careers infer fallback failed: {e}")
+                return DetailResult.empty(ERR_INVALID_DETAIL_URL)
             elif family == "workday":
                 result = await fetch_workday_detail(req, client)
                 if result.error_code is None:
@@ -357,131 +371,87 @@ class DetailExtractor:
 
     def parse_detail_html(self, raw_html_text: str, board_name: str, title: str, apply_url: str) -> Dict[str, Any]:
         raw_html_text = html.unescape(raw_html_text)
+        jp = extract_job_posting(raw_html_text)
+        if jp and jp.get("description"):
+            desc_clean = clean_html_to_text(jp["description"])[:40000]
+            if description_is_valid(desc_clean, title=title):
+                loc = None
+                job_loc = jp.get("jobLocation")
+                if isinstance(job_loc, dict):
+                    addr = job_loc.get("address", {})
+                    if isinstance(addr, dict):
+                        locality = addr.get("addressLocality")
+                        region = addr.get("addressRegion")
+                        country = addr.get("addressCountry")
+                        parts = [p for p in [locality, region, country] if p and isinstance(p, str)]
+                        if parts:
+                            loc = ", ".join(parts)[:200]
+                elif isinstance(job_loc, list) and len(job_loc) > 0:
+                    first_loc = job_loc[0]
+                    if isinstance(first_loc, dict):
+                        addr = first_loc.get("address", {})
+                        if isinstance(addr, dict):
+                            locality = addr.get("addressLocality")
+                            region = addr.get("addressRegion")
+                            country = addr.get("addressCountry")
+                            parts = [p for p in [locality, region, country] if p and isinstance(p, str)]
+                            if parts:
+                                loc = ", ".join(parts)[:200]
 
-        ld_data = extract_job_posting(raw_html_text)
+                emp_type = jp.get("employmentType")
+                if isinstance(emp_type, list):
+                    emp_type = ", ".join(str(x) for x in emp_type)
+                elif not isinstance(emp_type, str):
+                    emp_type = None
 
-        description = None
-        location = None
-        employment_type = None
+                sal_raw = None
+                sal_min = None
+                sal_max = None
+                sal_curr = None
+                base_sal = jp.get("baseSalary")
+                if isinstance(base_sal, dict):
+                    val = base_sal.get("value", {})
+                    sal_curr = base_sal.get("currency")
+                    if isinstance(val, dict):
+                        sal_min = val.get("minValue")
+                        sal_max = val.get("maxValue")
+                        if sal_min and sal_max:
+                            sal_raw = f"{sal_min} - {sal_max} {sal_curr or ''}".strip()
+                        elif sal_min:
+                            sal_raw = f"{sal_min} {sal_curr or ''}".strip()
 
-        if ld_data:
-            raw_desc = str(ld_data.get("description", ""))
-            clean_desc = clean_html_to_text(raw_desc)[:40000]
-            if description_is_valid(clean_desc, title=title):
-                description = clean_desc
+                return {
+                    "description": desc_clean,
+                    "location": loc,
+                    "employment_type": emp_type,
+                    "department": None,
+                    "salary_raw": sal_raw,
+                    "salary_min": sal_min,
+                    "salary_max": sal_max,
+                    "salary_currency": sal_curr,
+                }
 
-            job_loc = ld_data.get("jobLocation")
-            if isinstance(job_loc, list) and job_loc:
-                job_loc = job_loc[0]
-            if isinstance(job_loc, dict):
-                loc_name = job_loc.get("name")
-                addr = job_loc.get("address", {})
-                if isinstance(addr, dict):
-                    loc_city = addr.get("addressLocality") or addr.get("addressRegion") or ""
-                    loc_country = addr.get("addressCountry") or ""
-                    if loc_country.lower() in ('in', 'ind'):
-                        loc_country = "India"
-                    elif loc_country.lower() in ('us', 'usa'):
-                        loc_country = "United States"
-                    location = f"{loc_city}, {loc_country}".strip(" ,") if loc_city else (loc_name or loc_country)
-                elif loc_name:
-                    location = loc_name
+        # Fallback to meta tags
+        desc_meta = None
+        desc_match = re.search(r'<meta\b[^>]*?\bname=["\']description["\'][^>]*?\bcontent=["\'](.*?)["\']', raw_html_text, re.IGNORECASE)
+        if not desc_match:
+            desc_match = re.search(r'<meta\b[^>]*?\bproperty=["\']og:description["\'][^>]*?\bcontent=["\'](.*?)["\']', raw_html_text, re.IGNORECASE)
 
-            emp_type = ld_data.get("employmentType")
-            if emp_type and str(emp_type).lower() != "other":
-                employment_type = str(emp_type).replace("_", "-").capitalize()
+        if desc_match:
+            desc_meta = html.unescape(desc_match.group(1)).strip()
+            desc_clean = clean_html_to_text(desc_meta)[:40000]
+            if description_is_valid(desc_clean, title=title):
+                return {
+                    "description": desc_clean,
+                    "location": None,
+                    "employment_type": None,
+                    "department": None,
+                    "salary_raw": None,
+                    "salary_min": None,
+                    "salary_max": None,
+                    "salary_currency": None,
+                }
 
-        if not location or location.lower() in ('india', 'in', 'pagedata', ''):
-            workday_loc_match = re.search(r'/job/([A-Za-z0-9\-%]+)/', apply_url)
-            if workday_loc_match:
-                raw_city = workday_loc_match.group(1)
-                if 'CHENNAI' in raw_city.upper(): location = "Chennai, India"
-                elif 'BANGALORE' in raw_city.upper() or 'BENGALURU' in raw_city.upper(): location = "Bangalore, India"
-                elif 'HYDERABAD' in raw_city.upper(): location = "Hyderabad, India"
-                elif 'NOIDA' in raw_city.upper(): location = "Noida, India"
-                elif 'MUMBAI' in raw_city.upper(): location = "Mumbai, India"
-                elif 'PUNE' in raw_city.upper(): location = "Pune, India"
-                elif 'GURGAON' in raw_city.upper() or 'GURUGRAM' in raw_city.upper(): location = "Gurgaon, India"
-                else:
-                    c_title = raw_city.replace('-', ' ').title()
-                    location = f"{c_title}, India" if not any(x in c_title.lower() for x in ['india', 'usa']) else c_title
-
-            if not location or location.lower() in ('india', 'in', ''):
-                gh_loc = re.search(r'<div[^>]*class=["\'][^"\']*location[^"\']*["\'][^>]*>(.*?)</div', raw_html_text, re.DOTALL | re.IGNORECASE)
-                if gh_loc:
-                    loc_t = re.sub(r'<[^>]+>', ' ', gh_loc.group(1)).strip()
-                    if len(loc_t) > 2 and loc_t.lower() != 'india':
-                        location = loc_t
-
-            if not location or location.lower() in ('india', 'in', ''):
-                city_dom_match = re.search(r'\b(Hyderabad|Bangalore|Bengaluru|Chennai|Noida|Mumbai|Pune|Gurgaon|Gurugram|Delhi)\b', raw_html_text + ' ' + title + ' ' + apply_url, re.IGNORECASE)
-                if city_dom_match:
-                    city_found = city_dom_match.group(1).capitalize()
-                    if city_found == 'Bengaluru': city_found = 'Bangalore'
-                    location = f"{city_found}, India"
-
-        if not description:
-            desc_match = re.search(r'<(?:div|section)[^>]*class=["\'][^"\']*(?:ats-description|job-description|job-details)[^"\']*["\'][^>]*>(.*?)</(?:div|section)>', raw_html_text, re.DOTALL | re.IGNORECASE)
-            if desc_match:
-                clean_desc_text = clean_html_to_text(desc_match.group(1))[:40000]
-                if description_is_valid(clean_desc_text, title=title):
-                    description = clean_desc_text
-
-        if not location or location.lower() == 'india':
-            if 'abnormal' in board_name.lower():
-                location = "Bangalore, India"
-            else:
-                location = "India"
-
-        if not employment_type:
-            type_match = re.search(r'\b(Full-time|Part-time|Contract|Temporary|Internship)\b', raw_html_text, re.IGNORECASE)
-            employment_type = type_match.group(1).capitalize() if type_match else "Full-time"
-
-        dept_match = re.search(r'(?:Department|Team|Function):\s*([A-Za-z0-9\s&]+)', raw_html_text, re.IGNORECASE)
-        department = dept_match.group(1).strip() if dept_match else "Engineering"
-
-        salary_raw = None
-        salary_min = None
-        salary_max = None
-        salary_currency = None
-
-        inr_match = re.search(r'(?:INR|₹)\s*([\d,.]+)\s*(?:-|to)\s*(?:INR|₹)?\s*([\d,.]+)', raw_html_text, re.IGNORECASE)
-        usd_match = re.search(r'\$\s*([\d,.]+)\s*(?:-|to)\s*\$?\s*([\d,.]+)', raw_html_text)
-
-        if inr_match:
-            try:
-                c1 = int(inr_match.group(1).replace(',', '').split('.')[0])
-                c2 = int(inr_match.group(2).replace(',', '').split('.')[0])
-                salary_min = min(c1, c2)
-                salary_max = max(c1, c2)
-                salary_currency = "INR"
-                salary_raw = f"INR {salary_min:,} - INR {salary_max:,} / yr"
-            except Exception:
-                pass
-        elif usd_match:
-            try:
-                c1 = int(usd_match.group(1).replace(',', '').split('.')[0])
-                c2 = int(usd_match.group(2).replace(',', '').split('.')[0])
-                salary_min = min(c1, c2)
-                salary_max = max(c1, c2)
-                salary_currency = "USD"
-                salary_raw = f" -  / yr"
-            except Exception:
-                pass
-
-        if not salary_raw:
-            salary_raw = "Competitive / Not specified"
-
-        return {
-            "description": description[:40000] if description else None,
-            "location": location[:200] if location else None,
-            "employment_type": employment_type[:200] if employment_type else None,
-            "department": department[:200] if department else None,
-            "salary_raw": salary_raw[:200] if salary_raw else None,
-            "salary_min": salary_min,
-            "salary_max": salary_max,
-            "salary_currency": salary_currency
-        }
-
+        return {}
 
 detail_extractor = DetailExtractor()

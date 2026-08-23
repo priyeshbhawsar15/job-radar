@@ -80,6 +80,7 @@ class NormalizationService:
         new_jobs_count = 0
         seen_candidate_ids_in_batch = set()
         to_enrich: Dict[str, Tuple[str, str, str, str]] = {}  # cand_id -> (cand_id, url, company, title)
+        already_valid_candidate_ids: List[str] = []
         enrichment_succeeded_count = 0
         enrichment_failed_count = 0
 
@@ -151,10 +152,7 @@ class NormalizationService:
                         to_enrich[candidate_id] = (candidate_id, url_capped, company_capped, title_capped)
                     else:
                         enrichment_succeeded_count += 1
-                        try:
-                            await handoff_processor.enqueue_candidate_handoff(candidate_id)
-                        except Exception as h_err:
-                            logger.warning(f"Failed to enqueue handoff for {candidate_id}: {h_err}")
+                        already_valid_candidate_ids.append(candidate_id)
 
                 if candidate_id not in seen_candidate_ids_in_batch:
                     run_cand = RunCandidate(
@@ -167,6 +165,12 @@ class NormalizationService:
                     seen_candidate_ids_in_batch.add(candidate_id)
 
             await session.commit()
+
+        for c_id in already_valid_candidate_ids:
+            try:
+                await handoff_processor.enqueue_candidate_handoff(c_id)
+            except Exception as h_err:
+                logger.warning(f"Failed to enqueue handoff for valid candidate {c_id}: {h_err}")
 
         if to_enrich:
             board_concurrency = 5

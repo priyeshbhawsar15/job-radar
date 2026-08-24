@@ -23,6 +23,7 @@ class SettingsResponse(BaseModel):
     discord_webhook_url: str = ""
     global_browser_concurrency: int = 10
     jobops_import_batch_size: int = 50
+    next_scheduled_run_at: Optional[str] = None
 
 
 class UpdateSettingsRequest(BaseModel):
@@ -60,6 +61,16 @@ class TestDiscordWebhookRequest(BaseModel):
 
 
 def _to_response(stored) -> SettingsResponse:
+    next_run_iso = None
+    try:
+        jobs = scheduler_service.scheduler.get_jobs()
+        if jobs:
+            next_time = jobs[0].next_run_time
+            if next_time:
+                next_run_iso = next_time.isoformat()
+    except Exception:
+        pass
+
     return SettingsResponse(
         scheduler_enabled=stored.scheduler_enabled,
         scheduler_interval_hours=stored.scheduler_interval_hours,
@@ -72,6 +83,7 @@ def _to_response(stored) -> SettingsResponse:
         discord_webhook_url=stored.discord_webhook_url,
         global_browser_concurrency=stored.global_browser_concurrency,
         jobops_import_batch_size=stored.jobops_import_batch_size,
+        next_scheduled_run_at=next_run_iso,
     )
 
 
@@ -87,8 +99,7 @@ async def update_settings(req: UpdateSettingsRequest):
     update_data = req.model_dump(exclude_unset=True)
     updated = stored.model_copy(update=update_data)
     saved = save_settings(update_data)
-    scheduler_service.sync_pipeline_job()
-    return saved
+    await scheduler_service.sync_pipeline_job()
 
     app_config.HANDOFF_ENABLED = updated.handoff_enabled
     if updated.jobops_endpoint:

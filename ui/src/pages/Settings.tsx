@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Save, CheckCircle, Cog, Wifi, Send, Cpu, Layers } from 'lucide-react';
+import { Save, CheckCircle, Cog, Wifi, Send, Cpu, Layers, Clock } from 'lucide-react';
+import { formatLocalTimestamp } from '../utils/dateUtils';
 
 interface AppSettings {
   scheduler_enabled: boolean;
@@ -13,6 +14,7 @@ interface AppSettings {
   discord_webhook_url: string;
   global_browser_concurrency: number;
   jobops_import_batch_size: number;
+  next_scheduled_run_at?: string | null;
 }
 
 interface BoardOption {
@@ -227,6 +229,18 @@ export const Settings: React.FC = () => {
               Control how often the pipeline runs automatically and which boards are included.
             </p>
           </div>
+
+          {settings?.next_scheduled_run_at && schedulerEnabled && (
+            <div className="p-3.5 rounded-lg border border-teal-200 dark:border-teal-800/60 bg-teal-50/50 dark:bg-teal-950/30 text-teal-800 dark:text-teal-300 text-xs flex items-center justify-between font-medium">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+                <span>Next scheduled pipeline run:</span>
+              </div>
+              <span className="font-mono font-bold text-teal-700 dark:text-teal-300">
+                {formatLocalTimestamp(settings.next_scheduled_run_at)}
+              </span>
+            </div>
+          )}
 
           <div className="flex items-center justify-between p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Enable scheduler</span>

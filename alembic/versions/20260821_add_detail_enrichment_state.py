@@ -1,6 +1,6 @@
 """add_detail_enrichment_state
 
-Revision ID: 20260821_add_detail_enrichment_state
+Revision ID: 20260821_enrich_state
 Revises:
 Create Date: 2026-08-21 12:00:00.000000
 
@@ -9,7 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = "20260821_add_detail_enrichment_state"
+revision = "20260821_enrich_state"
 down_revision = None
 branch_labels = None
 depends_on = None

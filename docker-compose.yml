@@ -1,0 +1,67 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: job-radar-app
+    restart: unless-stopped
+    ports:
+      - "18080:18080"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-jobradar}:${POSTGRES_PASSWORD:-jobradar_secret}@job-radar-postgres:5432/${POSTGRES_DB:-job_radar}
+      - BROWSER_SERVICE_URL=ws://job-radar-browser:3013
+      - HANDOFF_ENABLED=${HANDOFF_ENABLED:-false}
+      - JOBOPS_ENDPOINT=${JOBOPS_ENDPOINT:-}
+      - JOBOPS_USERNAME=${JOBOPS_USERNAME:-}
+      - JOBOPS_PASSWORD=${JOBOPS_PASSWORD:-}
+      - SETTINGS_FILE_PATH=/app/data/app_settings.json
+    volumes:
+      - settings-data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      browser:
+        condition: service_started
+    networks:
+      - job-radar-net
+
+  browser:
+    image: browserless/chrome:latest
+    container_name: job-radar-browser
+    restart: unless-stopped
+    environment:
+      - PORT=3013
+      - CONCURRENCY=10
+      - MAX_QUEUE_LENGTH=100
+      - PREBOOT_CHROME=true
+      - CONNECTION_TIMEOUT=60000
+    ports:
+      - "3013:3013"
+    networks:
+      - job-radar-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: job-radar-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-jobradar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jobradar_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-job_radar}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobradar -d job_radar"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - job-radar-net
+
+networks:
+  job-radar-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  settings-data:

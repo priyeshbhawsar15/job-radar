@@ -68,6 +68,13 @@ ui/dist/
 *.sqlite
 *.sqlite3
 
+# Local secrets / runtime files
+.env
+.env.*
+!.env.example
+app_settings.json
+.playwright-mcp/
+
 # OS / IDE
 .DS_Store
 .vscode/

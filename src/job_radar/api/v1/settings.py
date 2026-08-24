@@ -5,7 +5,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from job_radar.config import settings as app_config
-from job_radar.services.settings_store import load_settings, save_settings
+from job_radar.services.settings_store import AppSettingsModel, load_settings, save_settings
+from job_radar.services.scheduler import scheduler_service
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 
@@ -85,7 +86,9 @@ async def update_settings(req: UpdateSettingsRequest):
     stored = load_settings()
     update_data = req.model_dump(exclude_unset=True)
     updated = stored.model_copy(update=update_data)
-    save_settings(updated)
+    saved = save_settings(update_data)
+    scheduler_service.sync_pipeline_job()
+    return saved
 
     app_config.HANDOFF_ENABLED = updated.handoff_enabled
     if updated.jobops_endpoint:

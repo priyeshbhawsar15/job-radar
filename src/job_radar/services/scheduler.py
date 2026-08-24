@@ -1,53 +1,111 @@
 import logging
+from datetime import datetime, timezone
+from typing import List
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 from sqlalchemy import select
+
 from job_radar.db.session import AsyncSessionLocal
 from job_radar.db.models.board import Board
+from job_radar.services.settings_store import load_settings
 from job_radar.services.engine import execution_engine
+from job_radar.services.handoff import handoff_processor
+from job_radar.services.discord_notifier import send_pipeline_summary_notification
 
 logger = logging.getLogger(__name__)
 
 class SchedulerService:
-  """In-process APScheduler orchestrator managing per-board recurring jobs."""
+    """In-process APScheduler orchestrator managing automated pipeline interval runs."""
 
-  def __init__(self):
-    self.scheduler = AsyncIOScheduler()
-    self._is_started = False
+    def __init__(self):
+        self.scheduler = AsyncIOScheduler()
+        self._is_started = False
 
-  def start(self):
-    if not self._is_started:
-      self.scheduler.start()
-      self._is_started = True
-      logger.info("In-process APScheduler service started.")
+    def start(self):
+        if not self._is_started:
+            self.scheduler.start()
+            self._is_started = True
+            logger.info("In-process APScheduler service started.")
+            self.sync_pipeline_job()
 
-  def shutdown(self):
-    if self._is_started:
-      self.scheduler.shutdown(wait=False)
-      self._is_started = False
-      logger.info("In-process APScheduler service shutdown.")
+    def shutdown(self):
+        if self._is_started:
+            self.scheduler.shutdown(wait=False)
+            self._is_started = False
+            logger.info("In-process APScheduler service shutdown.")
 
-  async def sync_board_jobs(self):
-    """Scan active boards in database and sync cron schedule jobs."""
-    async with AsyncSessionLocal() as session:
-      res = await session.execute(select(Board).where(Board.status == "active"))
-      boards = res.scalars().all()
+    def sync_pipeline_job(self):
+        """Sync recurring pipeline execution job according to AppSettings."""
+        stored = load_settings()
+        job_id = "automated_pipeline_job"
 
-      for board in boards:
-        job_id = f"board_job_{board.board_id}"
-        # Check if already scheduled
-        if not self.scheduler.get_job(job_id):
-          try:
-            trigger = CronTrigger.from_crontab(board.schedule_cron)
-            self.scheduler.add_job(
-              execution_engine.execute_board_run,
-              trigger=trigger,
-              id=job_id,
-              args=[board.board_id],
-              replace_existing=True
+        if not stored.scheduler_enabled or not stored.scheduler_interval_hours:
+            if self.scheduler.get_job(job_id):
+                self.scheduler.remove_job(job_id)
+                logger.info("Automated pipeline scheduler disabled. Removed scheduled job.")
+            return
+
+        interval_hours = stored.scheduler_interval_hours
+        trigger = IntervalTrigger(hours=interval_hours)
+
+        # Setting next_run_time to now() causes APScheduler to trigger immediately on startup,
+        # then recur every N hours thereafter.
+        self.scheduler.add_job(
+            self.run_scheduled_pipeline,
+            trigger=trigger,
+            id=job_id,
+            replace_existing=True,
+            next_run_time=datetime.now(timezone.utc),
+        )
+        logger.info(f"Scheduled automated pipeline job every {interval_hours} hours.")
+
+    async def run_scheduled_pipeline(self):
+        """Execute automated pipeline for selected active boards."""
+        stored = load_settings()
+        if not stored.scheduler_enabled:
+            logger.info("Scheduled pipeline triggered but scheduler is disabled in settings. Skipping.")
+            return
+
+        async with AsyncSessionLocal() as session:
+            query = select(Board).where(Board.status.in_(["active", "reviewed", "enabled"]))
+            if stored.selected_board_ids:
+                query = query.where(Board.board_id.in_(stored.selected_board_ids))
+
+            res = await session.execute(query)
+            boards = res.scalars().all()
+            board_ids = [b.board_id for b in boards]
+
+            if not board_ids:
+                logger.info("Scheduled pipeline triggered but no target boards selected/active. Skipping.")
+                return
+
+            from job_radar.db.models.run import PipelineRun
+            pipeline = PipelineRun(
+                trigger="scheduled",
+                status="running",
+                total_boards=len(board_ids),
             )
-            logger.info(f"Scheduled cron job for board '{board.name}' ({board.board_id}) with cron '{board.schedule_cron}'")
-          except Exception as e:
-            logger.error(f"Failed to schedule job for board {board.board_id}: {str(e)}")
+            session.add(pipeline)
+            await session.commit()
+            pipeline_id = pipeline.pipeline_id
+
+        logger.info(f"Starting scheduled pipeline run {pipeline_id} for {len(board_ids)} boards.")
+
+        for b_id in board_ids:
+            try:
+                await execution_engine.execute_board_run(board_id=b_id, pipeline_id=pipeline_id)
+            except Exception as e:
+                logger.error(f"Scheduled run error for board {b_id}: {e}")
+
+        try:
+            await handoff_processor.process_pending_outbox()
+        except Exception as e:
+            logger.error(f"Scheduled run outbox error for pipeline {pipeline_id}: {e}")
+
+        async with AsyncSessionLocal() as session:
+            try:
+                await send_pipeline_summary_notification(pipeline_id, session)
+            except Exception as e:
+                logger.error(f"Scheduled run notification error for pipeline {pipeline_id}: {e}")
 
 scheduler_service = SchedulerService()

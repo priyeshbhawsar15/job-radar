@@ -41,6 +41,7 @@ def _serialize_job(j: CandidateJob, job_ops_status: Optional[str] = None) -> dic
         "salary_currency": j.salary_currency,
         "first_seen_at": j.discovered_at.isoformat() if j.discovered_at else None,
         "last_seen_at": j.last_seen_at.isoformat() if j.last_seen_at else None,
+        "observation_outcome": getattr(j, "observation_outcome", "discovered"),
         "detail_enrichment_status": j.detail_enrichment_status,
         "detail_enrichment_error_code": j.detail_enrichment_error_code,
         "job_ops_status": state or "untracked",

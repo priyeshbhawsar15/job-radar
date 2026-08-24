@@ -10,6 +10,7 @@ export const Jobs: React.FC = () => {
   const [boardFilter, setBoardFilter] = useState<string>('all');
   const [adapterFilter, setAdapterFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [observationFilter, setObservationFilter] = useState<string>('all');
   const [enrichmentFilter, setEnrichmentFilter] = useState<string>('all');
   const [jobs, setJobs] = useState<any[]>([]);
   const [boards, setBoards] = useState<any[]>([]);
@@ -43,10 +44,15 @@ export const Jobs: React.FC = () => {
       const boardMatch = boardFilter === 'all' || j.board_id.toLowerCase() === boardFilter.toLowerCase();
       const adapterMatch = adapterFilter === 'all' || jobAdapter.toLowerCase() === adapterFilter.toLowerCase();
       const statusMatch = statusFilter === 'all' || (j.job_ops_status || 'accepted').toLowerCase() === statusFilter.toLowerCase();
+      const isNewJob = j.first_seen_at && j.last_seen_at && (new Date(j.last_seen_at).getTime() - new Date(j.first_seen_at).getTime() < 120000);
+      const observationMatch =
+        observationFilter === 'all' ||
+        (observationFilter === 'new' && isNewJob) ||
+        (observationFilter === 're_observed' && !isNewJob);
       const enrichmentMatch =
         enrichmentFilter === 'all' ||
         (j.detail_enrichment_status || 'pending').toLowerCase() === enrichmentFilter.toLowerCase();
-      return textMatch && boardMatch && adapterMatch && statusMatch && enrichmentMatch;
+      return textMatch && boardMatch && adapterMatch && statusMatch && observationMatch && enrichmentMatch;
     })
     .sort((a, b) => {
       const timeA = a.first_seen_at || '';
@@ -82,7 +88,7 @@ export const Jobs: React.FC = () => {
 
       {/* Filter Control Box */}
       <section className="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
           {/* Search Input */}
           <div className="space-y-1">
             <label htmlFor="jobSearch" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -174,6 +180,23 @@ export const Jobs: React.FC = () => {
               <option value="dispatching">Dispatching</option>
               <option value="uncertain">Uncertain</option>
               <option value="untracked">Untracked</option>
+            </select>
+          </div>
+
+          {/* Discovery / Duplicate Filter Dropdown */}
+          <div className="space-y-1">
+            <label htmlFor="jobObservation" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Discovery / Duplicate
+            </label>
+            <select
+              id="jobObservation"
+              value={observationFilter}
+              onChange={(e) => setObservationFilter(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="all">All discovery types</option>
+              <option value="new">New jobs only</option>
+              <option value="re_observed">Re-observed (Duplicates)</option>
             </select>
           </div>
 

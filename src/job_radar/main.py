@@ -7,6 +7,7 @@ from job_radar.config import settings
 from job_radar.api.v1.router import api_router
 from job_radar.db.base import Base
 from job_radar.db.session import engine
+from job_radar.services.scheduler import scheduler_service
 
 
 @asynccontextmanager
@@ -14,7 +15,9 @@ async def lifespan(app: FastAPI):
     # Initialize DB tables for lightweight SQLite/local test mode
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    scheduler_service.start()
     yield
+    scheduler_service.shutdown()
     await engine.dispose()
 
 

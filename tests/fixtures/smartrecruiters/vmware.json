@@ -1,0 +1,18 @@
+{
+  "content": [
+    {
+      "id": "86225624",
+      "name": "Specialist Sales Engineer - EUC",
+      "location": {
+        "city": "Bangalore",
+        "country": "in"
+      },
+      "department": {
+        "label": "Engineering"
+      },
+      "typeOfEmployment": {
+        "label": "Full-time"
+      }
+    }
+  ]
+}

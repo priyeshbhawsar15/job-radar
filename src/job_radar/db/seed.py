@@ -7,7 +7,9 @@ from job_radar.db.models.candidate import CandidateJob, RunCandidate
 from job_radar.db.models.run import PipelineRun, BoardRun, RunRequest, ExecutionAttempt
 from job_radar.db.models.handoff import HandoffOutbox, HandoffAttempt
 
+# Baseline 37 Boards + 65 New Boards (Total 102 Boards)
 INITIAL_BOARDS = [
+    # --- Baseline Boards ---
     ("board-abnormalai", "Abnormal AI", "custom", "https://abnormal.ai/careers/open-roles?location=Hybrid+-+Bangalore%2C+India&category=Engineering"),
     ("board-adobe", "Adobe", "workday", "https://adobe.wd5.myworkdayjobs.com/en-US/external_experienced?Job_Application_ID=cf0155a2a4659000ad6ec95db1160000&workerSubType=3ba4ecdf4893100b2f8d06b0870c6c8b&jobFamilyGroup=591af8b812fa10737b0e880e0e3eeee9&jobFamilyGroup=591af8b812fa10737af39db3d96eed9f&locationCountry=c4f78be1a8f14da0ab49ce1162348a5e"),
     ("board-amazon", "Amazon", "amazon_jobs", "https://www.amazon.jobs/en/search?offset=0&result_limit=10&sort=recent&category[]=software-development&distanceType=Mi&radius=24km&latitude=&longitude=&loc_group_id=&loc_query=India&base_query=software&city=&country=IND&region=&county=&query_options=&"),
@@ -75,8 +77,77 @@ INITIAL_BOARDS = [
     ("board-vanguard", "Vanguard", "workday", "https://vanguard.wd5.myworkdayjobs.com/en-US/vanguard_external"),
     ("board-walmart", "Walmart", "workday", "https://walmart.wd504.myworkdayjobs.com/en-US/WalmartExternal?timeType=b181d8271e36017533d4ca68eee44f00&jobFamilyGroup=e83ebdbd2a0a01e7e1477a8948e904c6&locationCountry=c4f78be1a8f14da0ab49ce1162348a5e&jobFamily=e83ebdbd2a0a01e6af60e95a47e972c4"),
     ("board-weave", "Weave", "ashby", "https://jobs.ashbyhq.com/weave?departmentId=18d3af43-c3c7-4437-8197-e4c649b8b8d9&employmentType=FullTime&locationId=efd16dc3-9146-410b-899f-75ca810de563&utm_medium=organic&utm_source=startup.jobs"),
-    ("board-wynploy", "Wynploy", "zoho", "https://wynploy.zohorecruit.in/jobs/Careers")
+    ("board-wynploy", "Wynploy", "zoho", "https://wynploy.zohorecruit.in/jobs/Careers"),
+
+    # --- 65 New Boards ---
+    ("board-jll", "JLL", "workday", "https://jll.wd1.myworkdayjobs.com/en-US/jllcareers?locationCountry=c4f78be1a8f14da0ab49ce1162348a5e&timeType=72e81fa31e6f01cf9aa5a4251a4e4e00&jobFamilyGroup=c608fc06410f01484a9fec7aba539450&jobFamilyGroup=f134f8e1c0811001fe9e2695d0c80000"),
+    ("board-razorpay", "Razorpay", "greenhouse", "https://job-boards.greenhouse.io/razorpaysoftwareprivatelimited?departments%5B%5D=4024806005"),
+    ("board-soti", "SOTI", "workday", "https://soti.wd3.myworkdayjobs.com/en-US/Careers?locations=f35dd6d3a7da01adef33e8916446200f&locations=27190dd10fff1074b213f2d1500595ed&EEB_-_Job_Categories_for_External_Site_Extended=267bdbcbbd671001697698c0843a0001"),
+    ("board-amgen", "Amgen", "workday", "https://amgen.wd1.myworkdayjobs.com/en-US/Careers?locations=be0893cb78ed012e9c728ee58144ec3b&jobFamilyGroup=3b16b67900e510859633b621ace7c537"),
+    ("board-paytm", "Paytm", "lever", "https://jobs.lever.co/paytm?department=Technology&commitment=Full-time%20Employment"),
+    ("board-atlassian", "Atlassian", "custom", "https://www.atlassian.com/company/careers/all-jobs?team=Engineering&location=India&search="),
+    ("board-uber", "Uber", "custom", "https://jobs.uber.com/en/jobs/?search=software&countries=India"),
+    ("board-gitlab", "Gitlab", "greenhouse", "https://job-boards.greenhouse.io/gitlab"),
+    ("board-hobspot", "Hobspot", "greenhouse", "https://job-boards.greenhouse.io/hubspot"),
+    ("board-godaddy", "GoDaddy", "greenhouse", "https://careers.godaddy/jobs/search?page=1&query=&department_uids[]=6ed98616cdc63adf0b08529f08290235&country_codes[]=IN"),
+    ("board-phonepay", "PhonePe", "greenhouse", "https://job-boards.greenhouse.io/phonepe?gh_src=961e65dc3us"),
+    ("board-buffer", "Buffer", "ashby", "https://jobs.ashbyhq.com/buffer"),
+    ("board-sourcegraph", "Sourcegraph", "greenhouse", "https://boards-api.greenhouse.io/v1/boards/sourcegraph91/jobs?content=true"),
+    ("board-zapier", "Zapier", "ashby", "https://jobs.ashbyhq.com/zapier"),
+    ("board-automattic", "Automattic", "custom", "https://automattic.com/work-with-us/jobs/"),
+    ("board-doist", "Doist", "custom", "https://doist.com/careers#open-roles"),
+    ("board-deel", "Deel", "custom", "https://www.deel.com/careers/?department=engineering"),
+    ("board-remote", "Remote.com", "greenhouse", "https://job-boards.greenhouse.io/remote"),
+    ("board-elastic", "Elastic", "custom", "https://jobs.elastic.co/jobs/country/india?size=n_20_n"),
+    ("board-twilio", "Twilio", "custom", "https://jobs.elastic.co/jobs/country/india?size=n_20_n"),
+    ("board-supabase", "Supabase", "ashby", "https://jobs.ashbyhq.com/supabase"),
+    ("board-bitwarden", "Bitwarden", "greenhouse", "https://job-boards.greenhouse.io/bitwarden"),
+    ("board-camunda", "Camunda", "ashby", "https://jobs.ashbyhq.com/camunda"),
+    ("board-mailerlite", "MailerLite", "custom", "https://www.mailerlite.com/jobs"),
+    ("board-zoho", "Zoho", "zoho", "https://www.zoho.com/careers/"),
+    ("board-postman", "Postman", "greenhouse", "https://job-boards.greenhouse.io/postman"),
+    ("board-browserstack", "BrowserStack", "workday", "https://browserstack.wd3.myworkdayjobs.com/External?jobFamilyGroup=0cb9174e33c9100190f156427de80000"),
+    ("board-atlan", "Atlan", "ashby", "https://jobs.ashbyhq.com/atlan"),
+    ("board-redis", "Redis", "ashby", "https://jobs.ashbyhq.com/redis"),
+    ("board-springworks", "Springworks", "custom", "https://jobs.goodfit.so/careers/springworks"),
+    ("board-juspay", "Juspay", "custom", "https://juspay.io/careers"),
+    ("board-groww", "Groww", "greenhouse", "https://job-boards.eu.greenhouse.io/groww"),
+    ("board-cred", "CRED", "lever", "https://jobs.lever.co/cred"),
+    ("board-snowflake", "Snowflake", "phenom", "https://careers.snowflake.com/us/en/search-results"),
+    ("board-databricks", "Databricks", "greenhouse", "https://job-boards.greenhouse.io/databricks"),
+    ("board-ibm", "IBM", "custom", "https://careers.ibm.com/en_IN/careers/search"),
+    ("board-okta", "Okta", "greenhouse", "https://job-boards.greenhouse.io/okta"),
+    ("board-crowdstrike", "CrowdStrike", "workday", "https://crowdstrike.wd5.myworkdayjobs.com/crowdstrikecareers?locationCountry=c4f78be1a8f14da0ab49ce1162348a5e&Job_Family=1408861ee6e201641be2c2f6b000c00b&Job_Family=cb19f044639b1001f6a02595bc920000"),
+    ("board-stripe", "Stripe", "custom", "https://stripe.com/careers/search?teams=Products&locations=Asia+Pacific--India&employment_types=Full+time"),
+    ("board-coinbase", "Coinbase", "greenhouse", "https://job-boards.greenhouse.io/coinbase"),
+    ("board-salesforce", "Salesforce", "workday", "https://salesforce.wd12.myworkdayjobs.com/External_Career_Site"),
+    ("board-sap", "SAP", "phenom", "https://jobs.sap.com/search/?createNewAlert=false&q=&locationsearch=&optionsFacetsDD_department=Software-Design+and+Development&optionsFacetsDD_customfield3=&optionsFacetsDD_country=IN"),
+    ("board-workdaycorp", "Workday", "workday", "https://workday.wd5.myworkdayjobs.com/Workday/?source=Careers_Website&Location_Country=c4f78be1a8f14da0ab49ce1162348a5e&jobFamilyGroup=8c5ce7a1cffb43e0a819c249a49fcb00"),
+    ("board-intuit", "Intuit", "custom", "https://jobs.intuit.com/search-jobs?acm=9211424&alrpm=ALL&ascf=[{%22key%22:%22ALL%22,%22value%22:%22%22}]"),
+    ("board-nutanix", "Nutanix", "phenom", "https://careers.nutanix.com/en/jobs/?search=&country=India&team=Engineering&type=Full-Time&pagesize=20#results"),
+    ("board-vmware", "VMware", "smartrecruiters", "https://careers.smartrecruiters.com/Vmware2"),
+    ("board-nvidia", "NVIDIA", "eightfold", "https://jobs.nvidia.com/careers?start=0&location=Hyderabad%2C++Telangana%2C++India&pid=893395509555&sort_by=distance&filter_distance=160&filter_include_remote=1&filter_include_relocation=0&filter_job_category=engineering"),
+    ("board-intel", "Intel", "workday", "https://intel.wd1.myworkdayjobs.com/External?locations=1e4a4eb3adf101f44070f976bf8184cf&jobFamilyGroup=ace7a3d23b7e01a0544279031a0ec85c"),
+    ("board-airbnb", "Airbnb", "greenhouse", "https://job-boards.greenhouse.io/airbnb"),
+    ("board-meesho", "Meesho", "custom", "https://www.meesho.io/jobs?&t=Business%20Analytics,Backend,QA,Infrastructure,CTO%20Office,Data%20Engineering,Data%20Science,Demand,Frontend,Supply,Security"),
+    ("board-target", "Target", "phenom", "https://corporate.target.com/careers/job-search?currentPage=1&jobAreas=Target%20Tech&schedule=Full-time&country=India"),
+    ("board-goldmansachs", "Goldman Sachs", "custom", "https://higher.gs.com/results?JOB_FUNCTION=Software%20Engineering&page=1&sort=POSTED_DATE"),
+    ("board-morganstanley", "Morgan Stanley", "eightfold", "https://morganstanley.eightfold.ai/careers?source=mscom&start=0&location=India&pid=549798643496&sort_by=distance&filter_include_remote=1&filter_include_relocation=0&filter_businessarea=technology&filter_employmenttype=full+time"),
+    ("board-hsbc", "HSBC", "eightfold", "https://portal.careers.hsbc.com/careers?query=software&location=India&pid=563774612163818&domain=hsbc.com&sort_by=relevance&triggerGoButton=false"),
+    ("board-blackrock", "BlackRock", "phenom", "https://careers.blackrock.com/search-jobs/software/India/45831/1/2/1269750/22/79/0/2"),
+    ("board-uipath", "UiPath", "custom", "https://www.uipath.com/careers/jobs"),
+    ("board-druva", "Druva", "greenhouse", "https://job-boards.greenhouse.io/druva"),
+    ("board-swiggy", "Swiggy", "custom", "https://careers.swiggy.com/#/careers?career_page_category=Technology"),
+    ("board-publicissapient", "Publicis Sapient", "phenom", "https://careers.publicissapient.com/job-search?q=&location_q=India&skipLocation=true&country=India&sortOrder=desc&teams=Technology+and+Engineering"),
+    ("board-epam", "EPAM Systems", "custom", "https://careers.epam.com/en/jobs/india?city=4060741400035606933&sort_by=relevance&specialization=developer&utm_content=job-search&utm_term=start-your-search-here"),
+    ("board-tmus", "TMUS", "talent500", "https://talent500.com/joblist/?company=TMUS+Global+Solutions&sort_by_created_date=1&offset=0&limit=20"),
+    ("board-bestbuy", "Best Buy", "talent500", "https://talent500.com/joblist/?company=Best+Buy&sort_by_created_date=1&offset=0&limit=20"),
+    ("board-evernorth", "Evernorth", "talent500", "https://talent500.com/joblist/?company=Evernorth&sort_by_created_date=1&offset=0&limit=20"),
+    ("board-marriotttech", "Marriott Tech", "talent500", "https://talent500.com/joblist/?company=Marriott+Tech+Accelerator&sort_by_created_date=1&offset=0&limit=20"),
+    ("board-mcd", "McD", "talent500", "https://talent500.com/joblist/?company=McDonalds+in+India&sort_by_created_date=1&offset=0&limit=20"),
 ]
+
+BLOCKED_BOARD_IDS = {"board-ibm"}
 
 def build_initial_revision_config(item: tuple) -> dict:
     """Build one initial BoardRevision config without database I/O."""
@@ -119,12 +190,13 @@ async def seed_database():
     async with AsyncSessionLocal() as session:
         for item in INITIAL_BOARDS:
             b_id, name, family = item[0], item[1], item[2]
+            status = "draft" if b_id in BLOCKED_BOARD_IDS else "reviewed"
 
             board = Board(
                 board_id=b_id,
                 name=name,
                 family=family,
-                status="reviewed",
+                status=status,
                 consecutive_parser_failures=0
             )
             session.add(board)
@@ -135,7 +207,7 @@ async def seed_database():
             rev = BoardRevision(
                 board_id=b_id,
                 revision_number=1,
-                status="reviewed",
+                status=status,
                 config_json=cfg_json
             )
             session.add(rev)
@@ -143,7 +215,7 @@ async def seed_database():
             board.current_revision_id = rev.revision_id
 
         await session.commit()
-    print("Database reset complete. Seeded company boards cleanly.")
+    print(f"Database reset complete. Seeded {len(INITIAL_BOARDS)} company boards cleanly.")
 
 if __name__ == "__main__":
     asyncio.run(seed_database())

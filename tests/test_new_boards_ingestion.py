@@ -16,61 +16,43 @@ GENERIC_TITLE_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Map of 45 reviewed new boards to fixture relative path under tests/fixtures/
+# Map of 27 reviewed new boards to fixture relative path under tests/fixtures/
 BOARD_FIXTURE_MAP = {
     "JLL": "workday/jll.json",
     "Razorpay": "greenhouse/razorpay.json",
     "Amgen": "workday/amgen.json",
     "Paytm": "lever/paytm.json",
-    "Uber": "custom/uber.json",
     "Gitlab": "greenhouse/gitlab.json",
     "GoDaddy": "greenhouse/godaddy.json",
     "PhonePe": "greenhouse/phonepe.json",
     "Buffer": "ashby/buffer.json",
     "Sourcegraph": "greenhouse/sourcegraph91.json",
-    "Automattic": "custom/automattic.json",
-    "Deel": "custom/deel.json",
-    "Elastic": "custom/elastic.json",
     "Twilio": "greenhouse/twilio.json",
     "Supabase": "ashby/supabase.json",
     "Bitwarden": "greenhouse/bitwarden.json",
     "Camunda": "ashby/camunda.json",
-    "MailerLite": "custom/mailerlite.json",
-    "Zoho": "zoho/zoho.json",
     "Postman": "greenhouse/postman.json",
     "BrowserStack": "workday/browserstack.json",
     "Atlan": "ashby/atlan.json",
     "Redis": "ashby/redis.json",
-    "Springworks": "custom/springworks.json",
     "Groww": "greenhouse/groww.json",
-    "Snowflake": "phenom/snowflake.json",
     "Databricks": "greenhouse/databricks.json",
     "Okta": "greenhouse/okta.json",
     "CrowdStrike": "workday/crowdstrike.json",
     "Coinbase": "greenhouse/coinbase.json",
     "Salesforce": "workday/salesforce.json",
-    "SAP": "phenom/sap.json",
-    "Intuit": "custom/intuit.json",
-    "Nutanix": "phenom/nutanix.json",
     "VMware": "smartrecruiters/vmware.json",
-    "NVIDIA": "eightfold/nvidia.json",
     "Intel": "workday/intel.json",
     "Airbnb": "greenhouse/airbnb.json",
-    "Meesho": "custom/meesho.json",
-    "Target": "phenom/target.json",
-    "Goldman Sachs": "custom/goldmansachs.json",
-    "Morgan Stanley": "eightfold/morganstanley.json",
-    "BlackRock": "phenom/blackrock.json",
     "Druva": "greenhouse/druva.json",
-    "EPAM Systems": "custom/epamsystems.json",
 }
 
 
 def test_65_new_boards_inventory_totals():
     assert len(NEW_BOARDS) == 65
     assert len(INITIAL_BOARDS) == 102
-    assert len(BOARD_FIXTURE_MAP) == 45
-    assert len(BLOCKED_BOARD_IDS) == 26
+    assert len(BOARD_FIXTURE_MAP) == 27
+    assert len(BLOCKED_BOARD_IDS) == 44
 
 
 @pytest.mark.parametrize("board_tuple", [b for b in NEW_BOARDS if b[1] in BOARD_FIXTURE_MAP], ids=lambda b: b[1])

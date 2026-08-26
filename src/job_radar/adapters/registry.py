@@ -13,6 +13,7 @@ from job_radar.adapters.families import (
     OracleAdapter,
     AmeripriseAdapter,
     PhenomAdapter,
+    EightfoldAdapter,
     GenericAdapter,
 )
 
@@ -31,6 +32,7 @@ class AdapterRegistry:
         self.register(OracleAdapter())
         self.register(AmeripriseAdapter())
         self.register(PhenomAdapter())
+        self.register(EightfoldAdapter())
         self.register(SmartRecruitersAdapter())
         self.register(Talent500Adapter())
 

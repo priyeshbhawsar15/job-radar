@@ -384,7 +384,7 @@ class GenericAdapter(BaseAdapter):
                     if isinstance(item, dict):
                         t = (item.get("title") or item.get("name") or "").strip()
                         u = item.get("url") or item.get("canonical_url") or item.get("jobUrl") or target_url
-                        loc = item.get("location") or "India"
+                        loc = item.get("location") or None
                         if t:
                             fp = generate_fingerprint(board_name, t, loc)
                             results.append(
@@ -623,7 +623,7 @@ class PhenomAdapter(BaseAdapter):
                     if isinstance(item, dict):
                         t = (item.get("title") or "").strip()
                         u = item.get("canonical_url") or item.get("url") or target_url
-                        loc = item.get("location") or "India"
+                        loc = item.get("location") or None
                         req_id = item.get("requisition_id") or u.split("/")[-1]
                         if t:
                             fp = generate_fingerprint(board_name, t, loc)
@@ -685,12 +685,12 @@ class PhenomAdapter(BaseAdapter):
             if not clean_text or clean_text.lower() in ('apply', 'apply now', 'read more', 'saved jobs', 'search results'):
                 clean_text = slug.replace('-', ' ').title()
 
-            fp = generate_fingerprint(board_name, clean_text, "India")
+            fp = generate_fingerprint(board_name, clean_text, None)
             results.append(
                 ExtractedCandidate(
                     title=clean_text,
                     company=board_name,
-                    location="India",
+                    location=None,
                     department="Engineering",
                     employment_type="Full-time",
                     raw_url=clean_url,
@@ -805,7 +805,7 @@ class EightfoldAdapter(BaseAdapter):
                     if len(t_cand) > 3 and not t_cand.startswith("http"):
                         title = t_cand
 
-                fp = generate_fingerprint(board_name, f"{title} {job_id_str}", "India")
+                fp = generate_fingerprint(board_name, f"{title} {job_id_str}", None)
 
                 extra = {}
                 if json_ld_desc:
@@ -815,7 +815,7 @@ class EightfoldAdapter(BaseAdapter):
                     ExtractedCandidate(
                         title=title,
                         company=board_name,
-                        location="India",
+                        location=None,
                         department="Engineering",
                         employment_type="Full-time",
                         raw_url=clean_url,

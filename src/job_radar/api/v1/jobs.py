@@ -11,7 +11,8 @@ from job_radar.db.models.board import Board
 from job_radar.db.models.candidate import CandidateJob
 from job_radar.db.models.handoff import HandoffOutbox
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
-from job_radar.services.handoff import handoff_processor, JobOpsClient
+from job_radar.services.handoff import handoff_processor
+from job_radar.services.location import is_india_eligible
 
 router = APIRouter(prefix="/jobs", tags=["Normalized Jobs"])
 
@@ -136,6 +137,10 @@ async def push_candidate_to_jobops(
     candidate = res.scalar_one_or_none()
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate job not found")
+
+    is_eligible, reason = is_india_eligible(candidate.location)
+    if not is_eligible:
+        return PushJobOpsResponse(status="excluded_non_india", detail=f"Job excluded by India gate: {reason}")
 
     outbox = await handoff_processor.enqueue_candidate_handoff(candidate_id)
     if not outbox:

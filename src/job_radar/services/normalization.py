@@ -14,6 +14,7 @@ from job_radar.db.models.run import PipelineRun, BoardRun, ExecutionAttempt
 from job_radar.adapters.base import ExtractedCandidate
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
 from job_radar.services.detail_contracts import DetailResult
+from job_radar.services.location import is_india_eligible
 from job_radar.services.oracle_detail import extract_oracle_public_id
 from job_radar.services.handoff import handoff_processor
 
@@ -168,7 +169,15 @@ class NormalizationService:
 
         for c_id in already_valid_candidate_ids:
             try:
-                await handoff_processor.enqueue_candidate_handoff(c_id)
+                async with self.session_factory() as session:
+                    res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == c_id))
+                    cand = res.scalar_one_or_none()
+                    cand_loc = cand.location if cand else None
+                is_eligible, reason = is_india_eligible(cand_loc)
+                if is_eligible:
+                    await handoff_processor.enqueue_candidate_handoff(c_id)
+                else:
+                    logger.info(f"Skipping handoff for candidate {c_id}: excluded by India gate ({reason})")
             except Exception as h_err:
                 logger.warning(f"Failed to enqueue handoff for valid candidate {c_id}: {h_err}")
 
@@ -227,7 +236,11 @@ class NormalizationService:
                                     f"board={board_id}, family={family}, source={getattr(result, 'source', None)}"
                                 )
                                 try:
-                                    await handoff_processor.enqueue_candidate_handoff(cand_id)
+                                    is_eligible, reason = is_india_eligible(job.location)
+                                    if is_eligible:
+                                        await handoff_processor.enqueue_candidate_handoff(cand_id)
+                                    else:
+                                        logger.info(f"Skipping handoff for candidate {cand_id} post-enrichment: excluded by India gate ({reason})")
                                 except Exception as h_err:
                                     logger.warning(f"Failed to enqueue handoff for {cand_id}: {h_err}")
                                 await session.commit()

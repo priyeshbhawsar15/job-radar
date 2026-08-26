@@ -98,8 +98,8 @@ async def update_settings(req: UpdateSettingsRequest):
     stored = load_settings()
     update_data = req.model_dump(exclude_unset=True)
     updated = stored.model_copy(update=update_data)
-    saved = save_settings(update_data)
-    await scheduler_service.sync_pipeline_job()
+    saved = save_settings(updated)
+    scheduler_service.sync_pipeline_job()
 
     app_config.HANDOFF_ENABLED = updated.handoff_enabled
     if updated.jobops_endpoint:

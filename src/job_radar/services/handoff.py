@@ -14,6 +14,7 @@ from job_radar.db.models.handoff import HandoffOutbox, HandoffAttempt
 from job_radar.db.models.candidate import CandidateJob
 from job_radar.services.detail_extractor import description_is_valid
 from job_radar.services.settings_store import load_settings
+from job_radar.services.location import is_india_eligible
 
 logger = logging.getLogger(__name__)
 
@@ -57,8 +58,8 @@ class JobOpsClient:
         stored = load_settings()
         is_enabled = stored.handoff_enabled or settings.HANDOFF_ENABLED
         if not is_enabled:
-            logger.info("JobOps handoff disabled in settings. Simulating successful handoff outbox dispatch.")
-            return True
+            logger.warning("JobOps handoff disabled in settings. Refusing outbound dispatch call.")
+            raise RuntimeError("JobOps handoff is disabled in settings.")
 
         async with httpx.AsyncClient(timeout=15.0) as client:
             token = await self._ensure_token(client)
@@ -85,6 +86,14 @@ class HandoffProcessor:
 
     async def enqueue_candidate_handoff(self, candidate_id: str, payload_json: Optional[Dict[str, Any]] = None) -> Optional[HandoffOutbox]:
         async with self.session_factory() as session:
+            cand_res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == candidate_id))
+            cand = cand_res.scalar_one_or_none()
+            if cand and cand.location:
+                is_eligible, reason = is_india_eligible(cand.location)
+                if not is_eligible:
+                    logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: {reason}")
+                    return None
+
             # Avoid duplicate outbox queueing for the same candidate
             existing_res = await session.execute(
                 select(HandoffOutbox).where(HandoffOutbox.candidate_id == candidate_id)

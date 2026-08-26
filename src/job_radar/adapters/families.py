@@ -378,7 +378,29 @@ class GenericAdapter(BaseAdapter):
         try:
             data = json.loads(payload)
             if isinstance(data, dict) and "jobs" in data:
-                return extract_html_job_links(json.dumps(data), board_name, target_url)
+                jobs = data["jobs"]
+                results = []
+                for item in jobs:
+                    if isinstance(item, dict):
+                        t = (item.get("title") or item.get("name") or "").strip()
+                        u = item.get("url") or item.get("canonical_url") or item.get("jobUrl") or target_url
+                        loc = item.get("location") or "India"
+                        if t:
+                            fp = generate_fingerprint(board_name, t, loc)
+                            results.append(
+                                ExtractedCandidate(
+                                    title=t,
+                                    company=board_name,
+                                    location=loc,
+                                    department="Technology",
+                                    employment_type="Full-time",
+                                    raw_url=u,
+                                    fingerprint=fp,
+                                    extra_payload=item.get("extra_payload") or {}
+                                )
+                            )
+                if results:
+                    return results
         except Exception:
             pass
         return extract_html_job_links(payload, board_name, target_url)
@@ -591,6 +613,36 @@ class PhenomAdapter(BaseAdapter):
     ) -> List[ExtractedCandidate]:
         if isinstance(payload, bytes):
             payload = payload.decode("utf-8")
+
+        try:
+            data = json.loads(payload)
+            if isinstance(data, dict) and "jobs" in data:
+                jobs = data["jobs"]
+                res: List[ExtractedCandidate] = []
+                for item in jobs:
+                    if isinstance(item, dict):
+                        t = (item.get("title") or "").strip()
+                        u = item.get("canonical_url") or item.get("url") or target_url
+                        loc = item.get("location") or "India"
+                        req_id = item.get("requisition_id") or u.split("/")[-1]
+                        if t:
+                            fp = generate_fingerprint(board_name, t, loc)
+                            res.append(
+                                ExtractedCandidate(
+                                    title=t,
+                                    company=board_name,
+                                    location=loc,
+                                    department="Engineering",
+                                    employment_type="Full-time",
+                                    raw_url=u,
+                                    fingerprint=fp,
+                                    extra_payload={"requisition_id": req_id}
+                                )
+                            )
+                if res:
+                    return res
+        except Exception:
+            pass
 
         html_text = html.unescape(payload)
         results: List[ExtractedCandidate] = []

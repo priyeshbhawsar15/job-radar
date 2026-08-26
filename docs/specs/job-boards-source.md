@@ -146,7 +146,7 @@ parent: "[[10 Personal/Personal MOC]]"
 | Larch          | [Careers](https://larch.in/careers)                                                                             |
 | Fieldguide     | [Careers](https://www.fieldguide.io/careers?ashby_jid=47a2afc4-1075-4378-83bb-714543b6c272&utm_source=LinkedIn) |
 | IKEA           | [Careers](https://ikea.avature.net/en_BW/External/SearchJobs)                                                   |
-## no india 
+## no india
 | [Toptal](https://www.toptal.com/careers#positions)        | no  | custom |
 | :-------------------------------------------------------- | :-- | :----- |
 | [Grafana Labs](https://grafana.com/careers/)              | no  | custom |

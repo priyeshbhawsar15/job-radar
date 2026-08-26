@@ -4,13 +4,17 @@
       "id": "86225624",
       "name": "Specialist Sales Engineer - EUC",
       "location": {
-        "city": "Bangalore",
-        "country": "in"
-      },
-      "department": {
-        "label": "Engineering"
+        "city": "London",
+        "region": "England",
+        "country": "gb",
+        "remote": false,
+        "hybrid": false,
+        "latitude": "51.5073509",
+        "longitude": "-0.12775829999998223",
+        "fullLocation": "London, England, United Kingdom"
       },
       "typeOfEmployment": {
+        "id": "permanent",
         "label": "Full-time"
       }
     }

@@ -1,13 +1,13 @@
 {
-  "total": 1,
+  "total": 364,
   "jobPostings": [
     {
-      "title": "Senior Software Development Engineer - Data Security and Protection",
-      "externalPath": "/job/R-1001",
-      "locationsText": "IND.Chennai, India",
-      "timeType": "Full time",
+      "title": "Customer Solution Strategist - Presales",
+      "externalPath": "/job/United-Kingdom-London/Customer-Solution-Strategist_JR-0104164",
+      "locationsText": "United Kingdom, London",
+      "timeType": null,
       "bulletFields": [
-        "R-1001"
+        "JR-0104164"
       ]
     }
   ]

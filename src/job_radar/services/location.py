@@ -4,7 +4,7 @@ import re
 from typing import Optional, Tuple, Set
 
 INDIAN_LOCATION_KEYWORDS: Set[str] = {
-    "india", "ind", "bengaluru", "bangalore", "hyderabad", "gurgaon", 
+    "india", "bengaluru", "bangalore", "hyderabad", "gurgaon",
     "gurugram", "noida", "pune", "chennai", "mumbai", "delhi", "new delhi", 
     "ncr", "ahmedabad", "kolkata", "jaipur", "indore", "kochi", "cochin", 
     "trivandrum", "thiruvananthapuram", "chandigarh", "mohali", "coimbatore", 
@@ -34,24 +34,30 @@ def is_india_eligible(location: Optional[str]) -> Tuple[bool, Optional[str]]:
     if not loc_clean or loc_clean in GENERIC_LOCATION_KEYWORDS:
         return True, None
 
-    # Check for word boundary tokens or direct substring matches for multi-word regions
-    # First check multi-word Indian keywords
-    if "new delhi" in loc_clean or "tamil nadu" in loc_clean or "uttar pradesh" in loc_clean or "west bengal" in loc_clean:
+    # Check multi-word Indian region/city keywords
+    if any(kw in loc_clean for kw in ["new delhi", "delhi ncr", "tamil nadu", "uttar pradesh", "west bengal"]):
         return True, None
 
     tokens = set(re.split(r'[^a-zA-Z0-9]+', loc_clean))
-    
-    # Check single word Indian keywords
-    if any(tok in INDIAN_LOCATION_KEYWORDS for tok in tokens):
-        return True, None
 
-    # Check standalone uppercase/lowercase "in" token as country code (e.g. "IN", "Bengaluru, IN")
-    if "in" in tokens:
-        return True, None
-
-    # If all tokens are generic (e.g. "remote", "flexible", "work from home") without explicit non-India country
+    # If location is purely generic tokens (e.g. "remote", "work from home", "hybrid") without specific country
     if tokens.issubset(GENERIC_LOCATION_KEYWORDS | {"work", "from", "home", "office", "hybrid"}):
         return True, None
 
-    # Non-empty location with no Indian keywords -> Excluded
+    # Check single-word Indian keywords
+    if any(tok in INDIAN_LOCATION_KEYWORDS for tok in tokens):
+        return True, None
+
+    # Exact country code match for "IN" or "IND"
+    if loc_str.upper() in ("IN", "IND"):
+        return True, None
+
+    # Structured country code pattern: e.g. ", IN", "(IN)", "[IN]", " - IN", ", IN," or terminal ", in" / ", ind"
+    if re.search(r'(?:,\s*|\(\s*|\[\s*|-\s*|/\s*)\b(IN|IND)\b(?:\s*,|\s*\)|\s*\]|\s*-|\s*/|$)', loc_str):
+        return True, None
+
+    if re.search(r',\s*(?:in|ind)\s*$', loc_clean):
+        return True, None
+
+    # Non-empty location without India match -> Excluded
     return False, f"NON_INDIA_LOCATION: {loc_str[:100]}"

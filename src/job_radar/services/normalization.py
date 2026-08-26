@@ -103,6 +103,7 @@ class NormalizationService:
                 existing_job = res.scalars().first()
 
                 loc = (item.location.strip() if item.location else "India")[:200]
+                is_elig, elig_reason = is_india_eligible(loc)
                 emp_type = (item.employment_type.strip() if item.employment_type else "Full-time")[:200]
                 dept = (item.department.strip() if item.department else "Engineering")[:200]
                 raw_desc = item.extra_payload.get("description")
@@ -111,6 +112,8 @@ class NormalizationService:
                 if existing_job:
                     candidate_id = existing_job.candidate_id
                     existing_job.last_seen_at = datetime.now(timezone.utc)
+                    existing_job.india_eligible = is_elig
+                    existing_job.india_exclusion_reason = elig_reason
                     if valid_extra_desc:
                         if not existing_job.description or not description_is_valid(existing_job.description, title=existing_job.title) or len(valid_extra_desc) > len(existing_job.description or ""):
                             existing_job.description = valid_extra_desc
@@ -135,6 +138,8 @@ class NormalizationService:
                         company=company_capped,
                         title=title_capped,
                         location=loc,
+                        india_eligible=is_elig,
+                        india_exclusion_reason=elig_reason,
                         department=dept,
                         employment_type=emp_type,
                         public_apply_url=url_capped,
@@ -215,6 +220,9 @@ class NormalizationService:
                                 job.description = result.description[:40000]
                                 if result.location and result.location.strip() not in ("India", "in", "pageData", ""):
                                     job.location = result.location.strip()[:200]
+                                is_elig, elig_reason = is_india_eligible(job.location)
+                                job.india_eligible = is_elig
+                                job.india_exclusion_reason = elig_reason
                                 if result.employment_type:
                                     job.employment_type = result.employment_type[:200]
                                 if result.department:

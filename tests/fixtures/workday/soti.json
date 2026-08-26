@@ -1,13 +1,13 @@
 {
-  "total": 1,
+  "total": 93,
   "jobPostings": [
     {
-      "title": "Software Developer 1",
-      "externalPath": "/job/R-1001",
-      "locationsText": "Gurgaon, India",
-      "timeType": "Full time",
+      "title": "Channel Account Manager",
+      "externalPath": "/job/Spain---Remote/Channel-Account-Manager_R10419",
+      "locationsText": "Spain - Remote",
+      "timeType": null,
       "bulletFields": [
-        "R-1001"
+        "R10419"
       ]
     }
   ]

@@ -1,7 +1,7 @@
 from datetime import datetime
 import uuid
 from typing import Optional, List, TYPE_CHECKING
-from sqlalchemy import String, DateTime, ForeignKey, Index, Text, UniqueConstraint, BigInteger
+from sqlalchemy import String, DateTime, ForeignKey, Index, Text, UniqueConstraint, BigInteger, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from job_radar.db.base import Base, utc_now
 
@@ -34,6 +34,8 @@ class CandidateJob(Base):
     detail_enrichment_attempts: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
     detail_enrichment_error_code: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     detail_enriched_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    india_eligible: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    india_exclusion_reason: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     discovered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
 

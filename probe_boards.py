@@ -7,7 +7,6 @@ import urllib.parse
 from typing import Dict, Any, List, Optional
 import httpx
 import html.parser
-# Regex parser for simple canary probe link finding
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -35,7 +34,7 @@ BOARDS_INVENTORY = [
     {"num": 17, "name": "Deel", "url": "https://www.deel.com/careers/?department=engineering", "family": "custom"},
     {"num": 18, "name": "Remote.com", "url": "https://job-boards.greenhouse.io/remote", "family": "greenhouse"},
     {"num": 19, "name": "Elastic", "url": "https://jobs.elastic.co/jobs/country/india?size=n_20_n", "family": "custom"},
-    {"num": 20, "name": "Twilio", "url": "https://jobs.elastic.co/jobs/country/india?size=n_20_n", "family": "custom"},
+    {"num": 20, "name": "Twilio", "url": "https://job-boards.greenhouse.io/twilio", "family": "greenhouse"},
     {"num": 21, "name": "Supabase", "url": "https://jobs.ashbyhq.com/supabase", "family": "ashby"},
     {"num": 22, "name": "Bitwarden", "url": "https://job-boards.greenhouse.io/bitwarden", "family": "greenhouse"},
     {"num": 23, "name": "Camunda", "url": "https://jobs.ashbyhq.com/camunda", "family": "ashby"},
@@ -90,7 +89,7 @@ async def probe_board(client: httpx.AsyncClient, item: Dict[str, Any]) -> Dict[s
     name = item["name"]
     target_url = item["url"]
     family = item["family"]
-    
+
     result = {
         "num": num,
         "name": name,
@@ -109,7 +108,6 @@ async def probe_board(client: httpx.AsyncClient, item: Dict[str, Any]) -> Dict[s
 
     try:
         if family == "greenhouse":
-            # Extract board slug from target URL or boards-api URL
             slug = None
             if "boards-api.greenhouse.io" in target_url:
                 m = re.search(r"/boards/([^/]+)/jobs", target_url)
@@ -117,11 +115,10 @@ async def probe_board(client: httpx.AsyncClient, item: Dict[str, Any]) -> Dict[s
             elif "greenhouse.io" in target_url:
                 parsed = urllib.parse.urlparse(target_url)
                 slug = parsed.path.strip("/").split("/")[0]
-            
-            if not slug:
-                if "godaddy" in target_url:
-                    slug = "godaddy"
-            
+
+            if not slug and "godaddy" in target_url:
+                slug = "godaddy"
+
             if slug:
                 api_url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true"
                 r = await client.get(api_url, timeout=10.0)
@@ -147,7 +144,6 @@ async def probe_board(client: httpx.AsyncClient, item: Dict[str, Any]) -> Dict[s
                 result["status"] = "draft"
 
         elif family == "ashby":
-            # e.g. https://jobs.ashbyhq.com/buffer -> posting-api/job-board/buffer
             parsed = urllib.parse.urlparse(target_url)
             slug = parsed.path.strip("/").split("/")[0]
             api_url = f"https://api.ashbyhq.com/posting-api/job-board/{slug}"
@@ -170,7 +166,6 @@ async def probe_board(client: httpx.AsyncClient, item: Dict[str, Any]) -> Dict[s
                 result["status"] = "draft"
 
         elif family == "lever":
-            # e.g. https://jobs.lever.co/paytm -> /v0/postings/paytm
             parsed = urllib.parse.urlparse(target_url)
             slug = parsed.path.strip("/").split("/")[0]
             api_url = f"https://api.lever.co/v0/postings/{slug}?mode=json"
@@ -197,7 +192,7 @@ async def probe_board(client: httpx.AsyncClient, item: Dict[str, Any]) -> Dict[s
             tenant_host = parsed.netloc
             tenant = tenant_host.split(".")[0]
             path_parts = [p for p in parsed.path.split("/") if p]
-            
+
             site = "Careers"
             if path_parts:
                 last_part = path_parts[-1].split("?")[0]
@@ -205,12 +200,12 @@ async def probe_board(client: httpx.AsyncClient, item: Dict[str, Any]) -> Dict[s
                     site = last_part
                 elif len(path_parts) > 1:
                     site = path_parts[1].split("?")[0]
-            
+
             if "jllcareers" in target_url:
                 site = "jllcareers"
 
             cxs_url = f"https://{tenant_host}/wday/cxs/{tenant}/{site}/jobs"
-            
+
             query_params = urllib.parse.parse_qs(parsed.query)
             payload = {
                 "appliedFacets": {},
@@ -265,133 +260,17 @@ async def probe_board(client: httpx.AsyncClient, item: Dict[str, Any]) -> Dict[s
                 result["blocker"] = f"SmartRecruiters API returned HTTP {r.status_code}"
                 result["status"] = "draft"
 
-        elif family == "talent500":
-            parsed = urllib.parse.urlparse(target_url)
-            query_params = urllib.parse.parse_qs(parsed.query)
-            company = query_params.get("company", [""])[0]
-            
-            # First try API
-            api_url = f"https://prod-warmachine.talent500.co/api/joblist/?company={urllib.parse.quote(company)}"
-            r = await client.get(api_url, timeout=5.0)
-            if r.status_code == 200 and "application/json" in r.headers.get("content-type", ""):
-                try:
-                    data = r.json()
-                    jobs = data.get("results") or data.get("data") or (data if isinstance(data, list) else [])
-                    result["count"] = len(jobs)
-                    if jobs:
-                        j0 = jobs[0]
-                        result["sample_id"] = str(j0.get("id") or j0.get("job_id"))
-                        result["sample_url"] = j0.get("url") or j0.get("link") or target_url
-                        result["sample_title"] = j0.get("title") or j0.get("job_title")
-                        result["sample_location"] = j0.get("location") or "India"
-                        result["raw_payload_sample"] = j0
-                    else:
-                        result["status"] = "active_empty"
-                except Exception as ex:
-                    result["blocker"] = f"Talent500 JSON parse error: {ex}"
-                    result["status"] = "draft"
-            else:
-                # Fallback to HTML fetch
-                r_html = await client.get(target_url, timeout=10.0)
-                if r_html.status_code == 200:
-                    result["status"] = "active"
-                    result["count"] = 1
-                    result["sample_id"] = f"t500_{company}"
-                    result["sample_url"] = target_url
-                    result["sample_title"] = f"{company} Jobs on Talent500"
-                    result["sample_location"] = "India"
-                    result["blocker"] = None
-                else:
-                    result["blocker"] = f"Talent500 page returned HTTP {r_html.status_code}"
-                    result["status"] = "draft"
-
-        elif family == "eightfold":
-            parsed = urllib.parse.urlparse(target_url)
-            domain = parsed.netloc
-            api_url = f"https://{domain}/api/apply/v2/jobs?domain={domain}&start=0&num=20"
-            r = await client.get(api_url, timeout=10.0)
-            if r.status_code == 200 and "positions" in r.text:
-                data = r.json()
-                jobs = data.get("positions", [])
-                result["count"] = len(jobs)
-                if jobs:
-                    j0 = jobs[0]
-                    result["sample_id"] = str(j0.get("id"))
-                    result["sample_url"] = f"https://{domain}/careers?pid={j0.get('id')}"
-                    result["sample_title"] = j0.get("name")
-                    locs = j0.get("location", [])
-                    result["sample_location"] = ", ".join(locs) if isinstance(locs, list) else str(locs)
-                    result["raw_payload_sample"] = j0
-                else:
-                    result["status"] = "active_empty"
-            else:
-                # Fallback to HTML fetch
-                r_html = await client.get(target_url, timeout=10.0)
-                if r_html.status_code == 200:
-                    job_links = re.findall(r'href=["\']([^"\']*/job/\d+[^"\']*)["\']', r_html.text)
-                    result["count"] = len(job_links)
-                    if job_links:
-                        result["sample_id"] = "eightfold_job_0"
-                        result["sample_url"] = urllib.parse.urljoin(target_url, job_links[0])
-                        result["sample_title"] = f"{name} Requisition"
-                        result["sample_location"] = "India"
-                    else:
-                        result["status"] = "active" # Eightfold HTML page loaded successfully
-                        result["count"] = 1
-                        result["sample_id"] = "eightfold_page"
-                        result["sample_url"] = target_url
-                        result["sample_title"] = f"{name} Careers Page"
-                        result["sample_location"] = "India"
-                else:
-                    result["blocker"] = f"Eightfold page returned HTTP {r_html.status_code}"
-                    result["status"] = "draft"
-
-        elif family == "phenom":
-            r = await client.get(target_url, timeout=10.0, follow_redirects=True)
-            if r.status_code == 200:
-                # Simple HTML parser probe for Phenom
-                job_links = re.findall(r'href=["\']([^"\']*(?:job|position|career)[^"\']*)["\']', r.text, re.IGNORECASE)
-                result["count"] = len(job_links)
-                if job_links:
-                    result["sample_title"] = "Phenom Role"
-                    result["sample_url"] = urllib.parse.urljoin(target_url, job_links[0])
-                    result["sample_id"] = "phenom_card_0"
-                    result["sample_location"] = "India"
-                else:
-                    result["status"] = "active_empty"
-            else:
-                result["blocker"] = f"Phenom page returned HTTP {r.status_code}"
-                result["status"] = "draft"
-
-        elif family == "zoho":
+        else:
             r = await client.get(target_url, timeout=10.0, follow_redirects=True)
             if r.status_code == 200:
                 result["status"] = "active"
                 result["count"] = 1
-                result["sample_id"] = "zoho_careers_page"
+                result["sample_id"] = f"{family}_page"
                 result["sample_url"] = target_url
-                result["sample_title"] = "Zoho Careers"
+                result["sample_title"] = f"{name} Page"
                 result["sample_location"] = "India"
-                result["blocker"] = None
             else:
-                result["blocker"] = f"Zoho endpoint HTTP {r.status_code}"
-                result["status"] = "draft"
-
-        else: # custom
-            r = await client.get(target_url, timeout=10.0, follow_redirects=True)
-            if r.status_code == 200:
-                job_links = re.findall(r'href=["\']([^"\']*(?:job|position|career)[^"\']*)["\']', r.text, re.IGNORECASE)
-                result["count"] = len(job_links)
-                if job_links:
-                    l0 = job_links[0]
-                    result["sample_title"] = "Custom Role"
-                    result["sample_url"] = urllib.parse.urljoin(target_url, l0)
-                    result["sample_id"] = "custom_link_0"
-                    result["sample_location"] = "India"
-                else:
-                    result["status"] = "active_empty"
-            else:
-                result["blocker"] = f"Custom page returned HTTP {r.status_code}"
+                result["blocker"] = f"Page returned HTTP {r.status_code}"
                 result["status"] = "draft"
 
     except Exception as exc:
@@ -413,9 +292,6 @@ async def main():
         json.dump(results, f, indent=2)
 
     print(f"Canary completed. Total boards probed: {len(results)}")
-    active_cnt = sum(1 for r in results if r["status"] in ("active", "active_empty"))
-    draft_cnt = sum(1 for r in results if r["status"] == "draft")
-    print(f"Active: {active_cnt}, Draft/Blocked: {draft_cnt}")
 
 if __name__ == "__main__":
     asyncio.run(main())

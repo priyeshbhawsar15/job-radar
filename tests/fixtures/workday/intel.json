@@ -1,13 +1,14 @@
 {
-  "total": 1,
+  "total": 619,
   "jobPostings": [
     {
-      "title": "Software Application Development Engineer",
-      "externalPath": "/job/R-1001",
-      "locationsText": "India, Bangalore",
-      "timeType": "Full time",
+      "title": "Experienced Manufacturing Technician",
+      "externalPath": "/job/Ireland-Leixlip/Manufacturing-Technician_JR0284458",
+      "locationsText": "Ireland, Leixlip",
+      "timeType": null,
       "bulletFields": [
-        "R-1001"
+        "Spotlight Job",
+        "JR0284458"
       ]
     }
   ]

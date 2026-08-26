@@ -31,6 +31,8 @@ from job_radar.services.location import is_india_eligible
         ("London, UK; Bangalore, India", True),
         ("Remote - India", True),
         ("Hybrid - Bangalore", True),
+        ("Remote in Europe", False),
+        ("Based in London", False),
         ("San Francisco, CA", False),
         ("London, UK", False),
         ("New York, NY, USA", False),

@@ -1,13 +1,13 @@
 {
-  "total": 1,
+  "total": 2000,
   "jobPostings": [
     {
-      "title": "Software Engineer 2",
-      "externalPath": "/job/R-1001",
-      "locationsText": "Bengaluru, KA, India",
-      "timeType": "Full time",
+      "title": "Facilities Executive - Technical",
+      "externalPath": "/job/Gurugram-HR/Facilities-Executive---Technical_REQ509543",
+      "locationsText": "Gurugram, HR",
+      "timeType": null,
       "bulletFields": [
-        "R-1001"
+        "REQ509543"
       ]
     }
   ]

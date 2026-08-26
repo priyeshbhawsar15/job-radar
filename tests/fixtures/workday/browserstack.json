@@ -1,13 +1,13 @@
 {
-  "total": 1,
+  "total": 33,
   "jobPostings": [
     {
-      "title": "Engineering Manager",
-      "externalPath": "/job/R-1001",
-      "locationsText": "Mumbai - WFO, India",
-      "timeType": "Full time",
+      "title": "Associate - Deal Desk (Night Shift)",
+      "externalPath": "/job/Mumbai-Remote/Associate---Deal-Desk--Night-Shift-_JR103615",
+      "locationsText": "Mumbai Remote",
+      "timeType": null,
       "bulletFields": [
-        "R-1001"
+        "JR103615"
       ]
     }
   ]

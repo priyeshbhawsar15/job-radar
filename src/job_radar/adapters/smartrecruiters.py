@@ -31,7 +31,7 @@ class SmartRecruitersAdapter(BaseAdapter):
                 title = item.get("name", "").strip()
                 if not title:
                     continue
-                    
+
                 loc_obj = item.get("location", {})
                 if isinstance(loc_obj, dict):
                     city = loc_obj.get("city") or ""
@@ -47,7 +47,7 @@ class SmartRecruitersAdapter(BaseAdapter):
 
                 job_id = item.get("id")
                 raw_url = f"https://jobs.smartrecruiters.com/{board_name}/{job_id}" if job_id else target_url
-                
+
                 dept = ""
                 dept_obj = item.get("department", {})
                 if isinstance(dept_obj, dict):

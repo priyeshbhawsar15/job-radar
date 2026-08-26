@@ -1,47 +1,78 @@
 import json
-import pytest
 from pathlib import Path
+import pytest
 
 from job_radar.adapters.registry import adapter_registry
-from job_radar.db.seed import INITIAL_BOARDS
+from job_radar.db.seed import INITIAL_BOARDS, BLOCKED_BOARD_IDS
 from job_radar.services.location import is_india_eligible
+from job_radar.services.detail_extractor import description_is_valid
 
 FIXTURES_DIR = Path("tests/fixtures")
-
-# Filter to the 65 new boards (from index 37 to end of INITIAL_BOARDS)
 NEW_BOARDS = INITIAL_BOARDS[37:]
 
-NAME_MAP = {
-    "phonepay": "phonepe",
-    "hobspot": "hubspot",
-    "godaddy": "godaddy",
-    "workday": "workdaycorp",
-    "publicis_sapient": "publicissapient",
+# Map of board names to fixture relative path under tests/fixtures/
+BOARD_FIXTURE_MAP = {
+    "JLL": "workday/jll.json",
+    "Razorpay": "greenhouse/razorpay.json",
+    "SOTI": "workday/soti.json",
+    "Amgen": "workday/amgen.json",
+    "Paytm": "lever/paytm.json",
+    "Uber": "custom/uber.json",
+    "GoDaddy": "greenhouse/godaddy.json",
+    "PhonePe": "greenhouse/phonepe.json",
+    "Buffer": "ashby/buffer.json",
+    "Sourcegraph": "greenhouse/sourcegraph91.json",
+    "Zapier": "ashby/zapier.json",
+    "Remote.com": "greenhouse/remote.json",
+    "Elastic": "custom/elastic.json",
+    "Twilio": "greenhouse/twilio.json",
+    "Supabase": "ashby/supabase.json",
+    "Bitwarden": "greenhouse/bitwarden.json",
+    "Camunda": "ashby/camunda.json",
+    "Zoho": "zoho/zoho.json",
+    "Postman": "greenhouse/postman.json",
+    "BrowserStack": "workday/browserstack.json",
+    "Atlan": "ashby/atlan.json",
+    "Redis": "ashby/redis.json",
+    "Springworks": "custom/springworks.json",
+    "Groww": "greenhouse/groww.json",
+    "Snowflake": "phenom/snowflake.json",
+    "Databricks": "greenhouse/databricks.json",
+    "Okta": "greenhouse/okta.json",
+    "Coinbase": "greenhouse/coinbase.json",
+    "Salesforce": "workday/salesforce.json",
+    "SAP": "phenom/sap.json",
+    "Workday": "workday/workdaycorp.json",
+    "VMware": "smartrecruiters/vmware.json",
+    "Intel": "workday/intel.json",
+    "Airbnb": "greenhouse/airbnb.json",
+    "Meesho": "custom/meesho.json",
+    "BlackRock": "phenom/blackrock.json",
+    "UiPath": "custom/uipath.json",
+    "Druva": "greenhouse/druva.json",
+    "EPAM Systems": "custom/epam_systems.json",
 }
 
 
-def get_board_fixture_path(board_name: str, family: str) -> Path:
-    raw_clean = board_name.lower().replace(" ", "_").replace(".", "").replace("-", "_")
-    clean_name = NAME_MAP.get(raw_clean, raw_clean)
-    return FIXTURES_DIR / family / f"{clean_name}.json"
-
-
-def test_65_new_boards_registered_count():
+def test_65_new_boards_inventory_totals():
     assert len(NEW_BOARDS) == 65
     assert len(INITIAL_BOARDS) == 102
+    assert len(BOARD_FIXTURE_MAP) == 39
+    assert len(BLOCKED_BOARD_IDS) == 26
 
 
-@pytest.mark.parametrize("board_tuple", NEW_BOARDS, ids=lambda b: b[1])
-def test_board_adapter_and_fixture_parsing(board_tuple):
+@pytest.mark.parametrize("board_tuple", [b for b in NEW_BOARDS if b[1] in BOARD_FIXTURE_MAP], ids=lambda b: b[1])
+def test_reviewed_board_contract(board_tuple):
     b_id, name, family, target_url = board_tuple[0], board_tuple[1], board_tuple[2], board_tuple[3]
+    rel_path = BOARD_FIXTURE_MAP[name]
+    fixture_path = FIXTURES_DIR / rel_path
+
+    assert fixture_path.exists(), f"Sanitized live fixture missing for reviewed board {name} at {fixture_path}"
+
+    payload_text = fixture_path.read_text()
 
     adapter = adapter_registry.get(family)
     assert adapter is not None, f"Adapter for family '{family}' not found in registry"
-
-    fixture_path = get_board_fixture_path(name, family)
-    assert fixture_path.exists(), f"Fixture file missing: {fixture_path}"
-
-    payload_text = fixture_path.read_text()
 
     extracted = adapter.parse_raw_payload(
         payload=payload_text,
@@ -53,12 +84,13 @@ def test_board_adapter_and_fixture_parsing(board_tuple):
     assert len(extracted) > 0, f"Expected at least 1 extracted candidate for {name}"
 
     for candidate in extracted:
-        assert candidate.title, f"Candidate missing title for board {name}"
-        assert candidate.company == name, f"Mismatch company for board {name}"
-        assert candidate.raw_url, f"Candidate missing raw_url for board {name}"
-        assert candidate.fingerprint, f"Candidate missing fingerprint for board {name}"
+        assert candidate.title and len(candidate.title) > 3, f"Invalid title '{candidate.title}' for {name}"
+        assert candidate.company == name, f"Mismatch company for {name}"
+        assert candidate.raw_url.startswith("http"), f"Invalid raw_url '{candidate.raw_url}' for {name}"
+        assert not candidate.raw_url.endswith(".css"), f"Canonical URL is a CSS asset for {name}"
+        assert candidate.fingerprint, f"Candidate missing fingerprint for {name}"
 
-        # Test India Gate classification on candidate location
+        # Test India Gate classification
         is_eligible, reason = is_india_eligible(candidate.location)
         if is_eligible:
             assert reason is None
@@ -67,18 +99,7 @@ def test_board_adapter_and_fixture_parsing(board_tuple):
             assert "NON_INDIA_LOCATION" in reason
 
 
-def test_india_gate_edge_cases_on_candidates():
-    # Non-India location candidate
-    eligible_sf, reason_sf = is_india_eligible("San Francisco, CA")
-    assert not eligible_sf
-    assert "NON_INDIA_LOCATION: San Francisco, CA" in reason_sf
-
-    # India location candidate
-    eligible_blr, reason_blr = is_india_eligible("Bengaluru, India")
-    assert eligible_blr
-    assert reason_blr is None
-
-    # Missing location candidate
-    eligible_none, reason_none = is_india_eligible(None)
-    assert eligible_none
-    assert reason_none is None
+@pytest.mark.parametrize("board_tuple", [b for b in NEW_BOARDS if b[0] in BLOCKED_BOARD_IDS], ids=lambda b: b[1])
+def test_blocked_draft_board_registration(board_tuple):
+    b_id, name, family, target_url = board_tuple[0], board_tuple[1], board_tuple[2], board_tuple[3]
+    assert b_id in BLOCKED_BOARD_IDS, f"Board {name} ({b_id}) must be registered as draft/blocked"

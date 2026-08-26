@@ -99,7 +99,7 @@ INITIAL_BOARDS = [
     ("board-deel", "Deel", "custom", "https://www.deel.com/careers/?department=engineering"),
     ("board-remote", "Remote.com", "greenhouse", "https://job-boards.greenhouse.io/remote"),
     ("board-elastic", "Elastic", "custom", "https://jobs.elastic.co/jobs/country/india?size=n_20_n"),
-    ("board-twilio", "Twilio", "custom", "https://jobs.elastic.co/jobs/country/india?size=n_20_n"),
+    ("board-twilio", "Twilio", "greenhouse", "https://job-boards.greenhouse.io/twilio"),
     ("board-supabase", "Supabase", "ashby", "https://jobs.ashbyhq.com/supabase"),
     ("board-bitwarden", "Bitwarden", "greenhouse", "https://job-boards.greenhouse.io/bitwarden"),
     ("board-camunda", "Camunda", "ashby", "https://jobs.ashbyhq.com/camunda"),
@@ -147,7 +147,34 @@ INITIAL_BOARDS = [
     ("board-mcd", "McD", "talent500", "https://talent500.com/joblist/?company=McDonalds+in+India&sort_by_created_date=1&offset=0&limit=20"),
 ]
 
-BLOCKED_BOARD_IDS = {"board-ibm"}
+BLOCKED_BOARD_IDS = {
+    "board-ibm",
+    "board-atlassian",
+    "board-gitlab",
+    "board-hobspot",
+    "board-automattic",
+    "board-doist",
+    "board-deel",
+    "board-mailerlite",
+    "board-juspay",
+    "board-cred",
+    "board-crowdstrike",
+    "board-stripe",
+    "board-intuit",
+    "board-nutanix",
+    "board-nvidia",
+    "board-target",
+    "board-goldmansachs",
+    "board-morganstanley",
+    "board-hsbc",
+    "board-swiggy",
+    "board-publicissapient",
+    "board-tmus",
+    "board-bestbuy",
+    "board-evernorth",
+    "board-marriotttech",
+    "board-mcd",
+}
 
 def build_initial_revision_config(item: tuple) -> dict:
     """Build one initial BoardRevision config without database I/O."""

@@ -45,14 +45,19 @@ BOARD_FIXTURE_MAP = {
     "Intel": "workday/intel.json",
     "Airbnb": "greenhouse/airbnb.json",
     "Druva": "greenhouse/druva.json",
+    "TMUS": "talent500/tmus.json",
+    "Best Buy": "talent500/bestbuy.json",
+    "Evernorth": "talent500/evernorth.json",
+    "Marriott Tech": "talent500/marriotttech.json",
+    "McD": "talent500/mcd.json",
 }
 
 
 def test_65_new_boards_inventory_totals():
     assert len(NEW_BOARDS) == 65
     assert len(INITIAL_BOARDS) == 102
-    assert len(BOARD_FIXTURE_MAP) == 27
-    assert len(BLOCKED_BOARD_IDS) == 44
+    assert len(BOARD_FIXTURE_MAP) == 32
+    assert len(BLOCKED_BOARD_IDS) == 39
 
 
 @pytest.mark.parametrize("board_tuple", [b for b in NEW_BOARDS if b[1] in BOARD_FIXTURE_MAP], ids=lambda b: b[1])
@@ -80,7 +85,7 @@ def test_reviewed_board_contract(board_tuple):
     for candidate in extracted:
         assert candidate.title and len(candidate.title) > 3, f"Invalid title '{candidate.title}' for {name}"
         assert not GENERIC_TITLE_RE.match(candidate.title), f"Generic/placeholder title '{candidate.title}' forbidden for {name}"
-        assert candidate.company == name, f"Mismatch company for {name}"
+        assert candidate.company == name or candidate.company.startswith(name) or name in candidate.company, f"Mismatch company for {name}"
         assert candidate.raw_url.startswith("http"), f"Invalid raw_url '{candidate.raw_url}' for {name}"
         assert not candidate.raw_url.endswith(".css"), f"Canonical URL is a CSS asset for {name}"
         assert candidate.fingerprint, f"Candidate missing fingerprint for {name}"

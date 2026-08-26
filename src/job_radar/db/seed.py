@@ -156,7 +156,7 @@ BLOCKED_BOARD_IDS = {
     "board-solera",
     "board-tp",
 
-    # New draft boards (38)
+    # New draft boards (33)
     "board-soti",
     "board-atlassian",
     "board-uber",
@@ -190,11 +190,6 @@ BLOCKED_BOARD_IDS = {
     "board-swiggy",
     "board-publicissapient",
     "board-epam",
-    "board-tmus",
-    "board-bestbuy",
-    "board-evernorth",
-    "board-marriotttech",
-    "board-mcd",
 }
 
 def build_initial_revision_config(item: tuple) -> dict:

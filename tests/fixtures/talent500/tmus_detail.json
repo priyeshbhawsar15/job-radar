@@ -1,0 +1,484 @@
+{
+  "id": "5c076879-8949-4fa2-a3dd-a6f3a9ba15bc",
+  "company": {
+    "id": "8ce5dc01-ed2c-4d9e-aa23-cc279ca1332c",
+    "company_stack": [],
+    "company_gallery": [],
+    "company_stats": [],
+    "company_about_section": {
+      "name": "TMUS Global Solutions",
+      "video_link": null,
+      "description": "<p>T-Mobile is America&rsquo;s supercharged Un-carrier, challenging conventions and setting new standards in wireless. With the nation&rsquo;s largest and fastest 5G network, T-Mobile delivers advanced connectivity and unmatched value to millions across the U.S. We&rsquo;re unwaveringly obsessed with providing the best possible service experience, driven by a spirit of disruption that fuels competition and innovation in wireless and beyond.</p>",
+      "primary_color": null,
+      "secondary_color": null
+    },
+    "company_benefit_section": [],
+    "company_testimonial_section": [],
+    "company_culture_section": [],
+    "onboarding_process": null,
+    "ticker_logos": [],
+    "gtn_companies": [],
+    "role_category": [
+      {
+        "name": "Commerce services"
+      },
+      {
+        "name": "Corporate IT"
+      },
+      {
+        "name": "FISCAL"
+      },
+      {
+        "name": "HR"
+      },
+      {
+        "name": "IT | Corporate Finance Technology (cft)"
+      },
+      {
+        "name": "People Experience Technology"
+      },
+      {
+        "name": "Quality Eng & Software Delivery"
+      },
+      {
+        "name": "Supply Chain, Doc Management and Device Financing"
+      },
+      {
+        "name": "Technology Customer Experience"
+      },
+      {
+        "name": "TFB Engineering & Solutions (TES)"
+      },
+      {
+        "name": "TFB Solutions & Product Management"
+      }
+    ],
+    "cta_color": "#000000",
+    "name": "TMUS Global Solutions",
+    "short_name": "t-mobile",
+    "slug": "t-mobile",
+    "description": "<p>T-Mobile is America&rsquo;s supercharged Un-carrier, challenging conventions and setting new standards in wireless. With the nation&rsquo;s largest and fastest 5G network, T-Mobile delivers advanced connectivity and unmatched value to millions across the U.S. We&rsquo;re unwaveringly obsessed with providing the best possible service experience, driven by a spirit of disruption that fuels competition and innovation in wireless and beyond.</p>",
+    "short_description": "<p>T-Mobile is America&rsquo;s supercharged Un-carrier, challenging conventions and setting new standards in wireless. With the nation&rsquo;s largest and fastest 5G network, T-Mobile delivers advanced connectivity and unmatched value to millions across the U.S. We&rsquo;re unwaveringly obsessed with providing the best possible service experience, driven by a spirit of disruption that fuels competition and innovation in wireless and beyond.<br />\r\n<br />\r\nDisclaimer: TMUS India Private Limited, operating as TMUS Global Solutions, has engaged ANSR, Inc. (&quot;ANSR&quot;) as its exclusive recruiting partner. That means that any communications regarding TMUS Global Solutions opportunities or employment offers will be issued only through ANSR and the 1Recruit platform. If you receive a communication or offer from another individual or entity, please notify TMUS Global Solutions immediately.</p>\r\n\r\n<p>TMUS Global Solutions will never seek any payment or other compensation during the hiring process or request sensitive personal data (such as bank details or government-issued identification numbers) prior to a candidate&rsquo;s acceptance of a formal offer.</p>",
+    "about_us": "T-Mobile is America\u2019s supercharged Un-carrier, challenging conventions and setting new standards in wireless. With the nation\u2019s largest and fastest 5G network, T-Mobile delivers advanced connectivity and unmatched value to millions across the U.S. We\u2019re unwaveringly obsessed with providing the best possible service experience, driven by a spirit of disruption that fuels competition and innovation in wireless and beyond.  <br> <br> Disclaimer: TMUS India Private Limited, operating as TMUS Global Solutions, has engaged ANSR, Inc. (\"ANSR\") as its exclusive recruiting partner. That means that any communications regarding TMUS Global Solutions opportunities or employment offers will be issued only through ANSR and the 1Recruit platform. If you receive a communication or offer from another individual or entity, please notify TMUS Global Solutions immediately. TMUS Global Solutions will never seek any payment or other compensation during the hiring process or request sensitive personal data (such as bank details or government-issued identification numbers) prior to a candidate\u2019s acceptance of a formal offer.",
+    "video_link": null,
+    "logo_url": "https://talent500-public-prod-cb.s3.ap-south-1.amazonaws.com/company_logos/T-Mobile-NewLogo_1_67ba89bf57ea414688a98f676c04950e.png",
+    "job_logo": "uploads/company_images/tmobilelogo_150x150.jpg",
+    "job_logo_url": "https://talent500-public-prod-cb.s3.ap-south-1.amazonaws.com/company_job_logos/tmobilelogo_150x150_2d57273a75b64776a8dd7db9f025ac63.jpg",
+    "show_powered_by_talent500_logo": false,
+    "website": null,
+    "redirect_logo_url": "https://talent500.com/t-mobile/careers/india/",
+    "linkedIn": null,
+    "facebook": null,
+    "twitter": null,
+    "instagram": null,
+    "hero_type": "1",
+    "nav_bar_color": "#E20074",
+    "nav_items_color": "#E20074",
+    "gallery_heading": "Gallery",
+    "company_image_url": "https://talent500-public-prod-cb.s3.ap-south-1.amazonaws.com/company_images/tmobilelogo_2_3d21995c7cfa4380a90a2cfc4ecbd2bd.png",
+    "meta_title": null,
+    "meta_description": "",
+    "hero_h1": null,
+    "hero_h2": null,
+    "primary_color": "#333333",
+    "secondary_color": "#000000",
+    "cta_text": null,
+    "jobs_subtitle": null,
+    "mission": null,
+    "stack_section_title": "About T-Mobile India",
+    "stack_section_description": "T-Mobile is America\u2019s supercharged Un-carrier, challenging conventions and setting new standards in wireless. With the nation\u2019s largest and fastest 5G network, T-Mobile delivers advanced connectivity and unmatched value to millions across the U.S. We\u2019re unwaveringly obsessed with providing the best possible service experience, driven by a spirit of disruption that fuels competition and innovation in wireless and beyond.\r\n\r\nDisclaimer: TMUS India Private Limited is a subsidiary of T-Mobile US, Inc. and operates as TMUS Global Solutions. TMUS India Private Ltd., and T-Mobile US, Inc., do not provide telecommunication services in India.",
+    "powered_by_logo_url": "https://d36dj8u11ystvj.cloudfront.net/Talent500_PoweredBy+(1).png",
+    "cta_bg_color": "#E20074",
+    "cta_text_color": "#FFFFFF",
+    "cta_border_color": "#FFFFFF",
+    "h1_font_size": null,
+    "h2_font_size": null,
+    "h3_font_size": null,
+    "h4_font_size": null,
+    "body_size_1": null,
+    "body_size_2": null,
+    "h1_font_w": null,
+    "h2_font_w": null,
+    "h3_font_w": null,
+    "h4_font_w": null,
+    "body_w_1": null,
+    "body_w_2": null,
+    "public_name": null,
+    "use_public_name": false,
+    "unique_id": "63d654b8-4efd-404d-b5e7-72faf0eb9463",
+    "head_favicon_url": "",
+    "head_title": null,
+    "privacy_policy_name": "Privacy Policy",
+    "privacy_policy_url": null,
+    "mandate_privacy_policy": null,
+    "ticker_title": null,
+    "publish": true,
+    "company_font_family": "5",
+    "use_company_font_on_jobs_page": true,
+    "gallery_section_name": null,
+    "about_section_name": "TMUS Global Solutions",
+    "testimonial_section_name": null,
+    "benefits_section_name": null,
+    "culture_section_name": null,
+    "jobs_section_name": null,
+    "is_job_displayable": true,
+    "is_onboarding_skip": false,
+    "company_specific_workflow": 0,
+    "third_party_company": false,
+    "is_vendor_third_party_company": false,
+    "priority_order": 1,
+    "order_of_about_role": 1,
+    "order_of_about_company": 2,
+    "whatsapp_company_logo": "uploads/company_images/TMUS.png",
+    "whatsapp_company_logo_url": "https://talent500-public-prod-cb.s3.ap-south-1.amazonaws.com/talent500-companies/whatsapp/logos/TMUS_fb4db06271ad42999d57285def0b5806.png",
+    "whatsapp_job_bg_color": "#ED008C",
+    "whatsapp_job_text_color": "#FFFFFF",
+    "engagement_type": null,
+    "font_family": 18
+  },
+  "location": "Hyderabad",
+  "primary_skills": [
+    "AWS or Azure",
+    "PL/SQL or SQLServer or Oracle",
+    "RDS or Relational Database Service",
+    "Java"
+  ],
+  "secondary_skills": [
+    "UKG or WFM or Work force Managment or WorkForce Managment",
+    "SASS"
+  ],
+  "experience_range": "10 - 15 years",
+  "job_qualifications": [
+    ""
+  ],
+  "screening_questions": [
+    {
+      "id": "5d622677-84ce-4542-a3d8-7eee96d0a5d9",
+      "question_number": 1,
+      "description": "How many years of experience do you have as an Engineering Manager ?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Less than 2 years",
+          "option_id": 1
+        },
+        {
+          "option": "More than 2 years",
+          "option_id": 2
+        },
+        {
+          "option": "More than 3 years",
+          "option_id": 3
+        },
+        {
+          "option": "More than 4 years",
+          "option_id": 4
+        },
+        {
+          "option": "No experience, but have strong understanding & knowledge",
+          "option_id": 5
+        },
+        {
+          "option": "No experience, but, I'm a quick learner",
+          "option_id": 6
+        }
+      ]
+    },
+    {
+      "id": "2b72a137-5685-4ab1-b53f-d7e88cf50ca4",
+      "question_number": 2,
+      "description": "How many years of experience do you have in Java?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Less than 6 years",
+          "option_id": 1
+        },
+        {
+          "option": "More than 6 years",
+          "option_id": 2
+        },
+        {
+          "option": "More than 7 years",
+          "option_id": 3
+        },
+        {
+          "option": "More than 8 years",
+          "option_id": 4
+        },
+        {
+          "option": "No experience, but have strong understanding & knowledge",
+          "option_id": 5
+        },
+        {
+          "option": "No experience, but, I'm a quick learner",
+          "option_id": 6
+        }
+      ]
+    },
+    {
+      "id": "570adc12-9a81-4bbe-9a8c-7c68ddd22604",
+      "question_number": 3,
+      "description": "How many years of experience do you have in PL/SQL / SQL Server / Oracle?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Less than 4 years",
+          "option_id": 1
+        },
+        {
+          "option": "More than 4 years",
+          "option_id": 2
+        },
+        {
+          "option": "More than 5 years",
+          "option_id": 3
+        },
+        {
+          "option": "More than 6 years",
+          "option_id": 4
+        },
+        {
+          "option": "No experience, but have strong understanding & knowledge",
+          "option_id": 5
+        },
+        {
+          "option": "No experience, but, I'm a quick learner",
+          "option_id": 6
+        }
+      ]
+    },
+    {
+      "id": "d953113b-dfc9-4ed7-b219-39209c60c03f",
+      "question_number": 4,
+      "description": "How many years of experience do you have in Relational Database Service?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Less than 3 years",
+          "option_id": 1
+        },
+        {
+          "option": "More than 3 years",
+          "option_id": 2
+        },
+        {
+          "option": "More than 4 years",
+          "option_id": 3
+        },
+        {
+          "option": "More than 5 years",
+          "option_id": 4
+        },
+        {
+          "option": "No experience, but have strong understanding & knowledge",
+          "option_id": 5
+        },
+        {
+          "option": "No experience, but, I'm a quick learner",
+          "option_id": 6
+        }
+      ]
+    },
+    {
+      "id": "6892aa71-aa5b-4225-885b-d84bc723bb4e",
+      "question_number": 5,
+      "description": "How many years of experience do you have in AWS / Azure?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Less than 3 years",
+          "option_id": 1
+        },
+        {
+          "option": "More than 3 years",
+          "option_id": 2
+        },
+        {
+          "option": "More than 4 years",
+          "option_id": 3
+        },
+        {
+          "option": "More than 5 years",
+          "option_id": 4
+        },
+        {
+          "option": "No experience, but have strong understanding & knowledge",
+          "option_id": 5
+        },
+        {
+          "option": "No experience, but, I'm a quick learner",
+          "option_id": 6
+        }
+      ]
+    },
+    {
+      "id": "815e5036-4e33-4603-9d00-a70135edf53a",
+      "question_number": 6,
+      "description": "How many years of experience do you have in People Management?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Less than 4 years",
+          "option_id": 1
+        },
+        {
+          "option": "More than 4 years",
+          "option_id": 2
+        },
+        {
+          "option": "More than 5 years",
+          "option_id": 3
+        },
+        {
+          "option": "More than 6 years",
+          "option_id": 4
+        },
+        {
+          "option": "No experience, but have strong understanding & knowledge",
+          "option_id": 5
+        },
+        {
+          "option": "No experience, but, I'm a quick learner",
+          "option_id": 6
+        }
+      ]
+    },
+    {
+      "id": "e089fa8f-01be-4541-a21d-80c495ac410d",
+      "question_number": 7,
+      "description": "If selected, would you be willing to relocate to Hyderabad?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Yes, willing to relocate",
+          "option_id": 1
+        },
+        {
+          "option": "No, not willing to relocate",
+          "option_id": 2
+        },
+        {
+          "option": "I am based in Hyderabad",
+          "option_id": 3
+        }
+      ]
+    },
+    {
+      "id": "d7999c57-1e0d-4b59-ac92-c7109a32e06a",
+      "question_number": 8,
+      "description": "What is your overall years of experience?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "0-10 years",
+          "option_id": 1
+        },
+        {
+          "option": "10-15 years",
+          "option_id": 2
+        },
+        {
+          "option": "15-17 years",
+          "option_id": 3
+        },
+        {
+          "option": "17+ years",
+          "option_id": 4
+        }
+      ]
+    }
+  ],
+  "title": "Manager, Software Engineering",
+  "description": "<p><strong>About T-Mobile:</strong></p><p>T-Mobile US, Inc. (NASDAQ: TMUS), headquartered in Bellevue, Washington, is America\u2019s supercharged Un-carrier, connecting millions through its strong nationwide network and flagship brands, T-Mobile and Metro by T-Mobile. Customers benefit from an unmatched combination of value, quality, and exceptional service experience.</p><p><strong>TMUS Global Solutions:</strong></p><p>TMUS Global Solutions is a world-class technology powerhouse accelerating the company\u2019s global digital transformation. With a culture built on growth, inclusivity, and global collaboration, the teams here drive innovation at scale, powered by bold thinking.</p><p><strong>About the Role:</strong></p><p>T-Mobile is driving a transformation to become a digital-first, AI-enabled, and data-driven organization, redefining how data powers business outcomes at scale. A key part of this journey is building robust, scalable platforms that support complex Commissions and timekeeping/scheduling systems.&nbsp;</p><p>Are you ready for the next chapter in your career</p><p>We\u2019re looking for an accomplished Manager of Software Development to lead a high-performing team in our Commissions, the mission-critical platform that powers compensation for all selling channels across the company, and Timekeeping &amp; Scheduling (UKG Dimensions) domain.&nbsp;</p><p>In this role, you\u2019ll provide strategic leadership, delivery oversight, and stakeholder engagement, ensuring successful execution of initiatives across backend database applications as well as Java, Varicent, SAP, and UKG vendor platforms. We foster a culture of innovation, agility, and transparency. Join us and help build systems that directly impact business-critical financial operations.&nbsp;</p><p><strong>Job Responsibilities:</strong></p><ul><li>Direct the delivery of multiple software development initiatives within the Commissions and UKG platforms.&nbsp;</li><li>Partner with Sales Operations, Finance, IT, HR, and other business stakeholders to align solutions with organizational goals.&nbsp;</li><li>Provide technical guidance and context to backend teams to ensure robust, scalable, and maintainable solutions.&nbsp;</li><li>Manage priorities and project delivery using Agile Scrum and Kanban frameworks.&nbsp;</li><li>Foster collaboration across internal teams and vendor partners to achieve delivery timelines and quality targets.&nbsp;</li><li>Continuously evaluate and enhance system performance, scalability, and reliability.&nbsp;</li></ul><p><strong>Experience Required:</strong></p><ul><li>5+ years of experience as an individual contributor in software development (backend emphasis preferred).&nbsp;</li><li>7+ years in a lead or supervisory role overseeing engineering teams.&nbsp;</li><li>Proven background in telecom or commissions systems.&nbsp;</li><li>Expertise in enterprise platforms and backend systems.&nbsp;</li><li>Demonstrated success managing delivery across both in-house and vendor teams.&nbsp;</li><li>Strong familiarity with Agile methodologies (Scrum, Kanban) in fast-paced settings.&nbsp;</li><li>Experience with cloud technologies (AWS, AZURE, RDS).&nbsp;</li><li>Knowledge of Java/Spring Boot application ecosystems.&nbsp;</li><li>Background in integrating data from APIs and enterprise services.</li><li>Experience working with a timekeeping and scheduling system.</li></ul><p><strong>Why T-Mobile:</strong></p><p>Be part of a large-scale data transformation impacting critical financial and operational systems. Work with cutting-edge cloud and data technologies in a high-scale environment. Collaborate with global teams across US and India on enterprise-grade platforms. Contribute to systems that directly influence revenue, commissions, and business performance.&nbsp;</p><p>What sets us apart at T-Mobile, you\u2019ll do more than build integrations. You\u2019ll architect reusable, enterprise-grade integration frameworks that ensure speed, scalability, and compliance across T-Mobile\u2019s Commissions and Timekeeping/Scheduling landscape. This isn\u2019t just another Manager role; it\u2019s your chance to engineer integration solutions at scale for one of the world\u2019s most disruptive brands.</p><p>We pride ourselves on encouraging a culture of innovation, agile ways of working, and transparency in all we do. Join us in embodying the spirit of the Un-carrier and make a tangible impact!</p><p><strong>What You\u2019ll Do:</strong></p><ul><li>Lead and manage a team of engineers delivering solutions for Commissions and UKG platforms.</li><li>Collaborate with leadership, product managers, and technical teams to align engineering work with business strategies.</li><li>Define technical roadmap and prioritize engineering backlog to meet organizational goals.</li><li>Partner with cross-functional teams to design and implement scalable platform solutions.</li><li>Drive engineers through the use of best practices, code quality standards, and agile ways of working.</li><li>Oversee team performance, mentoring, and professional development.</li><li>Drive and support other duties and projects as needed.</li></ul><p><strong>What You\u2019ll Bring:</strong></p><ul><li>Bachelor's degree in computer science, Technology, or related field, plus relevant years of experience in a related technical discipline.</li><li>Excellent problem-solving abilities with strong communication skills for effective collaboration with stakeholders.</li><li>Experience working in agile development environments.</li></ul>",
+  "employment_type": "Full-Time",
+  "industry": "",
+  "job_template": false,
+  "country": {
+    "name": "India",
+    "country_code": "IN",
+    "region": "Asia"
+  },
+  "is_job_displayable": true,
+  "job_url": "https://talent500.com/jobs/t-mobile/manager-software-engineering-hyderabad-T500-28653",
+  "created_at": "2026-08-18T15:57:41.927738+05:30",
+  "updated_at": "2026-08-26T16:09:20.762574+05:30",
+  "title_alias_1": "Manager, Software Engineering",
+  "slug": "manager-software-engineering-hyderabad-T500-28653",
+  "summary": null,
+  "typical_workday": null,
+  "what_you_offer": null,
+  "what_you_need_to_succeed": null,
+  "responsibilities": null,
+  "type": null,
+  "min_experience_years": 10,
+  "max_experience_years": 15,
+  "ctc_unit": "LPA",
+  "is_featured_job": false,
+  "is_active": true,
+  "job_code": "T500-28653",
+  "external_id": 40807,
+  "external_job_code": "TMOJV002",
+  "is_anonymized": false,
+  "mercurial_skills": null,
+  "open_date": "2026-08-11T14:40:40.088813+05:30",
+  "published_at": "2026-08-18T15:57:40.951865+05:30",
+  "anonymization_needed": null,
+  "anonymized_description": null,
+  "xml_feed_anonymization": null,
+  "unregistered_user_anonymization": null,
+  "registered_user_anonymization": null,
+  "pre_application_email_anonymization": null,
+  "mettl_account": null,
+  "job_table_sub_head": null,
+  "job_table_short_desc": null,
+  "is_remote": null,
+  "job_video": null,
+  "job_video_title": null,
+  "job_video_description": null,
+  "job_image_url": "https://wattt.s3.ap-south-1.amazonaws.com/PRODUCTION/T500-28653.png",
+  "role_summary": "<p><strong>About T-Mobile:</strong></p><p>T-Mobile US, Inc. (NASDAQ: TMUS), headquartered in Bellevue, Washington, is America\u2019s supercharged Un-carrier, connecting millions through its strong nationwide network and flagship brands, T-Mobile and Metro by T-Mobile. Customers benefit from an unmatched combination of value, quality, and exceptional service experience.</p><p><strong>TMUS Global Solutions:</strong></p><p>TMUS Global Solutions is a world-class technology powerhouse accelerating the company\u2019s global digital transformation. With a culture built on growth, inclusivity, and global collaboration, the teams here drive innovation at scale, powered by bold thinking.</p><p><strong>About the Role:</strong></p><p>T-Mobile is driving a transformation to become a digital-first, AI-enabled, and data-driven organization, redefining how data powers business outcomes at scale. A key part of this journey is building robust, scalable platforms that support complex Commissions and timekeeping/scheduling systems.</p>",
+  "syndication_control": true,
+  "syndication_status": "in_progress",
+  "syndication_job_title_alias": "[]",
+  "sourcing_requirements_updated_at": null,
+  "t500_sourcing_control": true,
+  "status": "open",
+  "job_redirection_url": null,
+  "is_external_job": false,
+  "is_leadership_job": false,
+  "leadership_confidentiality_level": null,
+  "pricing_type": null,
+  "is_auto_apply_eligible": false,
+  "external_apply_url": null,
+  "ats_provider": null,
+  "apply_timeout_seconds": null,
+  "recruiter": "1154daea-f24c-4f7f-aad6-494543ee6112",
+  "category": 30,
+  "job_sub_category": 48,
+  "role": null,
+  "job_function": 833,
+  "job_sub_function": 1463,
+  "naukri_industry": null,
+  "naukri_functional_area": null,
+  "naukri_role": null,
+  "role_category": 516,
+  "linkedin_industry": null,
+  "syndication_partners": [
+    "155c6cf4-8e99-4b9d-a962-30efd35c2aeb",
+    "56f3dcdd-b898-4806-ae12-c2578268f37c",
+    "5dc79af2-bfa4-4186-b589-219f71a4d5cf",
+    "9997eeaf-0206-4bb3-a458-e3823ad26e2f",
+    "a8bf9ce8-9d0e-401f-bb42-a409477787a6",
+    "aa8de7a4-71c0-4241-8523-33f47d7da6c6",
+    "dd8c2a4a-08ef-4849-8fd0-c5017b662841",
+    "f2b2a145-60a0-4c8e-86a2-dd03b3ee374a"
+  ],
+  "candidate_job_status": null,
+  "candidate_job_id": null,
+  "mettl_assessment_to_be_taken": false,
+  "company_font_data": {
+    "font-family": "Inter, sans-serif",
+    "url": "https://talent500-public-prod-cb.s3.ap-south-1.amazonaws.com/talent500-fonts/fonts/Inter-VariableFont_slntwght.ttf"
+  }
+}

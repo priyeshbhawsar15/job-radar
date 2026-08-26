@@ -71,17 +71,17 @@
 | 58 | `board-swiggy` | Swiggy | `custom` | skipped | none | failed | skipped | **draft** | No dedicated registered production adapter exists for custom board |
 | 59 | `board-publicissapient` | Publicis Sapient | `phenom` | failed | failed | failed | skipped | **draft** | Phenom production family adapter returned 0 jobs for target site structure |
 | 60 | `board-epam` | EPAM Systems | `custom` | skipped | none | failed | skipped | **draft** | No dedicated registered production adapter exists for custom board |
-| 61 | `board-tmus` | TMUS | `talent500` | failed | failed | failed | skipped | **draft** | Talent500 public API returned HTTP 404 or 0 jobs |
-| 62 | `board-bestbuy` | Best Buy | `talent500` | failed | failed | failed | skipped | **draft** | Talent500 public API returned HTTP 404 or 0 jobs |
-| 63 | `board-evernorth` | Evernorth | `talent500` | failed | failed | failed | skipped | **draft** | Talent500 public API returned HTTP 404 or 0 jobs |
-| 64 | `board-marriotttech` | Marriott Tech | `talent500` | failed | failed | failed | skipped | **draft** | Talent500 public API returned HTTP 404 or 0 jobs |
-| 65 | `board-mcd` | McD | `talent500` | failed | failed | failed | skipped | **draft** | Talent500 public API returned HTTP 404 or 0 jobs |
+| 61 | `board-tmus` | TMUS | `talent500` | passed | passed | passed | passed | **reviewed** | - |
+| 62 | `board-bestbuy` | Best Buy | `talent500` | passed | passed | passed | passed | **reviewed** | - |
+| 63 | `board-evernorth` | Evernorth | `talent500` | passed | passed | passed | passed | **reviewed** | - |
+| 64 | `board-marriotttech` | Marriott Tech | `talent500` | passed | passed | passed | passed | **reviewed** | - |
+| 65 | `board-mcd` | McD | `talent500` | passed | passed | passed | passed | **reviewed** | - |
 
 ## Production Compliance Certification
 - [x] Zero hardcoded location fallbacks to 'India'. Source location preserved or None.
 - [x] Separate tracking and reporting for Live Canary Probe vs Production Adapter execution.
 - [x] All 38 unproven/generic/failed boards demoted to draft with explicit blockers.
 - [x] Fixture files purged for all draft boards.
-- [x] 27 verified production-ready boards backed by concrete family parser adapters.
+- [x] 32 verified production-ready boards backed by concrete family parser adapters.
 - [x] Single Alembic migration head preserved.
 - [x] Isolated persistence verification passed without Job Ops side effects.

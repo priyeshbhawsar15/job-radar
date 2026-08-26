@@ -2309,174 +2309,184 @@
     "name": "TMUS",
     "family": "talent500",
     "target_url": "https://talent500.com/joblist/?company=TMUS+Global+Solutions&sort_by_created_date=1&offset=0&limit=20",
-    "canary_status": "failed",
-    "prod_adapter_status": "failed",
-    "listing_status": "failed",
-    "listing_count": 0,
-    "sample_id": null,
-    "sample_title": null,
-    "sample_location": null,
-    "sample_canonical_url": null,
-    "detail_status": "skipped",
-    "detail_source": null,
-    "detail_length": null,
+    "canary_status": "passed",
+    "prod_adapter_status": "passed",
+    "listing_status": "passed",
+    "listing_count": 128,
+    "sample_id": "5c076879-8949-4fa2-a3dd-a6f3a9ba15bc",
+    "sample_title": "Manager, Software Engineering",
+    "sample_location": "Hyderabad, India",
+    "sample_canonical_url": "https://talent500.com/jobs/t-mobile/manager-software-engineering-hyderabad-T500-28653/",
+    "detail_status": "passed",
+    "detail_source": "talent500_api",
+    "detail_length": 4950,
     "semantic_checks": {
-      "has_responsibilities_or_qualifications": false,
-      "valid_description_length": false,
-      "non_shell": false
+      "has_responsibilities_or_qualifications": true,
+      "valid_description_length": true,
+      "non_shell": true
     },
     "pagination_checks": {
-      "tested": false,
-      "reason": "Pagination not supported or not tested",
-      "preserved": null
+      "tested": true,
+      "total_available": 128,
+      "pages_fetched": 2,
+      "jobs_extracted": 40,
+      "deduped": true
     },
     "filter_checks": {
-      "tested": false,
-      "location_preserved": false,
-      "india_eligible": false
+      "tested": true,
+      "location_preserved": true,
+      "india_eligible": true
     },
-    "status": "draft",
-    "enabled": false,
-    "blocker": "Talent500 public API returned HTTP 404 or 0 jobs"
+    "status": "reviewed",
+    "enabled": true,
+    "blocker": null
   },
   {
     "board_id": "board-bestbuy",
     "name": "Best Buy",
     "family": "talent500",
     "target_url": "https://talent500.com/joblist/?company=Best+Buy&sort_by_created_date=1&offset=0&limit=20",
-    "canary_status": "failed",
-    "prod_adapter_status": "failed",
-    "listing_status": "failed",
-    "listing_count": 0,
-    "sample_id": null,
-    "sample_title": null,
-    "sample_location": null,
-    "sample_canonical_url": null,
-    "detail_status": "skipped",
-    "detail_source": null,
-    "detail_length": null,
+    "canary_status": "passed",
+    "prod_adapter_status": "passed",
+    "listing_status": "passed",
+    "listing_count": 6,
+    "sample_id": "f0c7f1af-1e25-40a4-82f8-28fb9161f1b1",
+    "sample_title": "Senior Product Manager",
+    "sample_location": "Bengaluru, India",
+    "sample_canonical_url": "https://talent500.com/jobs/best-buy-india/senior-product-manager-bengaluru-T500-28622/",
+    "detail_status": "passed",
+    "detail_source": "talent500_api",
+    "detail_length": 3389,
     "semantic_checks": {
-      "has_responsibilities_or_qualifications": false,
-      "valid_description_length": false,
-      "non_shell": false
+      "has_responsibilities_or_qualifications": true,
+      "valid_description_length": true,
+      "non_shell": true
     },
     "pagination_checks": {
-      "tested": false,
-      "reason": "Pagination not supported or not tested",
-      "preserved": null
+      "tested": true,
+      "total_available": 6,
+      "pages_fetched": 1,
+      "jobs_extracted": 6,
+      "deduped": true
     },
     "filter_checks": {
-      "tested": false,
-      "location_preserved": false,
-      "india_eligible": false
+      "tested": true,
+      "location_preserved": true,
+      "india_eligible": true
     },
-    "status": "draft",
-    "enabled": false,
-    "blocker": "Talent500 public API returned HTTP 404 or 0 jobs"
+    "status": "reviewed",
+    "enabled": true,
+    "blocker": null
   },
   {
     "board_id": "board-evernorth",
     "name": "Evernorth",
     "family": "talent500",
     "target_url": "https://talent500.com/joblist/?company=Evernorth&sort_by_created_date=1&offset=0&limit=20",
-    "canary_status": "failed",
-    "prod_adapter_status": "failed",
-    "listing_status": "failed",
-    "listing_count": 0,
-    "sample_id": null,
-    "sample_title": null,
-    "sample_location": null,
-    "sample_canonical_url": null,
-    "detail_status": "skipped",
-    "detail_source": null,
-    "detail_length": null,
+    "canary_status": "passed",
+    "prod_adapter_status": "passed",
+    "listing_status": "passed",
+    "listing_count": 32,
+    "sample_id": "cc77b491-8e5c-4464-8567-e65f1a1f6f8c",
+    "sample_title": "Automation Engineer Associate Advisor",
+    "sample_location": "Hyderabad, India",
+    "sample_canonical_url": "https://talent500.com/jobs/evernorth/automation-engineer-associate-advisor-hyderabad-T500-16822/",
+    "detail_status": "passed",
+    "detail_source": "talent500_api",
+    "detail_length": 4840,
     "semantic_checks": {
-      "has_responsibilities_or_qualifications": false,
-      "valid_description_length": false,
-      "non_shell": false
+      "has_responsibilities_or_qualifications": true,
+      "valid_description_length": true,
+      "non_shell": true
     },
     "pagination_checks": {
-      "tested": false,
-      "reason": "Pagination not supported or not tested",
-      "preserved": null
+      "tested": true,
+      "total_available": 32,
+      "pages_fetched": 2,
+      "jobs_extracted": 40,
+      "deduped": true
     },
     "filter_checks": {
-      "tested": false,
-      "location_preserved": false,
-      "india_eligible": false
+      "tested": true,
+      "location_preserved": true,
+      "india_eligible": true
     },
-    "status": "draft",
-    "enabled": false,
-    "blocker": "Talent500 public API returned HTTP 404 or 0 jobs"
+    "status": "reviewed",
+    "enabled": true,
+    "blocker": null
   },
   {
     "board_id": "board-marriotttech",
     "name": "Marriott Tech",
     "family": "talent500",
     "target_url": "https://talent500.com/joblist/?company=Marriott+Tech+Accelerator&sort_by_created_date=1&offset=0&limit=20",
-    "canary_status": "failed",
-    "prod_adapter_status": "failed",
-    "listing_status": "failed",
-    "listing_count": 0,
-    "sample_id": null,
-    "sample_title": null,
-    "sample_location": null,
-    "sample_canonical_url": null,
-    "detail_status": "skipped",
-    "detail_source": null,
-    "detail_length": null,
+    "canary_status": "passed",
+    "prod_adapter_status": "passed",
+    "listing_status": "passed",
+    "listing_count": 82,
+    "sample_id": "0371b3e3-c394-4d43-bde2-8bc1197ada72",
+    "sample_title": "Senior Software Engineer II - 2026_1476",
+    "sample_location": "Hyderabad, India",
+    "sample_canonical_url": "https://talent500.com/jobs/marriott-tech-accelerator/senior-software-engineer-ii-it-security-hyderabad-T500-28815/",
+    "detail_status": "passed",
+    "detail_source": "talent500_api",
+    "detail_length": 7713,
     "semantic_checks": {
-      "has_responsibilities_or_qualifications": false,
-      "valid_description_length": false,
-      "non_shell": false
+      "has_responsibilities_or_qualifications": true,
+      "valid_description_length": true,
+      "non_shell": true
     },
     "pagination_checks": {
-      "tested": false,
-      "reason": "Pagination not supported or not tested",
-      "preserved": null
+      "tested": true,
+      "total_available": 82,
+      "pages_fetched": 2,
+      "jobs_extracted": 40,
+      "deduped": true
     },
     "filter_checks": {
-      "tested": false,
-      "location_preserved": false,
-      "india_eligible": false
+      "tested": true,
+      "location_preserved": true,
+      "india_eligible": true
     },
-    "status": "draft",
-    "enabled": false,
-    "blocker": "Talent500 public API returned HTTP 404 or 0 jobs"
+    "status": "reviewed",
+    "enabled": true,
+    "blocker": null
   },
   {
     "board_id": "board-mcd",
     "name": "McD",
     "family": "talent500",
     "target_url": "https://talent500.com/joblist/?company=McDonalds+in+India&sort_by_created_date=1&offset=0&limit=20",
-    "canary_status": "failed",
-    "prod_adapter_status": "failed",
-    "listing_status": "failed",
-    "listing_count": 0,
-    "sample_id": null,
-    "sample_title": null,
-    "sample_location": null,
-    "sample_canonical_url": null,
-    "detail_status": "skipped",
-    "detail_source": null,
-    "detail_length": null,
+    "canary_status": "passed",
+    "prod_adapter_status": "passed",
+    "listing_status": "passed",
+    "listing_count": 22,
+    "sample_id": "b2308aaf-7758-49b8-b0d8-990885cd76f2",
+    "sample_title": "Cloud Engineer III",
+    "sample_location": "Hyderabad, India",
+    "sample_canonical_url": "https://talent500.com/jobs/mcdonaldsindia/cloud-engineer-iii-hyderabad-T500-28814/",
+    "detail_status": "passed",
+    "detail_source": "talent500_api",
+    "detail_length": 6259,
     "semantic_checks": {
-      "has_responsibilities_or_qualifications": false,
-      "valid_description_length": false,
-      "non_shell": false
+      "has_responsibilities_or_qualifications": true,
+      "valid_description_length": true,
+      "non_shell": true
     },
     "pagination_checks": {
-      "tested": false,
-      "reason": "Pagination not supported or not tested",
-      "preserved": null
+      "tested": true,
+      "total_available": 22,
+      "pages_fetched": 2,
+      "jobs_extracted": 22,
+      "deduped": true
     },
     "filter_checks": {
-      "tested": false,
-      "location_preserved": false,
-      "india_eligible": false
+      "tested": true,
+      "location_preserved": true,
+      "india_eligible": true
     },
-    "status": "draft",
-    "enabled": false,
-    "blocker": "Talent500 public API returned HTTP 404 or 0 jobs"
+    "status": "reviewed",
+    "enabled": true,
+    "blocker": null
   }
 ]

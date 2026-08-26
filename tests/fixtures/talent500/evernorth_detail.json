@@ -1,0 +1,491 @@
+{
+  "id": "cc77b491-8e5c-4464-8567-e65f1a1f6f8c",
+  "company": {
+    "id": "8449daea-1ce4-4c25-9da1-a285c6795c10",
+    "company_stack": [],
+    "company_gallery": [],
+    "company_stats": [],
+    "company_about_section": {
+      "name": "Evernorth",
+      "video_link": null,
+      "description": "",
+      "primary_color": null,
+      "secondary_color": null
+    },
+    "company_benefit_section": [],
+    "company_testimonial_section": [],
+    "company_culture_section": [],
+    "onboarding_process": null,
+    "ticker_logos": [],
+    "gtn_companies": [],
+    "role_category": [
+      {
+        "name": "AASS/SSA/Data Integration"
+      },
+      {
+        "name": "AASS/SSA/High Performing Providers"
+      },
+      {
+        "name": "AASS/SSA/Value Based Programs"
+      },
+      {
+        "name": "AI COE"
+      },
+      {
+        "name": "Back End Pharmacy"
+      },
+      {
+        "name": "Business Analytics"
+      },
+      {
+        "name": "Campaign Management"
+      },
+      {
+        "name": "CareCentral Clearance"
+      },
+      {
+        "name": "CareCentral RxProcessing"
+      },
+      {
+        "name": "CareSolutions & Interop"
+      },
+      {
+        "name": "Cigna Information Protection"
+      },
+      {
+        "name": "Content Creation"
+      },
+      {
+        "name": "Customer Programs Agile Release Train"
+      },
+      {
+        "name": "Digital Engineering"
+      },
+      {
+        "name": "Digital Operations"
+      },
+      {
+        "name": "Digital Quality Engineering"
+      },
+      {
+        "name": "Finance"
+      },
+      {
+        "name": "Foundational Data & Analytics / Big Data Engineering"
+      },
+      {
+        "name": "Foundational Data & Analytics / Business Intelligence Solutions & Enablement"
+      },
+      {
+        "name": "Foundational Data & Analytics / Evernorth Health Services Data Engineering"
+      },
+      {
+        "name": "Foundational Data & Analytics / Evernorth Health Services Product & Planning"
+      },
+      {
+        "name": "Foundational Data & Analytics / U.S. Commerical & Care Product & Planning"
+      },
+      {
+        "name": "Foundational Data & Analytics / U.S. Commericial & Care Data Engineering"
+      },
+      {
+        "name": "Global Operations"
+      },
+      {
+        "name": "HRBP"
+      },
+      {
+        "name": "OIA Production & Platform Operations"
+      },
+      {
+        "name": "OIA WorkFlow Automation/DevOps"
+      },
+      {
+        "name": "Pharmacy Management Entity Platforms"
+      },
+      {
+        "name": "Platform Engineering Shared Services"
+      },
+      {
+        "name": "Production Ops & Automation"
+      },
+      {
+        "name": "Quality"
+      },
+      {
+        "name": "Real Estate Management"
+      },
+      {
+        "name": "Robotics Delivery"
+      },
+      {
+        "name": "Scheduling"
+      },
+      {
+        "name": "Software Engineering"
+      }
+    ],
+    "cta_color": "#035C67",
+    "name": "Evernorth",
+    "short_name": "Evernorth",
+    "slug": "evernorth",
+    "description": "<p>Evernorth Health Services, a division of The Cigna Group (NYSE: CI), creates pharmacy, care, and benefits solutions to improve health and increase vitality. We relentlessly innovate to make the prediction, prevention, and treatment of illness and disease more accessible to millions of people.</p>",
+    "short_description": "",
+    "about_us": null,
+    "video_link": null,
+    "logo_url": "https://talent500-public-prod-cb.s3.ap-south-1.amazonaws.com/company_logos/evernorth-logo-hypermint_915997ee8d224cacadb63c9de43edc3b.png",
+    "job_logo": "uploads/company_images/Evernorth_Health_Services_India.png",
+    "job_logo_url": "https://talent500-public-prod-cb.s3.ap-south-1.amazonaws.com/company_job_logos/Evernorth_Health_Services_India_9cdcbde79c854f9782fed364617eab36.png",
+    "show_powered_by_talent500_logo": false,
+    "website": "https://talent500.co/companies/evernorth",
+    "redirect_logo_url": "https://talent500.com/evernorth",
+    "linkedIn": "https://www.linkedin.com/company/evernorth/",
+    "facebook": null,
+    "twitter": null,
+    "instagram": "https://www.instagram.com/evernorth/?hl=en",
+    "hero_type": "1",
+    "nav_bar_color": "#035C67",
+    "nav_items_color": "#3EFFC0",
+    "gallery_heading": "Gallery",
+    "company_image_url": "",
+    "meta_title": null,
+    "meta_description": "Evernorth Health Services, a division of The Cigna Group (NYSE: CI), creates pharmacy, care, and benefits solutions to improve health and increase vitality. We relentlessly innovate to make the prediction, prevention, and treatment of illness and disease more accessible to millions of people.",
+    "hero_h1": null,
+    "hero_h2": null,
+    "primary_color": "#035C67",
+    "secondary_color": "#035C67",
+    "cta_text": "Join Us",
+    "jobs_subtitle": null,
+    "mission": null,
+    "stack_section_title": null,
+    "stack_section_description": "",
+    "powered_by_logo_url": null,
+    "cta_bg_color": "#FFFFFF",
+    "cta_text_color": "#2F343D",
+    "cta_border_color": "#FFFFFF",
+    "h1_font_size": null,
+    "h2_font_size": null,
+    "h3_font_size": null,
+    "h4_font_size": null,
+    "body_size_1": null,
+    "body_size_2": null,
+    "h1_font_w": null,
+    "h2_font_w": null,
+    "h3_font_w": null,
+    "h4_font_w": null,
+    "body_w_1": null,
+    "body_w_2": null,
+    "public_name": null,
+    "use_public_name": false,
+    "unique_id": "cc2be88f-ddee-4b33-8a4f-98714e8c5166",
+    "head_favicon_url": "",
+    "head_title": null,
+    "privacy_policy_name": "Privacy Policy",
+    "privacy_policy_url": null,
+    "mandate_privacy_policy": null,
+    "ticker_title": null,
+    "publish": true,
+    "company_font_family": "18",
+    "use_company_font_on_jobs_page": true,
+    "gallery_section_name": null,
+    "about_section_name": null,
+    "testimonial_section_name": null,
+    "benefits_section_name": null,
+    "culture_section_name": null,
+    "jobs_section_name": null,
+    "is_job_displayable": true,
+    "is_onboarding_skip": false,
+    "company_specific_workflow": 1,
+    "third_party_company": false,
+    "is_vendor_third_party_company": false,
+    "priority_order": 3,
+    "order_of_about_role": 1,
+    "order_of_about_company": 2,
+    "whatsapp_company_logo": "uploads/company_images/Evernorth.png",
+    "whatsapp_company_logo_url": "https://talent500-public-prod-cb.s3.ap-south-1.amazonaws.com/talent500-companies/whatsapp/logos/Evernorth_99283cac69854bcc8e2e212e8ac5b9f6.png",
+    "whatsapp_job_bg_color": "#3DFFC0",
+    "whatsapp_job_text_color": "#180101",
+    "engagement_type": null,
+    "font_family": 18
+  },
+  "location": "Hyderabad",
+  "primary_skills": [
+    "Selenium",
+    "Java"
+  ],
+  "secondary_skills": [
+    "Cucumber"
+  ],
+  "experience_range": "8 - 11 years",
+  "job_qualifications": [
+    ""
+  ],
+  "screening_questions": [
+    {
+      "id": "b4fca03c-a655-45fc-818b-edbe91d10089",
+      "question_number": 1,
+      "description": "How many years of experience do you have in Java ?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Less than 2 years",
+          "option_id": 1
+        },
+        {
+          "option": "2-4 years",
+          "option_id": 2
+        },
+        {
+          "option": "More than 4 years",
+          "option_id": 3
+        },
+        {
+          "option": "More than 5 years",
+          "option_id": 4
+        },
+        {
+          "option": "No experience, but have strong understanding and knowledge",
+          "option_id": 5
+        },
+        {
+          "option": "No experience, but I'm a quick learner",
+          "option_id": 6
+        }
+      ]
+    },
+    {
+      "id": "dbc67388-6833-4fe4-a266-da7f12c3a499",
+      "question_number": 2,
+      "description": "How many years of experience do you have in Selenium ?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Less than 3 years",
+          "option_id": 1
+        },
+        {
+          "option": "3-5 years",
+          "option_id": 2
+        },
+        {
+          "option": "More than 5 years",
+          "option_id": 3
+        },
+        {
+          "option": "More than 6 years",
+          "option_id": 4
+        },
+        {
+          "option": "No experience, but have strong understanding and knowledge",
+          "option_id": 5
+        },
+        {
+          "option": "No experience, but I'm a quick learner",
+          "option_id": 6
+        }
+      ]
+    },
+    {
+      "id": "e8b3ffda-8860-47ee-866a-1ccc5e3a61e4",
+      "question_number": 3,
+      "description": "How many years of experience do you have in Automation Framework development from scratch ?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Less than 2 years",
+          "option_id": 1
+        },
+        {
+          "option": "2-4 years",
+          "option_id": 2
+        },
+        {
+          "option": "More than 4 years",
+          "option_id": 3
+        },
+        {
+          "option": "More than 5 years",
+          "option_id": 4
+        },
+        {
+          "option": "No experience, but have strong understanding and knowledge",
+          "option_id": 5
+        },
+        {
+          "option": "No experience, but I'm a quick learner",
+          "option_id": 6
+        }
+      ]
+    },
+    {
+      "id": "506a52b0-a44c-41f6-b696-e1412daf46ef",
+      "question_number": 4,
+      "description": "What is your overall years of experience ?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "0-4 years",
+          "option_id": 1
+        },
+        {
+          "option": "4-8 years",
+          "option_id": 2
+        },
+        {
+          "option": "8-11 years",
+          "option_id": 3
+        },
+        {
+          "option": "11+ years",
+          "option_id": 4
+        }
+      ]
+    },
+    {
+      "id": "ab8ec3fa-fae7-4f95-a99e-26fd319202d8",
+      "question_number": 5,
+      "description": "If selected, would you be willing to relocate to Hyderabad ?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Yes, willing to relocate",
+          "option_id": 1
+        },
+        {
+          "option": "No, not willing to relocate",
+          "option_id": 2
+        },
+        {
+          "option": "I am based in Hyderabad",
+          "option_id": 3
+        }
+      ]
+    },
+    {
+      "id": "06bba13f-c737-4b04-ada4-91b5af72b9f1",
+      "question_number": 6,
+      "description": "If selected, how soon can you join us ?",
+      "question_type": "MCSA",
+      "question_options": [
+        {
+          "option": "Within 15 days",
+          "option_id": 1
+        },
+        {
+          "option": "Within 15-30 days",
+          "option_id": 2
+        },
+        {
+          "option": "Within 30-45 days",
+          "option_id": 3
+        },
+        {
+          "option": "Within 45-60 days",
+          "option_id": 4
+        },
+        {
+          "option": "60+ days",
+          "option_id": 5
+        }
+      ]
+    }
+  ],
+  "title": "Automation Engineer Associate Advisor",
+  "description": "<p><strong>About Evernorth:</strong></p><p>Evernorth Health Services, a division of The Cigna Group (NYSE: CI), creates pharmacy, care, and benefits solutions to improve health and increase vitality. We relentlessly innovate to make the prediction, prevention, and treatment of illness and disease more accessible to millions of people.</p><p><strong>Automation Engineer Associate Advisor</strong>&nbsp;</p><p><strong>Position Overview:</strong></p><p>The Automaton / Test Engineer associate advisor will be responsible for the strategy and implementation of designing and architecting test automation frameworks for both front end and backend including but not limited to Pega, Java / Services/APIs and cloud-based applications etc.&nbsp;&nbsp;</p><p>In this role, you will be responsible for designing, developing and implementing test automation using the automation tools.&nbsp;</p><p>Hands-on manual, automation and End to End testing is required and collaborates with QE team members to deliver on highly complex projects while interfacing with external teams. Assesses risk associated with new software implementations. Reviewing and guiding the code of other team members through reviews. This role is empowered and accountable to Triage, debugging, surveillance &amp; monitoring. Professional growth of knowledge across both technical and operational domains is required.? Expectations include innovation and critical thinking leading to decision making driving towards efficient, simple solutions answering complex business needs. Represents and promotes QA methodology across Pharmacy+ divisions. Devises improvements to current procedures and develops models for possible future configurations.&nbsp;</p><p><strong>Responsibilities:</strong></p><ul><li>Works within an agile team to develop, test, and maintain business applications built on Pega and Java technologies, both manual and automation testing is required&nbsp;</li><li>Designing test automation strategy for large, complex, cross-functional projects&nbsp;</li><li>Utilizing advanced technical knowledge base to create automation test framework and scripts on multiple platforms.</li><li>Leading End to End test calls and coordinating UAT testing&nbsp;</li><li>Identify and prepare complex test data to support the test cases&nbsp;</li><li>Walk through test scenarios for both functional and End to End with stakeholders&nbsp;</li><li>Support Release activities&nbsp;&nbsp;</li><li>Defining test process including required test activities, deliverables and test schedule.&nbsp;</li><li>Identifying and leading process improvement across the Quality Engineering organization. Promotes business effectiveness and efficiency while striving for innovation, flexibility, automation and integration with technology.&nbsp;</li><li>Ensuring employees and vendor partners are meeting all testing standards by conducting reviews of all the test deliverables / artifacts.&nbsp;</li><li>Consulting with both inter-organizational and outside client contact to ensure the use of best practices and industry standards.&nbsp;</li><li>Understanding of how changes impact work upstream and downstream.&nbsp;</li><li>Independently estimating and re-estimating projects while recognizing and communicating dependencies in cross functional testing as well as data to complete estimates.&nbsp;</li><li>Contributing to the funding and forecasting process.&nbsp;</li><li>Training and mentoring QE team members&nbsp;</li><li>Managing the flow of information to internal and external clients as well as leadership.&nbsp;</li><li>Assisting with the on boarding new team members including content development and training.&nbsp;</li><li>Solving complex problems; applying new perspectives to existing solutions.&nbsp;</li><li>Ensures defects are quickly assessed and / or mitigated and resolved, whether in non-production or production.</li><li>Working independently with minimal guidance.&nbsp;</li></ul><p><strong>Qualifications</strong>&nbsp;</p><p><strong>Required Skills:</strong>&nbsp;</p><ul><li>Hand-on test automation experience with preferably 1-2+ years at healthcare or in the PBM industry.&nbsp;</li><li>Expert level system test automation experience.&nbsp;</li><li>Expertise developing automated test scripts using Selenium, Cucumber, Java scripting, node.js and Json.</li><li>Preferably integration to Jenkins and Sauce labs.&nbsp;</li><li>Expert level End to End testing experience across multiple product teams&nbsp;</li><li>Experience developing Java code with latest web design concepts.&nbsp;</li><li>Experience in Agile development methodology.&nbsp;</li><li>Good understanding of multiple test automation frameworks and Dev Ops.&nbsp;</li><li>Ability to adapt in a dynamic work environment, learn quickly and solve problems.&nbsp;</li><li>Ability to work a flexible schedule to accommodate business needs.&nbsp;</li><li>Demonstrated advanced technical and analytical skills.&nbsp;</li><li>Excellent verbal and written communication skills with the ability to adjust to meet the needs of the audience.&nbsp;</li><li>Detail oriented with the ability to work and guide others during time constraints to meet deadlines.&nbsp;</li><li>Demonstrated ability to mentor and train teams.&nbsp;</li><li>Strong leadership / influencing skills.&nbsp;</li></ul><p><strong>Required Experience &amp; Education:</strong></p><ul><li>University degree in Computer Science or a related discipline&nbsp;</li><li>Minimum 8-11 years of work experience in software or web testing&nbsp;</li><li>Strong desire to learn&nbsp;</li></ul>",
+  "employment_type": "Full-Time",
+  "industry": "",
+  "job_template": false,
+  "country": {
+    "name": "India",
+    "country_code": "IN",
+    "region": "Asia"
+  },
+  "is_job_displayable": true,
+  "job_url": "https://talent500.com/jobs/evernorth/automation-engineer-associate-advisor-hyderabad-T500-16822",
+  "created_at": "2025-03-14T16:27:56.149932+05:30",
+  "updated_at": "2026-08-26T15:42:33.490603+05:30",
+  "title_alias_1": "Automation Engineer Associate Advisor",
+  "slug": "automation-engineer-associate-advisor-hyderabad-T500-16822",
+  "summary": null,
+  "typical_workday": null,
+  "what_you_offer": null,
+  "what_you_need_to_succeed": null,
+  "responsibilities": null,
+  "type": null,
+  "min_experience_years": 8,
+  "max_experience_years": 11,
+  "ctc_unit": "LPA",
+  "is_featured_job": false,
+  "is_active": true,
+  "job_code": "T500-16822",
+  "external_id": 24939,
+  "external_job_code": "ENTSM014",
+  "is_anonymized": false,
+  "mercurial_skills": null,
+  "open_date": "2025-03-12T14:27:48.107940+05:30",
+  "published_at": "2025-03-14T16:27:55.094146+05:30",
+  "anonymization_needed": null,
+  "anonymized_description": null,
+  "xml_feed_anonymization": null,
+  "unregistered_user_anonymization": null,
+  "registered_user_anonymization": null,
+  "pre_application_email_anonymization": null,
+  "mettl_account": null,
+  "job_table_sub_head": null,
+  "job_table_short_desc": null,
+  "is_remote": null,
+  "job_video": null,
+  "job_video_title": null,
+  "job_video_description": null,
+  "job_image_url": "https://wattt.s3.ap-south-1.amazonaws.com/PRODUCTION/T500-16822.png",
+  "role_summary": "",
+  "syndication_control": true,
+  "syndication_status": "in_progress",
+  "syndication_job_title_alias": "[]",
+  "sourcing_requirements_updated_at": "2025-03-14T11:57:19.101190+05:30",
+  "t500_sourcing_control": true,
+  "status": "open",
+  "job_redirection_url": null,
+  "is_external_job": false,
+  "is_leadership_job": false,
+  "leadership_confidentiality_level": null,
+  "pricing_type": null,
+  "is_auto_apply_eligible": false,
+  "external_apply_url": null,
+  "ats_provider": null,
+  "apply_timeout_seconds": null,
+  "recruiter": "1154daea-f24c-4f7f-aad6-494543ee6112",
+  "category": 30,
+  "job_sub_category": 6,
+  "role": null,
+  "job_function": 458,
+  "job_sub_function": 761,
+  "naukri_industry": null,
+  "naukri_functional_area": null,
+  "naukri_role": null,
+  "role_category": 191,
+  "linkedin_industry": null,
+  "syndication_partners": [
+    "080e8887-744e-45fb-809a-22dc56405760",
+    "155c6cf4-8e99-4b9d-a962-30efd35c2aeb",
+    "32401301-1247-4c2d-be14-8c190cae33ab",
+    "56f3dcdd-b898-4806-ae12-c2578268f37c",
+    "5dc79af2-bfa4-4186-b589-219f71a4d5cf",
+    "75854529-b954-4c9e-9223-dd73e4bb564a",
+    "857f1932-f803-401a-a423-5f5350e015ed",
+    "9997eeaf-0206-4bb3-a458-e3823ad26e2f",
+    "a8812bb2-f253-4161-ad74-b2617497a612",
+    "a8bf9ce8-9d0e-401f-bb42-a409477787a6",
+    "aa8de7a4-71c0-4241-8523-33f47d7da6c6",
+    "da406e8f-edb1-4775-a465-4cfadb566bc8",
+    "dd8c2a4a-08ef-4849-8fd0-c5017b662841",
+    "fe38debc-5053-41c0-a94f-50ae47634eda"
+  ],
+  "candidate_job_status": null,
+  "candidate_job_id": null,
+  "mettl_assessment_to_be_taken": false,
+  "company_font_data": {
+    "font-family": "Inter, sans-serif",
+    "url": "https://talent500-public-prod-cb.s3.ap-south-1.amazonaws.com/talent500-fonts/fonts/Inter-VariableFont_slntwght.ttf"
+  }
+}

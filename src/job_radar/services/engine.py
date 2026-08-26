@@ -93,30 +93,93 @@ class PipelineExecutionEngine:
         self,
         target_url: str,
         board_name: str,
-        selector_config: Optional[Dict[str, Any]] = None
+        selector_config: Optional[Dict[str, Any]] = None,
+        max_pages: int = 5
     ) -> List[ExtractedCandidate]:
-        """Fetch Talent500 job postings via API or HTML page parsing."""
+        """Fetch Talent500 job postings via API v3 bounded search pagination."""
         parsed = urllib.parse.urlparse(target_url)
         query_params = urllib.parse.parse_qs(parsed.query)
+
         company = query_params.get("company", [""])[0]
+        if not company:
+            return []
+
+        sort_by_created_date = query_params.get("sort_by_created_date", ["1"])[0]
+        is_leadership_job = query_params.get("is_leadership_job", ["false"])[0]
+
+        try:
+            initial_offset = int(query_params.get("offset", ["0"])[0])
+        except ValueError:
+            initial_offset = 0
+
+        try:
+            limit = int(query_params.get("limit", ["20"])[0])
+        except ValueError:
+            limit = 20
 
         adapter = adapter_registry.get("talent500")
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        if not adapter:
+            return []
 
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            if company:
-                api_url = f"https://prod-warmachine.talent500.co/api/joblist/?company={urllib.parse.quote(company)}"
-                resp = await client.get(api_url, headers=headers)
-                if resp.status_code == 200 and "application/json" in resp.headers.get("content-type", ""):
-                    cands = adapter.parse_raw_payload(resp.text, board_name, target_url, selector_config)
-                    if cands:
-                        return cands
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*"
+        }
 
-            resp_html = await client.get(target_url, headers=headers, follow_redirects=True)
-            if resp_html.status_code == 200:
-                return adapter.parse_raw_payload(resp_html.text, board_name, target_url, selector_config)
+        all_candidates: List[ExtractedCandidate] = []
+        seen_keys: set[str] = set()
+        offset = initial_offset
+        page = 0
 
-        return []
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            while page < max_pages:
+                params = {
+                    "company": company,
+                    "sort_by_created_date": sort_by_created_date,
+                    "offset": str(offset),
+                    "limit": str(limit),
+                    "is_leadership_job": is_leadership_job
+                }
+                api_url = "https://prod-warmachine.talent500.co/api/v3/jobs/search/"
+                try:
+                    resp = await client.get(api_url, params=params, headers=headers)
+                except Exception as e:
+                    logger.warning(f"Talent500 search fetch error on page {page}: {e}")
+                    break
+
+                if resp.status_code != 200 or "application/json" not in resp.headers.get("content-type", "").lower():
+                    break
+
+                raw_text = resp.text
+                cands = adapter.parse_raw_payload(raw_text, board_name, target_url, selector_config)
+                if not cands:
+                    break
+
+                try:
+                    payload_json = resp.json()
+                    total = payload_json.get("total", 0)
+                    items_len = len(payload_json.get("data", []))
+                except Exception:
+                    total = 0
+                    items_len = len(cands)
+
+                for cand in cands:
+                    dedup_key = cand.extra_payload.get("talent500_id") or cand.raw_url
+                    if dedup_key in seen_keys:
+                        continue
+                    seen_keys.add(dedup_key)
+                    all_candidates.append(cand)
+
+                if items_len < limit:
+                    break
+
+                offset += items_len if items_len > 0 else limit
+                if total > 0 and offset >= total:
+                    break
+
+                page += 1
+
+        return all_candidates
 
     async def fetch_greenhouse_candidates(
         self,
@@ -688,7 +751,8 @@ class PipelineExecutionEngine:
                         extracted_candidates = await self.fetch_talent500_candidates(
                             target_url=target_url,
                             board_name=board.name,
-                            selector_config=selector_config
+                            selector_config=selector_config,
+                            max_pages=max_pages
                         )
                     elif family == "workday":
                         extracted_candidates = await self.fetch_workday_candidates_multipage(

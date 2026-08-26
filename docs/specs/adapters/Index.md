@@ -19,18 +19,22 @@ Each linked document provides:
 | **Amex** | `oracle` | [[20 Projects/Job Radar/Adapters/[Adapter] Oracle HCM\|[Adapter] Oracle HCM]] |
 | **Apple** | `apple_jobs` | [[20 Projects/Job Radar/Adapters/[Adapter] Apple\|[Adapter] Apple]] |
 | **Aspora** | `ashbyhq` | [[20 Projects/Job Radar/Adapters/[Adapter] Ashby\|[Adapter] Ashby]] |
+| **Best Buy** | `talent500` | [[20 Projects/Job Radar/Adapters/[Adapter] Talent500\|[Adapter] Talent500]] |
 | **Celonis** | `custom` | [[20 Projects/Job Radar/Adapters/[Adapter] Custom Boards\|[Adapter] Custom Boards]] |
 | **Cisco** | `workday` | [[20 Projects/Job Radar/Adapters/[Adapter] Workday\|[Adapter] Workday]] |
 | **Cognite** | `greenhouse` | [[20 Projects/Job Radar/Adapters/[Adapter] Greenhouse\|[Adapter] Greenhouse]] |
 | **Coupa** | `custom` | [[20 Projects/Job Radar/Adapters/[Adapter] Custom Boards\|[Adapter] Custom Boards]] |
 | **eBay** | `workday` | [[20 Projects/Job Radar/Adapters/[Adapter] Workday\|[Adapter] Workday]] |
 | **EisnerAmper** | `workday` | [[20 Projects/Job Radar/Adapters/[Adapter] Workday\|[Adapter] Workday]] |
+| **Evernorth** | `talent500` | [[20 Projects/Job Radar/Adapters/[Adapter] Talent500\|[Adapter] Talent500]] |
 | **Google** | `google_careers` | [[20 Projects/Job Radar/Adapters/[Adapter] Google Careers\|[Adapter] Google Careers]] |
 | **HighRadius** | `custom` | [[20 Projects/Job Radar/Adapters/[Adapter] Custom Boards\|[Adapter] Custom Boards]] |
 | **HP** | `eightfold` | [[20 Projects/Job Radar/Adapters/[Adapter] Eightfold\|[Adapter] Eightfold]] |
 | **JioStar** | `workday` | [[20 Projects/Job Radar/Adapters/[Adapter] Workday\|[Adapter] Workday]] |
 | **JPMC** | `oracle` | [[20 Projects/Job Radar/Adapters/[Adapter] Oracle HCM\|[Adapter] Oracle HCM]] |
+| **Marriott Tech** | `talent500` | [[20 Projects/Job Radar/Adapters/[Adapter] Talent500\|[Adapter] Talent500]] |
 | **Mattel** | `custom` | [[20 Projects/Job Radar/Adapters/[Adapter] Custom Boards\|[Adapter] Custom Boards]] |
+| **McD** | `talent500` | [[20 Projects/Job Radar/Adapters/[Adapter] Talent500\|[Adapter] Talent500]] |
 | **Meta** | `meta_careers` | [[20 Projects/Job Radar/Adapters/[Adapter] Meta Careers\|[Adapter] Meta Careers]] |
 | **Microsoft** | `eightfold` | [[20 Projects/Job Radar/Adapters/[Adapter] Eightfold\|[Adapter] Eightfold]] |
 | **Motorola Solutions** | `workday` | [[20 Projects/Job Radar/Adapters/[Adapter] Workday\|[Adapter] Workday]] |
@@ -44,6 +48,7 @@ Each linked document provides:
 | **Solera** | `workday` | [[20 Projects/Job Radar/Adapters/[Adapter] Workday\|[Adapter] Workday]] |
 | **Tesco** | `avature` | [[20 Projects/Job Radar/Adapters/[Adapter] Avature\|[Adapter] Avature]] |
 | **Thomson Reuters** | `workday` | [[20 Projects/Job Radar/Adapters/[Adapter] Workday\|[Adapter] Workday]] |
+| **TMUS** | `talent500` | [[20 Projects/Job Radar/Adapters/[Adapter] Talent500\|[Adapter] Talent500]] |
 | **TP** | `workday` | [[20 Projects/Job Radar/Adapters/[Adapter] Workday\|[Adapter] Workday]] |
 | **Vanguard** | `google_cloud_talent_solution` | [[20 Projects/Job Radar/Adapters/[Adapter] Google Cloud Talent Solution\|[Adapter] Google Cloud Talent Solution]] |
 | **Walmart** | `workday` | [[20 Projects/Job Radar/Adapters/[Adapter] Workday\|[Adapter] Workday]] |

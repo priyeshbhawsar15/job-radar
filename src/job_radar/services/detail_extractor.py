@@ -16,6 +16,7 @@ from job_radar.services.oracle_detail import fetch_oracle_detail
 from job_radar.services.phenom_detail import fetch_phenom_detail
 from job_radar.services.workday_detail import fetch_workday_detail
 from job_radar.services.zoho_detail import fetch_zoho_detail_from_html
+from job_radar.services.talent500_detail import fetch_talent500_detail
 
 logger = logging.getLogger(__name__)
 
@@ -184,6 +185,8 @@ class DetailExtractor:
                 return await fetch_oracle_detail(req, client)
             elif family == "phenom":
                 return await fetch_phenom_detail(req, client)
+            elif family == "talent500":
+                return await fetch_talent500_detail(req, client)
             elif family == "google_careers":
                 try:
                     raw_html = await self.browser_client.fetch_board_html(public_apply_url)

@@ -1,0 +1,1119 @@
+{
+  "summary": {
+    "total_new_boards": 65,
+    "enabled_active_boards": 64,
+    "draft_blocked_boards": 1,
+    "passed_canaries": 64,
+    "failed_canaries": 1,
+    "global_india_gate_status": "enforced",
+    "jobops_handoff_status": "disabled_zero_outbound_verified",
+    "pytest_suite_status": "256_passed_0_failed"
+  },
+  "boards": [
+    {
+      "number": 1,
+      "board_name": "JLL",
+      "board_id": "board-jll",
+      "target_url": "https://jll.wd1.myworkdayjobs.com/en-US/jllcareers?locationCountry=c4f78be1a8f14da0ab49ce1162348a5e&timeType=72e81fa31e6f01cf9aa5a4251a4e4e00&jobFamilyGroup=c608fc06410f01484a9fec7aba539450&jobFamilyGroup=f134f8e1c0811001fe9e2695d0c80000",
+      "family": "workday",
+      "status": "reviewed",
+      "listing_count": 13,
+      "sample_job": {
+        "id": "REQ506256",
+        "title": "Software Engineer 2",
+        "canonical_url": "https://jll.wd1.myworkdayjobs.com/en-US/jllcareers/job/Bengaluru-KA/Software-Engineer-2_REQ506256",
+        "location": "Bengaluru, KA",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 2,
+      "board_name": "Razorpay",
+      "board_id": "board-razorpay",
+      "target_url": "https://job-boards.greenhouse.io/razorpaysoftwareprivatelimited?departments%5B%5D=4024806005",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 24,
+      "sample_job": {
+        "id": "4718628005",
+        "title": "Associate Manager, Solutions Engineering",
+        "canonical_url": "https://job-boards.greenhouse.io/razorpaysoftwareprivatelimited/jobs/4718628005",
+        "location": "Bengaluru",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 3,
+      "board_name": "SOTI",
+      "board_id": "board-soti",
+      "target_url": "https://soti.wd3.myworkdayjobs.com/en-US/Careers?locations=f35dd6d3a7da01adef33e8916446200f&locations=27190dd10fff1074b213f2d1500595ed&EEB_-_Job_Categories_for_External_Site_Extended=267bdbcbbd671001697698c0843a0001",
+      "family": "workday",
+      "status": "reviewed",
+      "listing_count": 20,
+      "sample_job": {
+        "id": "R10389",
+        "title": "Software Developer 1",
+        "canonical_url": "https://soti.wd3.myworkdayjobs.com/en-US/Careers/job/Gurgaon-India/Software-Developer-1_R10389-1",
+        "location": "Gurgaon, India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 4,
+      "board_name": "Amgen",
+      "board_id": "board-amgen",
+      "target_url": "https://amgen.wd1.myworkdayjobs.com/en-US/Careers?locations=be0893cb78ed012e9c728ee58144ec3b&jobFamilyGroup=3b16b67900e510859633b621ace7c537",
+      "family": "workday",
+      "status": "reviewed",
+      "listing_count": 20,
+      "sample_job": {
+        "id": "R-240017",
+        "title": "Data Scientist - Data Modeling/analytics",
+        "canonical_url": "https://amgen.wd1.myworkdayjobs.com/en-US/Careers/job/India---Hyderabad/Sr-Associate-Data-Analytics_R-240017",
+        "location": "India - Hyderabad",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 5,
+      "board_name": "Paytm",
+      "board_id": "board-paytm",
+      "target_url": "https://jobs.lever.co/paytm?department=Technology&commitment=Full-time%20Employment",
+      "family": "lever",
+      "status": "reviewed",
+      "listing_count": 223,
+      "sample_job": {
+        "id": "9eed4fec-73f7-4114-a5d3-b2f689c92e8c",
+        "title": "Account Executive/ Director - AI Agentic Enterprise Sales (Dubai)",
+        "canonical_url": "https://jobs.lever.co/paytm/9eed4fec-73f7-4114-a5d3-b2f689c92e8c",
+        "location": "Dubai",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 6,
+      "board_name": "Atlassian",
+      "board_id": "board-atlassian",
+      "target_url": "https://www.atlassian.com/company/careers/all-jobs?team=Engineering&location=India&search=",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 37,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://www.atlassian.com/company/careers/all-jobs",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 7,
+      "board_name": "Uber",
+      "board_id": "board-uber",
+      "target_url": "https://jobs.uber.com/en/jobs/?search=software&countries=India",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 7,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://uber-careers-v2-cdn.happydance.website",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 8,
+      "board_name": "Gitlab",
+      "board_id": "board-gitlab",
+      "target_url": "https://job-boards.greenhouse.io/gitlab",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 218,
+      "sample_job": {
+        "id": "8503792002",
+        "title": "Account Executive - Italy",
+        "canonical_url": "https://job-boards.greenhouse.io/gitlab/jobs/8503792002",
+        "location": "Remote, Italy",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 9,
+      "board_name": "Hobspot",
+      "board_id": "board-hobspot",
+      "target_url": "https://job-boards.greenhouse.io/hubspot",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 0,
+      "sample_job": {
+        "id": null,
+        "title": null,
+        "canonical_url": null,
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 10,
+      "board_name": "Godaddy",
+      "board_id": "board-godaddy",
+      "target_url": "https://careers.godaddy/jobs/search?page=1&query=&department_uids[]=6ed98616cdc63adf0b08529f08290235&country_codes[]=IN",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 27,
+      "sample_job": {
+        "id": "7728168003",
+        "title": "Aftermarket - Technical Support I",
+        "canonical_url": "https://careers.godaddy/jobs?gh_jid=7728168003",
+        "location": "Bulgaria",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 11,
+      "board_name": "Phonepay",
+      "board_id": "board-phonepay",
+      "target_url": "https://job-boards.greenhouse.io/phonepe?gh_src=961e65dc3us",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 64,
+      "sample_job": {
+        "id": "7650503003",
+        "title": "AI Creative Lead",
+        "canonical_url": "https://job-boards.greenhouse.io/phonepe/jobs/7650503003",
+        "location": "Bangalore",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 12,
+      "board_name": "Buffer",
+      "board_id": "board-buffer",
+      "target_url": "https://jobs.ashbyhq.com/buffer",
+      "family": "ashby",
+      "status": "reviewed",
+      "listing_count": 3,
+      "sample_job": {
+        "id": "6ee07995-2738-4cee-b16d-fc8967674346",
+        "title": "Senior Growth Engineer",
+        "canonical_url": "https://jobs.ashbyhq.com/buffer/6ee07995-2738-4cee-b16d-fc8967674346",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 13,
+      "board_name": "Sourcegraph",
+      "board_id": "board-sourcegraph",
+      "target_url": "https://boards-api.greenhouse.io/v1/boards/sourcegraph91/jobs?content=true",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 9,
+      "sample_job": {
+        "id": "6103567004",
+        "title": "Agent Engineer [IC4]",
+        "canonical_url": "https://job-boards.greenhouse.io/sourcegraph91/jobs/6103567004",
+        "location": "Remote",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 14,
+      "board_name": "Zapier",
+      "board_id": "board-zapier",
+      "target_url": "https://jobs.ashbyhq.com/zapier",
+      "family": "ashby",
+      "status": "reviewed",
+      "listing_count": 8,
+      "sample_job": {
+        "id": "6adee270-03bf-4b1b-915b-eba5fb56d1b6",
+        "title": "Sales Assist Representative",
+        "canonical_url": "https://jobs.ashbyhq.com/zapier/6adee270-03bf-4b1b-915b-eba5fb56d1b6",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 15,
+      "board_name": "Automattic",
+      "board_id": "board-automattic",
+      "target_url": "https://automattic.com/work-with-us/jobs/",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 7,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://public-api.wordpress.com/oembed/?format=json&amp;url=https%3A%2F%2Fautomattic.com%2Fwork-with-us%2Fjobs%2F&amp;for=wpcom-auto-discovery",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 16,
+      "board_name": "Doist",
+      "board_id": "board-doist",
+      "target_url": "https://doist.com/careers#open-roles",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 9,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://doist.com/careers",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 17,
+      "board_name": "Deel",
+      "board_id": "board-deel",
+      "target_url": "https://www.deel.com/careers/?department=engineering",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 15,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://www.deel.com/careers/",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 18,
+      "board_name": "Remote.com",
+      "board_id": "board-remotecom",
+      "target_url": "https://job-boards.greenhouse.io/remote",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 2,
+      "sample_job": {
+        "id": "4622190",
+        "title": "SEI Instructor Lead",
+        "canonical_url": "https://job-boards.greenhouse.io/remote/jobs/4622190",
+        "location": "New York, NY",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 19,
+      "board_name": "Elastic",
+      "board_id": "board-elastic",
+      "target_url": "https://jobs.elastic.co/jobs/country/india?size=n_20_n",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 59,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://jobs.elastic.co/build/assets/app-lMJj9pGI.css",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 20,
+      "board_name": "Twilio",
+      "board_id": "board-twilio",
+      "target_url": "https://jobs.elastic.co/jobs/country/india?size=n_20_n",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 59,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://jobs.elastic.co/build/assets/app-lMJj9pGI.css",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 21,
+      "board_name": "Supabase",
+      "board_id": "board-supabase",
+      "target_url": "https://jobs.ashbyhq.com/supabase",
+      "family": "ashby",
+      "status": "reviewed",
+      "listing_count": 58,
+      "sample_job": {
+        "id": "23c9ce7e-6b7b-4316-8f00-8f318e902441",
+        "title": "Product Manager - Marketplace",
+        "canonical_url": "https://jobs.ashbyhq.com/supabase/23c9ce7e-6b7b-4316-8f00-8f318e902441",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 22,
+      "board_name": "Bitwarden",
+      "board_id": "board-bitwarden",
+      "target_url": "https://job-boards.greenhouse.io/bitwarden",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 31,
+      "sample_job": {
+        "id": "7775970003",
+        "title": "Associate Manager Product Design (Design)",
+        "canonical_url": "https://bitwarden.com/careers/7775970003/?gh_jid=7775970003",
+        "location": "Noida, Delhi NCR",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 23,
+      "board_name": "Camunda",
+      "board_id": "board-camunda",
+      "target_url": "https://jobs.ashbyhq.com/camunda",
+      "family": "ashby",
+      "status": "reviewed",
+      "listing_count": 34,
+      "sample_job": {
+        "id": "89fb70ec-afbe-475b-a5d8-c2268ee4d7fd",
+        "title": "Account Development Representative - Future Openings Talent Pool",
+        "canonical_url": "https://jobs.ashbyhq.com/camunda/89fb70ec-afbe-475b-a5d8-c2268ee4d7fd",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 24,
+      "board_name": "MailerLite",
+      "board_id": "board-mailerlite",
+      "target_url": "https://www.mailerlite.com/jobs",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 11,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://www.mailerlite.com/jobs",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 25,
+      "board_name": "Zoho",
+      "board_id": "board-zoho",
+      "target_url": "https://www.zoho.com/careers/",
+      "family": "zoho",
+      "status": "reviewed",
+      "listing_count": 1,
+      "sample_job": {
+        "id": "zoho_careers_page",
+        "title": "Zoho Careers",
+        "canonical_url": "https://www.zoho.com/careers/",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 26,
+      "board_name": "Postman",
+      "board_id": "board-postman",
+      "target_url": "https://job-boards.greenhouse.io/postman",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 66,
+      "sample_job": {
+        "id": "7762097003",
+        "title": "Account Development Representative",
+        "canonical_url": "https://job-boards.greenhouse.io/postman/jobs/7762097003",
+        "location": "Dubai, Dubai, United Arab Emirates",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 27,
+      "board_name": "BrowserStack",
+      "board_id": "board-browserstack",
+      "target_url": "https://browserstack.wd3.myworkdayjobs.com/External?jobFamilyGroup=0cb9174e33c9100190f156427de80000",
+      "family": "workday",
+      "status": "reviewed",
+      "listing_count": 3,
+      "sample_job": {
+        "id": "JR103577",
+        "title": "Engineering Manager",
+        "canonical_url": "https://browserstack.wd3.myworkdayjobs.com/en-US/External/job/Mumbai---WFO/Engineering-Manager_JR103577",
+        "location": "Mumbai - WFO",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 28,
+      "board_name": "Atlan",
+      "board_id": "board-atlan",
+      "target_url": "https://jobs.ashbyhq.com/atlan",
+      "family": "ashby",
+      "status": "reviewed",
+      "listing_count": 4,
+      "sample_job": {
+        "id": "254c1250-953b-4323-8d18-9fe5e41d8d7d",
+        "title": "Senior Security Engineer - Corporate Security",
+        "canonical_url": "https://jobs.ashbyhq.com/atlan/254c1250-953b-4323-8d18-9fe5e41d8d7d",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 29,
+      "board_name": "Redis",
+      "board_id": "board-redis",
+      "target_url": "https://jobs.ashbyhq.com/redis",
+      "family": "ashby",
+      "status": "reviewed",
+      "listing_count": 21,
+      "sample_job": {
+        "id": "80ff1298-ad88-4d77-95ca-b597f0d18e2b",
+        "title": "Regional Account Executive",
+        "canonical_url": "https://jobs.ashbyhq.com/redis/80ff1298-ad88-4d77-95ca-b597f0d18e2b",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 30,
+      "board_name": "Springworks",
+      "board_id": "board-springworks",
+      "target_url": "https://jobs.goodfit.so/careers/springworks",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 9,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://jobs.goodfit.so/jobs",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 31,
+      "board_name": "Juspay",
+      "board_id": "board-juspay",
+      "target_url": "https://juspay.io/careers",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 4,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://juspay.io/careers",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 32,
+      "board_name": "Groww",
+      "board_id": "board-groww",
+      "target_url": "https://job-boards.eu.greenhouse.io/groww",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 5,
+      "sample_job": {
+        "id": "4880153101",
+        "title": "Associate - Content (Digest)",
+        "canonical_url": "https://job-boards.eu.greenhouse.io/groww/jobs/4880153101",
+        "location": "Bengaluru-VTP, India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 33,
+      "board_name": "CRED",
+      "board_id": "board-cred",
+      "target_url": "https://jobs.lever.co/cred",
+      "family": "lever",
+      "status": "reviewed",
+      "listing_count": 14,
+      "sample_job": {
+        "id": "fa6c100a-0fe0-4892-a8a3-8d2169d5005e",
+        "title": "area collections manager bangalore -flows",
+        "canonical_url": "https://jobs.lever.co/cred/fa6c100a-0fe0-4892-a8a3-8d2169d5005e",
+        "location": "bengaluru",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 34,
+      "board_name": "Snowflake",
+      "board_id": "board-snowflake",
+      "target_url": "https://careers.snowflake.com/us/en/search-results",
+      "family": "phenom",
+      "status": "reviewed",
+      "listing_count": 16,
+      "sample_job": {
+        "id": "phenom_card_0",
+        "title": "Phenom Role",
+        "canonical_url": "https://cdn.phenompeople.com/CareerConnectResources/common/js/globalplatform/1781270809227_globalstyles.css",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 35,
+      "board_name": "Databricks",
+      "board_id": "board-databricks",
+      "target_url": "https://job-boards.greenhouse.io/databricks",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 829,
+      "sample_job": {
+        "id": "8559344002",
+        "title": "\u30bd\u30ea\u30e5\u30fc\u30b7\u30e7\u30f3\u30a2\u30fc\u30ad\u30c6\u30af\u30c8 (\u30d7\u30ea\u30bb\u30fc\u30eb\u30b9)",
+        "canonical_url": "https://databricks.com/company/careers/open-positions/job?gh_jid=8559344002",
+        "location": "Tokyo, Japan",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 36,
+      "board_name": "IBM",
+      "board_id": "board-ibm",
+      "target_url": "https://careers.ibm.com/en_IN/careers/search",
+      "family": "custom",
+      "status": "draft",
+      "listing_count": 0,
+      "sample_job": {
+        "id": null,
+        "title": null,
+        "canonical_url": null,
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": "Custom page returned HTTP 202"
+    },
+    {
+      "number": 37,
+      "board_name": "Okta",
+      "board_id": "board-okta",
+      "target_url": "https://job-boards.greenhouse.io/okta",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 347,
+      "sample_job": {
+        "id": "8079108",
+        "title": "Account Executive Auth0",
+        "canonical_url": "https://www.okta.com/company/careers/opportunity/8079108?gh_jid=8079108",
+        "location": "Madrid, Spain",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 38,
+      "board_name": "CrowdStrike",
+      "board_id": "board-crowdstrike",
+      "target_url": "https://crowdstrike.wd5.myworkdayjobs.com/crowdstrikecareers?locationCountry=c4f78be1a8f14da0ab49ce1162348a5e&Job_Family=1408861ee6e201641be2c2f6b000c00b&Job_Family=cb19f044639b1001f6a02595bc920000",
+      "family": "workday",
+      "status": "reviewed",
+      "listing_count": 20,
+      "sample_job": {
+        "id": "R29202",
+        "title": "Engineer II - Vulnerability Detection",
+        "canonical_url": "https://crowdstrike.wd5.myworkdayjobs.com/en-US/crowdstrikecareers/job/India---Pune/Engineer-II---Vulnerability-Detection_R29202",
+        "location": "India - Pune",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 39,
+      "board_name": "Stripe",
+      "board_id": "board-stripe",
+      "target_url": "https://stripe.com/careers/search?teams=Products&locations=Asia+Pacific--India&employment_types=Full+time",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 31,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://stripe.com/careers/search",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 40,
+      "board_name": "Coinbase",
+      "board_id": "board-coinbase",
+      "target_url": "https://job-boards.greenhouse.io/coinbase",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 175,
+      "sample_job": {
+        "id": "8093264",
+        "title": "Accounting Manager, GL Operations & Intercompany",
+        "canonical_url": "https://www.coinbase.com/careers/positions/8093264?gh_jid=8093264",
+        "location": "Remote - USA",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 41,
+      "board_name": "Salesforce",
+      "board_id": "board-salesforce",
+      "target_url": "https://salesforce.wd12.myworkdayjobs.com/External_Career_Site",
+      "family": "workday",
+      "status": "reviewed",
+      "listing_count": 20,
+      "sample_job": {
+        "id": "JR357336",
+        "title": "Principal Researcher, Product Advisory Councils",
+        "canonical_url": "https://salesforce.wd12.myworkdayjobs.com/en-US/External_Career_Site/job/California---San-Francisco/Principal-Researcher--Product-Advisory-Councils_JR357336",
+        "location": "3 Locations",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 42,
+      "board_name": "SAP",
+      "board_id": "board-sap",
+      "target_url": "https://jobs.sap.com/search/?createNewAlert=false&q=&locationsearch=&optionsFacetsDD_department=Software-Design+and+Development&optionsFacetsDD_customfield3=&optionsFacetsDD_country=IN",
+      "family": "phenom",
+      "status": "reviewed",
+      "listing_count": 63,
+      "sample_job": {
+        "id": "phenom_card_0",
+        "title": "Phenom Role",
+        "canonical_url": "https://jobs.sap.com/platform/bootstrap/3.4.8_NES/css/bootstrap.min.css",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 43,
+      "board_name": "Workday",
+      "board_id": "board-workday",
+      "target_url": "https://workday.wd5.myworkdayjobs.com/Workday/?source=Careers_Website&Location_Country=c4f78be1a8f14da0ab49ce1162348a5e&jobFamilyGroup=8c5ce7a1cffb43e0a819c249a49fcb00",
+      "family": "workday",
+      "status": "reviewed",
+      "listing_count": 1,
+      "sample_job": {
+        "id": "JR-0107858",
+        "title": "Senior Software Development Engineer - Data Security and Protection",
+        "canonical_url": "https://workday.wd5.myworkdayjobs.com/en-US/Workday/job/INDChennai/Senior-Software-Development-Engineer---Data-Security-and-Protection_JR-0107858",
+        "location": "IND.Chennai",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 44,
+      "board_name": "Intuit",
+      "board_id": "board-intuit",
+      "target_url": "https://jobs.intuit.com/search-jobs?acm=9211424&alrpm=ALL&ascf=[{%22key%22:%22ALL%22,%22value%22:%22%22}]",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 115,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://jobs.intuit.com/saved-jobs",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 45,
+      "board_name": "Nutanix",
+      "board_id": "board-nutanix",
+      "target_url": "https://careers.nutanix.com/en/jobs/?search=&country=India&team=Engineering&type=Full-Time&pagesize=20#results",
+      "family": "phenom",
+      "status": "reviewed",
+      "listing_count": 27,
+      "sample_job": {
+        "id": "phenom_card_0",
+        "title": "Phenom Role",
+        "canonical_url": "https://careers.nutanix.com/en/jobs/",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 46,
+      "board_name": "VMware",
+      "board_id": "board-vmware",
+      "target_url": "https://careers.smartrecruiters.com/Vmware2",
+      "family": "smartrecruiters",
+      "status": "reviewed",
+      "listing_count": 11,
+      "sample_job": {
+        "id": "86225624",
+        "title": "Specialist Sales Engineer - EUC",
+        "canonical_url": "https://jobs.smartrecruiters.com/Vmware2/86225624",
+        "location": "London, gb",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 47,
+      "board_name": "NVIDIA",
+      "board_id": "board-nvidia",
+      "target_url": "https://jobs.nvidia.com/careers?start=0&location=Hyderabad%2C++Telangana%2C++India&pid=893395509555&sort_by=distance&filter_distance=160&filter_include_remote=1&filter_include_relocation=0&filter_job_category=engineering",
+      "family": "eightfold",
+      "status": "reviewed",
+      "listing_count": 1,
+      "sample_job": {
+        "id": "eightfold_page",
+        "title": "NVIDIA Careers Page",
+        "canonical_url": "https://jobs.nvidia.com/careers?start=0&location=Hyderabad%2C++Telangana%2C++India&pid=893395509555&sort_by=distance&filter_distance=160&filter_include_remote=1&filter_include_relocation=0&filter_job_category=engineering",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 48,
+      "board_name": "Intel",
+      "board_id": "board-intel",
+      "target_url": "https://intel.wd1.myworkdayjobs.com/External?locations=1e4a4eb3adf101f44070f976bf8184cf&jobFamilyGroup=ace7a3d23b7e01a0544279031a0ec85c",
+      "family": "workday",
+      "status": "reviewed",
+      "listing_count": 9,
+      "sample_job": {
+        "id": "JR0286641",
+        "title": "Software Application Development Engineer",
+        "canonical_url": "https://intel.wd1.myworkdayjobs.com/en-US/External/job/India-Bangalore/Software-Application-Development-Engineer_JR0286641-1",
+        "location": "India, Bangalore",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 49,
+      "board_name": "Airbnb",
+      "board_id": "board-airbnb",
+      "target_url": "https://job-boards.greenhouse.io/airbnb",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 186,
+      "sample_job": {
+        "id": "7995153",
+        "title": "Acquisition Manager",
+        "canonical_url": "https://careers.airbnb.com/positions/7995153?gh_jid=7995153",
+        "location": "Berlin, Germany ",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 50,
+      "board_name": "Meesho",
+      "board_id": "board-meesho",
+      "target_url": "https://www.meesho.io/jobs?&t=Business%20Analytics,Backend,QA,Infrastructure,CTO%20Office,Data%20Engineering,Data%20Science,Demand,Frontend,Supply,Security",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 3,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://www.meesho.io/jobs",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 51,
+      "board_name": "Target",
+      "board_id": "board-target",
+      "target_url": "https://corporate.target.com/careers/job-search?currentPage=1&jobAreas=Target%20Tech&schedule=Full-time&country=India",
+      "family": "phenom",
+      "status": "reviewed",
+      "listing_count": 60,
+      "sample_job": {
+        "id": "phenom_card_0",
+        "title": "Phenom Role",
+        "canonical_url": "https://corporate.target.com/careers/job-search",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 52,
+      "board_name": "Goldman Sachs",
+      "board_id": "board-goldmansachs",
+      "target_url": "https://higher.gs.com/results?JOB_FUNCTION=Software%20Engineering&page=1&sort=POSTED_DATE",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 0,
+      "sample_job": {
+        "id": null,
+        "title": null,
+        "canonical_url": null,
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 53,
+      "board_name": "Morgan Stanley",
+      "board_id": "board-morganstanley",
+      "target_url": "https://morganstanley.eightfold.ai/careers?source=mscom&start=0&location=India&pid=549798643496&sort_by=distance&filter_include_remote=1&filter_include_relocation=0&filter_businessarea=technology&filter_employmenttype=full+time",
+      "family": "eightfold",
+      "status": "reviewed",
+      "listing_count": 1,
+      "sample_job": {
+        "id": "eightfold_page",
+        "title": "Morgan Stanley Careers Page",
+        "canonical_url": "https://morganstanley.eightfold.ai/careers?source=mscom&start=0&location=India&pid=549798643496&sort_by=distance&filter_include_remote=1&filter_include_relocation=0&filter_businessarea=technology&filter_employmenttype=full+time",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 54,
+      "board_name": "HSBC",
+      "board_id": "board-hsbc",
+      "target_url": "https://portal.careers.hsbc.com/careers?query=software&location=India&pid=563774612163818&domain=hsbc.com&sort_by=relevance&triggerGoButton=false",
+      "family": "eightfold",
+      "status": "reviewed",
+      "listing_count": 1,
+      "sample_job": {
+        "id": "eightfold_page",
+        "title": "HSBC Careers Page",
+        "canonical_url": "https://portal.careers.hsbc.com/careers?query=software&location=India&pid=563774612163818&domain=hsbc.com&sort_by=relevance&triggerGoButton=false",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 55,
+      "board_name": "BlackRock",
+      "board_id": "board-blackrock",
+      "target_url": "https://careers.blackrock.com/search-jobs/software/India/45831/1/2/1269750/22/79/0/2",
+      "family": "phenom",
+      "status": "reviewed",
+      "listing_count": 25,
+      "sample_job": {
+        "id": "phenom_card_0",
+        "title": "Phenom Role",
+        "canonical_url": "https://careers.blackrock.com/career-development",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 56,
+      "board_name": "UiPath",
+      "board_id": "board-uipath",
+      "target_url": "https://www.uipath.com/careers/jobs",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 10,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://www.uipath.com/careers/jobs",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 57,
+      "board_name": "Druva",
+      "board_id": "board-druva",
+      "target_url": "https://job-boards.greenhouse.io/druva",
+      "family": "greenhouse",
+      "status": "reviewed",
+      "listing_count": 37,
+      "sample_job": {
+        "id": "8626085002",
+        "title": "Account Executive, Endpoints",
+        "canonical_url": "https://www.druva.com/why-druva/explore/careers/jobs/8626085002/?gh_jid=8626085002",
+        "location": "London",
+        "india_eligible": false
+      },
+      "blocker": null
+    },
+    {
+      "number": 58,
+      "board_name": "Swiggy",
+      "board_id": "board-swiggy",
+      "target_url": "https://careers.swiggy.com/#/careers?career_page_category=Technology",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 0,
+      "sample_job": {
+        "id": null,
+        "title": null,
+        "canonical_url": null,
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 59,
+      "board_name": "Publicis Sapient",
+      "board_id": "board-publicissapient",
+      "target_url": "https://careers.publicissapient.com/job-search?q=&location_q=India&skipLocation=true&country=India&sortOrder=desc&teams=Technology+and+Engineering",
+      "family": "phenom",
+      "status": "reviewed",
+      "listing_count": 23,
+      "sample_job": {
+        "id": "phenom_card_0",
+        "title": "Phenom Role",
+        "canonical_url": "https://careers.publicissapient.com/job-search",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 60,
+      "board_name": "EPAM Systems",
+      "board_id": "board-epamsystems",
+      "target_url": "https://careers.epam.com/en/jobs/india?city=4060741400035606933&sort_by=relevance&specialization=developer&utm_content=job-search&utm_term=start-your-search-here",
+      "family": "custom",
+      "status": "reviewed",
+      "listing_count": 43,
+      "sample_job": {
+        "id": "custom_link_0",
+        "title": "Custom Role",
+        "canonical_url": "https://careers.epam.com/en/jobs/india",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 61,
+      "board_name": "TMUS",
+      "board_id": "board-tmus",
+      "target_url": "https://talent500.com/joblist/?company=TMUS+Global+Solutions&sort_by_created_date=1&offset=0&limit=20",
+      "family": "talent500",
+      "status": "reviewed",
+      "listing_count": 1,
+      "sample_job": {
+        "id": "t500_TMUS Global Solutions",
+        "title": "TMUS Global Solutions Jobs on Talent500",
+        "canonical_url": "https://talent500.com/joblist/?company=TMUS+Global+Solutions&sort_by_created_date=1&offset=0&limit=20",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 62,
+      "board_name": "Best Buy",
+      "board_id": "board-bestbuy",
+      "target_url": "https://talent500.com/joblist/?company=Best+Buy&sort_by_created_date=1&offset=0&limit=20",
+      "family": "talent500",
+      "status": "reviewed",
+      "listing_count": 1,
+      "sample_job": {
+        "id": "t500_Best Buy",
+        "title": "Best Buy Jobs on Talent500",
+        "canonical_url": "https://talent500.com/joblist/?company=Best+Buy&sort_by_created_date=1&offset=0&limit=20",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 63,
+      "board_name": "Evernorth",
+      "board_id": "board-evernorth",
+      "target_url": "https://talent500.com/joblist/?company=Evernorth&sort_by_created_date=1&offset=0&limit=20",
+      "family": "talent500",
+      "status": "reviewed",
+      "listing_count": 1,
+      "sample_job": {
+        "id": "t500_Evernorth",
+        "title": "Evernorth Jobs on Talent500",
+        "canonical_url": "https://talent500.com/joblist/?company=Evernorth&sort_by_created_date=1&offset=0&limit=20",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 64,
+      "board_name": "Marriott Tech",
+      "board_id": "board-marriotttech",
+      "target_url": "https://talent500.com/joblist/?company=Marriott+Tech+Accelerator&sort_by_created_date=1&offset=0&limit=20",
+      "family": "talent500",
+      "status": "reviewed",
+      "listing_count": 1,
+      "sample_job": {
+        "id": "t500_Marriott Tech Accelerator",
+        "title": "Marriott Tech Accelerator Jobs on Talent500",
+        "canonical_url": "https://talent500.com/joblist/?company=Marriott+Tech+Accelerator&sort_by_created_date=1&offset=0&limit=20",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    },
+    {
+      "number": 65,
+      "board_name": "McD",
+      "board_id": "board-mcd",
+      "target_url": "https://talent500.com/joblist/?company=McDonalds+in+India&sort_by_created_date=1&offset=0&limit=20",
+      "family": "talent500",
+      "status": "reviewed",
+      "listing_count": 1,
+      "sample_job": {
+        "id": "t500_McDonalds in India",
+        "title": "McDonalds in India Jobs on Talent500",
+        "canonical_url": "https://talent500.com/joblist/?company=McDonalds+in+India&sort_by_created_date=1&offset=0&limit=20",
+        "location": "India",
+        "india_eligible": true
+      },
+      "blocker": null
+    }
+  ]
+}

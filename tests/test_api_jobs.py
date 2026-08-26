@@ -84,3 +84,22 @@ async def test_retry_enrichment_endpoint_failure(client: AsyncClient, db_session
 async def test_retry_enrichment_endpoint_not_found(client: AsyncClient, db_session: AsyncSession):
     resp = await client.post("/api/v1/jobs/does-not-exist/retry-enrichment")
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_legacy_record_serialization_consistency(client: AsyncClient, db_session: AsyncSession):
+    board = await _make_board(db_session)
+    candidate = await _make_candidate(
+        db_session,
+        board,
+        location="London, UK",
+        india_eligible=None,
+        india_exclusion_reason=None,
+    )
+    resp = await client.get("/api/v1/jobs")
+    assert resp.status_code == 200
+    jobs = resp.json()
+    match = next((j for j in jobs if j["candidate_id"] == candidate.candidate_id), None)
+    assert match is not None
+    assert match["india_eligible"] is False
+    assert match["india_exclusion_reason"] == "NON_INDIA_LOCATION: London, UK"

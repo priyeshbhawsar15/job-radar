@@ -1,13 +1,13 @@
 {
-  "total": 2000,
+  "total": 13,
   "jobPostings": [
     {
-      "title": "Facilities Executive - Technical",
-      "externalPath": "/job/Gurugram-HR/Facilities-Executive---Technical_REQ509543",
-      "locationsText": "Gurugram, HR",
+      "title": "Software Engineer 2",
+      "externalPath": "/job/Bengaluru-KA/Software-Engineer-2_REQ506256",
+      "locationsText": "Bengaluru, KA",
       "timeType": null,
       "bulletFields": [
-        "REQ509543"
+        "REQ506256"
       ]
     }
   ]

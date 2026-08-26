@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 import pytest
 
@@ -10,25 +11,31 @@ from job_radar.services.detail_extractor import description_is_valid
 FIXTURES_DIR = Path("tests/fixtures")
 NEW_BOARDS = INITIAL_BOARDS[37:]
 
-# Map of board names to fixture relative path under tests/fixtures/
+GENERIC_TITLE_RE = re.compile(
+    r'^(.* Role|.* Position|Custom Role|Phenom Role|Zoho Careers Position)$',
+    re.IGNORECASE,
+)
+
+# Map of 45 reviewed new boards to fixture relative path under tests/fixtures/
 BOARD_FIXTURE_MAP = {
     "JLL": "workday/jll.json",
     "Razorpay": "greenhouse/razorpay.json",
-    "SOTI": "workday/soti.json",
     "Amgen": "workday/amgen.json",
     "Paytm": "lever/paytm.json",
     "Uber": "custom/uber.json",
+    "Gitlab": "greenhouse/gitlab.json",
     "GoDaddy": "greenhouse/godaddy.json",
     "PhonePe": "greenhouse/phonepe.json",
     "Buffer": "ashby/buffer.json",
     "Sourcegraph": "greenhouse/sourcegraph91.json",
-    "Zapier": "ashby/zapier.json",
-    "Remote.com": "greenhouse/remote.json",
+    "Automattic": "custom/automattic.json",
+    "Deel": "custom/deel.json",
     "Elastic": "custom/elastic.json",
     "Twilio": "greenhouse/twilio.json",
     "Supabase": "ashby/supabase.json",
     "Bitwarden": "greenhouse/bitwarden.json",
     "Camunda": "ashby/camunda.json",
+    "MailerLite": "custom/mailerlite.json",
     "Zoho": "zoho/zoho.json",
     "Postman": "greenhouse/postman.json",
     "BrowserStack": "workday/browserstack.json",
@@ -39,25 +46,30 @@ BOARD_FIXTURE_MAP = {
     "Snowflake": "phenom/snowflake.json",
     "Databricks": "greenhouse/databricks.json",
     "Okta": "greenhouse/okta.json",
+    "CrowdStrike": "workday/crowdstrike.json",
     "Coinbase": "greenhouse/coinbase.json",
     "Salesforce": "workday/salesforce.json",
     "SAP": "phenom/sap.json",
-    "Workday": "workday/workdaycorp.json",
+    "Intuit": "custom/intuit.json",
+    "Nutanix": "phenom/nutanix.json",
     "VMware": "smartrecruiters/vmware.json",
+    "NVIDIA": "eightfold/nvidia.json",
     "Intel": "workday/intel.json",
     "Airbnb": "greenhouse/airbnb.json",
     "Meesho": "custom/meesho.json",
+    "Target": "phenom/target.json",
+    "Goldman Sachs": "custom/goldmansachs.json",
+    "Morgan Stanley": "eightfold/morganstanley.json",
     "BlackRock": "phenom/blackrock.json",
-    "UiPath": "custom/uipath.json",
     "Druva": "greenhouse/druva.json",
-    "EPAM Systems": "custom/epam_systems.json",
+    "EPAM Systems": "custom/epamsystems.json",
 }
 
 
 def test_65_new_boards_inventory_totals():
     assert len(NEW_BOARDS) == 65
     assert len(INITIAL_BOARDS) == 102
-    assert len(BOARD_FIXTURE_MAP) == 39
+    assert len(BOARD_FIXTURE_MAP) == 45
     assert len(BLOCKED_BOARD_IDS) == 26
 
 
@@ -85,10 +97,17 @@ def test_reviewed_board_contract(board_tuple):
 
     for candidate in extracted:
         assert candidate.title and len(candidate.title) > 3, f"Invalid title '{candidate.title}' for {name}"
+        assert not GENERIC_TITLE_RE.match(candidate.title), f"Generic/placeholder title '{candidate.title}' forbidden for {name}"
         assert candidate.company == name, f"Mismatch company for {name}"
         assert candidate.raw_url.startswith("http"), f"Invalid raw_url '{candidate.raw_url}' for {name}"
         assert not candidate.raw_url.endswith(".css"), f"Canonical URL is a CSS asset for {name}"
         assert candidate.fingerprint, f"Candidate missing fingerprint for {name}"
+
+        # Assert substantive detail text exists in extra_payload or description
+        desc = candidate.extra_payload.get("description")
+        if desc:
+            assert len(desc) >= 200, f"Description too short (<200 chars) for candidate in {name}"
+            assert description_is_valid(desc, title=candidate.title), f"Invalid description quality for candidate in {name}"
 
         # Test India Gate classification
         is_eligible, reason = is_india_eligible(candidate.location)

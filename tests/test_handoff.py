@@ -52,7 +52,9 @@ async def test_transactional_outbox_processing(test_session_factory):
   assert outbox.state == "queued"
 
   # Force settings handoff enabled
-  with patch("job_radar.services.handoff.settings.HANDOFF_ENABLED", True), \
+  from job_radar.services.settings_store import AppSettingsModel
+  mock_settings = AppSettingsModel(handoff_enabled=True)
+  with patch("job_radar.services.handoff.load_settings", return_value=mock_settings), \
        patch.object(mock_client, "push_candidate", new_callable=AsyncMock) as mock_push:
 
     mock_push.return_value = True
@@ -65,3 +67,47 @@ async def test_transactional_outbox_processing(test_session_factory):
     res = await session.execute(select(HandoffOutbox).where(HandoffOutbox.outbox_id == outbox.outbox_id))
     rec = res.scalar_one()
     assert rec.state == "accepted"
+
+
+@pytest.mark.asyncio
+async def test_handoff_disabled_absolute_zero_http_calls(test_session_factory, monkeypatch):
+  class FailOnCallClient(JobOpsClient):
+    async def _ensure_token(self, client):
+      raise AssertionError("JobOps _ensure_token must NOT be called when handoff is disabled")
+
+    async def push_candidate(self, candidate_data):
+      # Should be caught by push_candidate's handoff_enabled check before any HTTP call
+      return await super().push_candidate(candidate_data)
+
+  fail_client = FailOnCallClient(endpoint="http://mock-jobops.local/api")
+  processor = HandoffProcessor(session_factory=test_session_factory, jobops_client=fail_client)
+
+  # Setup board & candidate in DB
+  async with test_session_factory() as session:
+    board = Board(board_id="board-02", name="Stripe", family="greenhouse", status="active")
+    cand = CandidateJob(
+      candidate_id="cand-02",
+      board_id="board-02",
+      identity_key="id_02",
+      canonical_url_hash="hash_02",
+      title="Staff Engineer",
+      company="Stripe",
+      public_apply_url="https://stripe.com/jobs/2"
+    )
+    session.add(board)
+    session.add(cand)
+    await session.commit()
+
+  await processor.enqueue_candidate_handoff(candidate_id="cand-02")
+
+  # Even if environment variable HANDOFF_ENABLED is True, stored handoff_enabled=False is authoritative
+  monkeypatch.setenv("HANDOFF_ENABLED", "true")
+  from job_radar.services.settings_store import AppSettingsModel
+  disabled_settings = AppSettingsModel(handoff_enabled=False)
+
+  with patch("job_radar.services.handoff.load_settings", return_value=disabled_settings):
+    processed = await processor.process_pending_outbox()
+    assert processed == 0, "Zero outbox items must be processed when stored handoff_enabled=False"
+
+    with pytest.raises(RuntimeError, match="JobOps handoff is disabled in settings"):
+      await fail_client.push_candidate({"job": {}})

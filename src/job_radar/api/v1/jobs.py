@@ -25,6 +25,12 @@ def _serialize_job(j: CandidateJob, job_ops_status: Optional[str] = None) -> dic
                 state = j.handoff_outbox.state
         except Exception:
             state = "untracked"
+    if getattr(j, "india_eligible", None) is not None:
+        elig = j.india_eligible
+        reason = j.india_exclusion_reason
+    else:
+        elig, reason = is_india_eligible(j.location)
+
     return {
         "candidate_id": j.candidate_id,
         "board_id": j.board_id,
@@ -45,8 +51,8 @@ def _serialize_job(j: CandidateJob, job_ops_status: Optional[str] = None) -> dic
         "observation_outcome": getattr(j, "observation_outcome", "discovered"),
         "detail_enrichment_status": j.detail_enrichment_status,
         "detail_enrichment_error_code": j.detail_enrichment_error_code,
-        "india_eligible": j.india_eligible if hasattr(j, "india_eligible") and j.india_eligible is not None else is_india_eligible(j.location)[0],
-        "india_exclusion_reason": j.india_exclusion_reason if hasattr(j, "india_exclusion_reason") else is_india_eligible(j.location)[1],
+        "india_eligible": elig,
+        "india_exclusion_reason": reason,
         "job_ops_status": state or "untracked",
     }
 

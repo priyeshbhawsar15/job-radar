@@ -16,7 +16,7 @@ from job_radar.services.detail_extractor import detail_extractor, description_is
 from job_radar.services.detail_contracts import DetailResult
 from job_radar.services.location import is_india_eligible
 from job_radar.services.oracle_detail import extract_oracle_public_id
-from job_radar.services.handoff import handoff_processor
+from job_radar.services.handoff import HandoffProcessor, handoff_processor
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ class NormalizationService:
                 )
                 existing_job = res.scalars().first()
 
-                loc = (item.location.strip() if item.location else "India")[:200]
+                loc = (item.location.strip()[:200] if item.location and item.location.strip() else None)
                 is_elig, elig_reason = is_india_eligible(loc)
                 emp_type = (item.employment_type.strip() if item.employment_type else "Full-time")[:200]
                 dept = (item.department.strip() if item.department else "Engineering")[:200]
@@ -180,7 +180,8 @@ class NormalizationService:
                     cand_loc = cand.location if cand else None
                 is_eligible, reason = is_india_eligible(cand_loc)
                 if is_eligible:
-                    await handoff_processor.enqueue_candidate_handoff(c_id)
+                    processor = HandoffProcessor(session_factory=self.session_factory)
+                    await processor.enqueue_candidate_handoff(c_id)
                 else:
                     logger.info(f"Skipping handoff for candidate {c_id}: excluded by India gate ({reason})")
             except Exception as h_err:
@@ -246,7 +247,8 @@ class NormalizationService:
                                 try:
                                     is_eligible, reason = is_india_eligible(job.location)
                                     if is_eligible:
-                                        await handoff_processor.enqueue_candidate_handoff(cand_id)
+                                        processor = HandoffProcessor(session_factory=self.session_factory)
+                                        await processor.enqueue_candidate_handoff(cand_id)
                                     else:
                                         logger.info(f"Skipping handoff for candidate {cand_id} post-enrichment: excluded by India gate ({reason})")
                                 except Exception as h_err:

@@ -1,17 +1,18 @@
 {
   "content": [
     {
-      "id": "86225624",
-      "name": "Specialist Sales Engineer - EUC",
+      "id": "83557431",
+      "name": "Sr. Technical Support Engineer",
       "location": {
-        "city": "London",
-        "region": "England",
-        "country": "gb",
+        "city": "Bengaluru",
+        "region": "KA",
+        "country": "in",
+        "address": "Bengaluru, Karnataka, India",
         "remote": false,
         "hybrid": false,
-        "latitude": "51.5073509",
-        "longitude": "-0.12775829999998223",
-        "fullLocation": "London, England, United Kingdom"
+        "latitude": "12.9715987",
+        "longitude": "77.59456269999998",
+        "fullLocation": "Bengaluru, KA, India"
       },
       "typeOfEmployment": {
         "id": "permanent",

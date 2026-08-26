@@ -409,3 +409,48 @@ async def test_detail_title_replacement_persistence_invariants(test_session_fact
         assert job2.title == "Lead Software Engineer - Sales"
         assert job2.identity_key == initial_identity_key
         assert job2.canonical_url_hash == initial_url_hash
+
+
+@pytest.mark.asyncio
+async def test_missing_location_preservation_and_outbox_queueing(test_session_factory):
+    from job_radar.db.models.handoff import HandoffOutbox
+    valid_test_description = (
+        "<p>Responsibilities include building backend services for software processing systems across multiple domains.</p>\n"
+        "<p>Qualifications include 5+ years experience in Java and Python microservices and distributed systems.</p>\n"
+        "<p>Requirements include strong knowledge of SQL databases and async performance tuning.</p>"
+    )
+
+    mock_extractor = AsyncMock()
+    mock_extractor.fetch_and_enrich.return_value = DetailResult.empty(error_code="description_missing")
+    norm_svc = NormalizationService(session_factory=test_session_factory, detail_extractor=mock_extractor)
+
+    async with test_session_factory() as session:
+        board = Board(board_id="board-noloc", name="NoLocCorp", family="ashby", status="active")
+        p_run = PipelineRun(pipeline_id="p-noloc", trigger="manual", status="running")
+        b_run = BoardRun(board_run_id="br-noloc", pipeline_id="p-noloc", board_id="board-noloc", stage="running", outcome="in_progress")
+        session.add_all([board, p_run, b_run])
+        await session.commit()
+
+    candidate = ExtractedCandidate(
+        title="Remote Systems Architect",
+        company="NoLocCorp",
+        location=None,
+        raw_url="https://jobs.ashbyhq.com/noloc/101",
+        fingerprint="fp_noloc_101",
+        extra_payload={"description": valid_test_description}
+    )
+
+    res = await norm_svc.ingest_candidates("board-noloc", "br-noloc", [candidate], family="ashby")
+    assert res.created_count == 1
+
+    async with test_session_factory() as session:
+        db_res = await session.execute(select(CandidateJob).where(CandidateJob.board_id == "board-noloc"))
+        job = db_res.scalar_one()
+        assert job.location is None, f"Expected location to be preserved as None, got '{job.location}'"
+        assert job.india_eligible is True
+        assert job.india_exclusion_reason is None
+
+        outbox_res = await session.execute(select(HandoffOutbox).where(HandoffOutbox.candidate_id == job.candidate_id))
+        outbox_entry = outbox_res.scalar_one_or_none()
+        assert outbox_entry is not None, "Candidate with missing location must have handoff outbox row queued"
+        assert outbox_entry.state == "queued"

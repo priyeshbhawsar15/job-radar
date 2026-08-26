@@ -1,13 +1,13 @@
 {
-  "total": 33,
+  "total": 3,
   "jobPostings": [
     {
-      "title": "Associate - Deal Desk (Night Shift)",
-      "externalPath": "/job/Mumbai-Remote/Associate---Deal-Desk--Night-Shift-_JR103615",
-      "locationsText": "Mumbai Remote",
+      "title": "Engineering Manager",
+      "externalPath": "/job/Mumbai---WFO/Engineering-Manager_JR103577",
+      "locationsText": "Mumbai - WFO",
       "timeType": null,
       "bulletFields": [
-        "JR103615"
+        "JR103577"
       ]
     }
   ]

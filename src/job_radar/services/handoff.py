@@ -56,7 +56,7 @@ class JobOpsClient:
 
     async def push_candidate(self, candidate_data: Dict[str, Any]) -> bool:
         stored = load_settings()
-        is_enabled = stored.handoff_enabled or settings.HANDOFF_ENABLED
+        is_enabled = stored.handoff_enabled
         if not is_enabled:
             logger.warning("JobOps handoff disabled in settings. Refusing outbound dispatch call.")
             raise RuntimeError("JobOps handoff is disabled in settings.")
@@ -115,7 +115,7 @@ class HandoffProcessor:
 
     async def process_pending_outbox(self, max_batch: Optional[int] = None, loop_until_empty: bool = True) -> int:
         stored = load_settings()
-        is_enabled = stored.handoff_enabled or settings.HANDOFF_ENABLED
+        is_enabled = stored.handoff_enabled
         if not is_enabled:
             logger.debug("Handoff feature disabled in settings. Skipping outbox processing.")
             return 0

@@ -1,14 +1,13 @@
 {
-  "total": 619,
+  "total": 9,
   "jobPostings": [
     {
-      "title": "Experienced Manufacturing Technician",
-      "externalPath": "/job/Ireland-Leixlip/Manufacturing-Technician_JR0284458",
-      "locationsText": "Ireland, Leixlip",
+      "title": "Software Application Development Engineer",
+      "externalPath": "/job/India-Bangalore/Software-Application-Development-Engineer_JR0286641-1",
+      "locationsText": "India, Bangalore",
       "timeType": null,
       "bulletFields": [
-        "Spotlight Job",
-        "JR0284458"
+        "JR0286641"
       ]
     }
   ]

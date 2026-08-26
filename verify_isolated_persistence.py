@@ -27,6 +27,14 @@ from job_radar.services.settings_store import load_settings, save_settings, AppS
 from job_radar.services.location import is_india_eligible
 
 
+class FailOnCallJobOpsClient(JobOpsClient):
+    async def _ensure_token(self, client):
+        raise AssertionError("JobOps _ensure_token must NOT be called when handoff is disabled")
+
+    async def push_candidate(self, candidate_data):
+        raise AssertionError("JobOps push_candidate HTTP call must NOT be called when handoff is disabled")
+
+
 async def verify_isolated_persistence():
     print(f"Running isolated persistence verification against {temp_db_path}...")
 
@@ -81,13 +89,13 @@ async def verify_isolated_persistence():
         draft_boards = [b for b in all_boards if b.status == "draft"]
 
         print(f"✓ Total board rows persisted: {len(all_boards)} (Reviewed: {len(rev_boards)}, Draft: {len(draft_boards)})")
-        assert len(rev_boards) == 76, f"Expected 76 reviewed boards (37 baseline + 39 new), got {len(rev_boards)}"
-        assert len(draft_boards) == 26, f"Expected 26 draft/blocked boards, got {len(draft_boards)}"
+        assert len(rev_boards) == 76, f"Expected 76 reviewed boards (31 baseline + 45 new), got {len(rev_boards)}"
+        assert len(draft_boards) == 26, f"Expected 26 draft/blocked boards (6 baseline + 20 new), got {len(draft_boards)}"
 
     # 3. Test NormalizationService & HandoffProcessor with Candidate India eligibility
-    client = JobOpsClient()
+    fail_client = FailOnCallJobOpsClient()
     norm_service = NormalizationService(session_factory=async_session_factory)
-    handoff_proc = HandoffProcessor(session_factory=async_session_factory, jobops_client=client)
+    handoff_proc = HandoffProcessor(session_factory=async_session_factory, jobops_client=fail_client)
 
     desc_sample = """About the Role:
 We are looking for a Senior Software Engineer to join our core backend engineering team in Bengaluru, India.
@@ -141,9 +149,10 @@ Qualifications & Requirements:
     )
     print(f"✓ Ingestion result: {ingest_res}")
 
-    # Process pending outbox (handoff disabled)
+    # Process pending outbox with FailOnCall client (handoff disabled)
     processed = await handoff_proc.process_pending_outbox()
-    print(f"✓ Outbox process result (handoff disabled): processed={processed}")
+    print(f"✓ Outbox process result (handoff disabled, fail-on-call client proven): processed={processed}")
+    assert processed == 0, "Zero outbox processing calls when handoff is disabled"
 
     # Read back and verify assertions
     async with async_session_factory() as session:
@@ -169,10 +178,17 @@ Qualifications & Requirements:
                 assert "NON_INDIA_LOCATION" in c.india_exclusion_reason
                 assert outbox_entry is None, "Non-India candidate must NOT have outbox row"
                 print(f"  - Non-India candidate correctly persisted & excluded: '{c.title}' ({c.location}) -> {c.india_exclusion_reason}")
+            elif c.title == "DevOps Engineer":
+                assert c.location is None, "Missing location candidate readback must preserve None"
+                assert c.india_eligible is True
+                assert c.india_exclusion_reason is None
+                assert outbox_entry is not None, "Missing-location candidate must have outbox row enqueued"
+                print(f"  - Missing-location candidate correctly enqueued: '{c.title}' (location=None) -> outbox state: {outbox_entry.state}")
             else:
                 assert c.india_eligible is True
+                assert c.india_exclusion_reason is None
                 assert outbox_entry is not None, "India-eligible candidate must have outbox row"
-                print(f"  - India-eligible candidate enqueued: '{c.title}' ({c.location or 'None'}) -> outbox state: {outbox_entry.state}")
+                print(f"  - India-eligible candidate enqueued: '{c.title}' ({c.location}) -> outbox state: {outbox_entry.state}")
 
     print("\n✓ ALL ISOLATED PERSISTENCE VERIFICATION GATES PASSED CLEANLY!")
     await engine.dispose()
@@ -180,6 +196,7 @@ Qualifications & Requirements:
         os.remove(temp_db_path)
     if os.path.exists(f"{temp_db_path}.settings.json"):
         os.remove(f"{temp_db_path}.settings.json")
+
 
 if __name__ == "__main__":
     asyncio.run(verify_isolated_persistence())

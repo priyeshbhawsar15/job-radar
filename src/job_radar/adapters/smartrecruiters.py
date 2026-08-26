@@ -26,7 +26,7 @@ class SmartRecruitersAdapter(BaseAdapter):
         try:
             data = json.loads(payload)
             jobs = data.get("content", []) if isinstance(data, dict) else (data if isinstance(data, list) else [])
-            
+
             for item in jobs:
                 title = item.get("name", "").strip()
                 if not title:

@@ -5,11 +5,11 @@ from typing import Optional, Tuple, Set
 
 INDIAN_LOCATION_KEYWORDS: Set[str] = {
     "india", "bengaluru", "bangalore", "hyderabad", "gurgaon",
-    "gurugram", "noida", "pune", "chennai", "mumbai", "delhi", "new delhi", 
-    "ncr", "ahmedabad", "kolkata", "jaipur", "indore", "kochi", "cochin", 
-    "trivandrum", "thiruvananthapuram", "chandigarh", "mohali", "coimbatore", 
-    "vadodara", "surat", "nagpur", "bhubaneswar", "karnataka", "telangana", 
-    "maharashtra", "haryana", "tamil nadu", "kerala", "uttar pradesh", 
+    "gurugram", "noida", "pune", "chennai", "mumbai", "delhi", "new delhi",
+    "ncr", "ahmedabad", "kolkata", "jaipur", "indore", "kochi", "cochin",
+    "trivandrum", "thiruvananthapuram", "chandigarh", "mohali", "coimbatore",
+    "vadodara", "surat", "nagpur", "bhubaneswar", "karnataka", "telangana",
+    "maharashtra", "haryana", "tamil nadu", "kerala", "uttar pradesh",
     "gujarat", "rajasthan", "punjab", "west bengal", "odisha"
 }
 

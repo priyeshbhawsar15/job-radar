@@ -224,7 +224,7 @@ async def probe_greenhouse(name: str, slug: str, client: httpx.AsyncClient) -> D
     desc_clean = clean_html_text(desc_html)
 
     valid_detail, sem_checks, blocker = evaluate_detail_text(desc_clean)
-    
+
     # Save sanitized fixture if valid
     if valid_detail:
         fix_dir = FIXTURES_DIR / "greenhouse"
@@ -582,7 +582,7 @@ async def main():
     logger.info("Initializing standalone canary probe runner...")
     browser = BrowserServiceClient()
     verification_records = []
-    
+
     passed_count = 0
     draft_count = 0
 
@@ -619,7 +619,7 @@ async def main():
                     job_links = list(set(re.findall(r'href=["\']([^"\']*/job/[^"\']+)["\']', html_content, re.I)))
                     if not job_links:
                         job_links = list(set(re.findall(r'href=["\']([^"\']*/search-jobs/[^"\']+)["\']', html_content, re.I)))
-                    
+
                     if not job_links:
                         res = {"status": "failed", "count": 0, "blocker": "Phenom board page returned 0 job links via browser"}
                     else:
@@ -627,7 +627,7 @@ async def main():
                         if sample_url.startswith("/"):
                             parsed = urllib.parse.urlparse(target_url)
                             sample_url = f"https://{parsed.netloc}{sample_url}"
-                        
+
                         slug_parts = sample_url.rstrip("/").split("/")
                         sample_id = slug_parts[-2] if len(slug_parts) >= 2 and slug_parts[-2].isdigit() else slug_parts[-1]
                         sample_title = slug_parts[-1].replace("-", " ").title()

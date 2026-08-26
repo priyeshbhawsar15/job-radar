@@ -44,6 +44,7 @@ Each linked document provides:
 | **Plane** | `ashbyhq` | [[20 Projects/Job Radar/Adapters/[Adapter] Ashby\|[Adapter] Ashby]] |
 | **Qualcomm** | `eightfold` | [[20 Projects/Job Radar/Adapters/[Adapter] Eightfold\|[Adapter] Eightfold]] |
 | **RBCTech** | `stratsy` | [[20 Projects/Job Radar/Adapters/[Adapter] Stratsy\|[Adapter] Stratsy]] |
+| **Regal Rexnord** | `workday` | [[20 Projects/Job Radar/Adapters/[Adapter] Workday\|[Adapter] Workday]] |
 | **Resilinc** | `lever` | [[20 Projects/Job Radar/Adapters/[Adapter] Lever\|[Adapter] Lever]] |
 | **Solera** | `workday` | [[20 Projects/Job Radar/Adapters/[Adapter] Workday\|[Adapter] Workday]] |
 | **Tesco** | `avature` | [[20 Projects/Job Radar/Adapters/[Adapter] Avature\|[Adapter] Avature]] |

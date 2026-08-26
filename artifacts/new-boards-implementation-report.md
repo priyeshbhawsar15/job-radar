@@ -1,11 +1,11 @@
 # New Job Boards Hardening & Verification Report
 
 ## Executive Summary
-- **Total Target Boards**: 65
-- **Reviewed & Enabled Boards**: 27
-- **Draft / Blocked Boards**: 38
+- **Total Target Boards**: 66
+- **Reviewed & Enabled Boards**: 33
+- **Draft / Blocked Boards**: 33
 - **Baseline Draft Boards**: 6
-- **Total System Draft Boards**: 44
+- **Total System Draft Boards**: 39
 
 ## Verification Records Matrix
 
@@ -76,12 +76,13 @@
 | 63 | `board-evernorth` | Evernorth | `talent500` | passed | passed | passed | passed | **reviewed** | - |
 | 64 | `board-marriotttech` | Marriott Tech | `talent500` | passed | passed | passed | passed | **reviewed** | - |
 | 65 | `board-mcd` | McD | `talent500` | passed | passed | passed | passed | **reviewed** | - |
+| 66 | `board-regalrexnord` | Regal Rexnord | `workday` | passed | passed | passed | passed | **reviewed** | - |
 
 ## Production Compliance Certification
 - [x] Zero hardcoded location fallbacks to 'India'. Source location preserved or None.
 - [x] Separate tracking and reporting for Live Canary Probe vs Production Adapter execution.
 - [x] All 38 unproven/generic/failed boards demoted to draft with explicit blockers.
 - [x] Fixture files purged for all draft boards.
-- [x] 32 verified production-ready boards backed by concrete family parser adapters.
+- [x] 33 verified production-ready boards backed by concrete family parser adapters.
 - [x] Single Alembic migration head preserved.
 - [x] Isolated persistence verification passed without Job Ops side effects.

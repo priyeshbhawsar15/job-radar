@@ -2488,5 +2488,48 @@
     "status": "reviewed",
     "enabled": true,
     "blocker": null
+  },
+  {
+    "board_id": "board-regalrexnord",
+    "name": "Regal Rexnord",
+    "family": "workday",
+    "target_url": "https://regalrexnord.wd1.myworkdayjobs.com/en-US/Careers?locationCountry=c4f78be1a8f14da0ab49ce1162348a5e",
+    "canary_status": "passed",
+    "prod_adapter_status": "passed",
+    "listing_status": "passed",
+    "listing_count": 30,
+    "sample_id": "R26_04268",
+    "sample_title": ".Net Backend Engineer",
+    "sample_location": "Hyderabad, Telangana, India",
+    "sample_canonical_url": "https://regalrexnord.wd1.myworkdayjobs.com/en-US/Careers/job/Hyderabad-Telangana-India/XMLNAME-Net-Backend-Engineer_R26_04268",
+    "detail_status": "passed",
+    "detail_source": "workday_cxs_api",
+    "detail_length": 3088,
+    "semantic_checks": {
+      "has_responsibilities_or_qualifications": true,
+      "valid_description_length": true,
+      "non_shell": true
+    },
+    "pagination_checks": {
+      "tested": true,
+      "total_available": 30,
+      "pages_fetched": 2,
+      "jobs_extracted": 30,
+      "deduped": true
+    },
+    "filter_checks": {
+      "tested": true,
+      "applied_facets": {
+        "locationCountry": [
+          "c4f78be1a8f14da0ab49ce1162348a5e"
+        ]
+      },
+      "filtered_total_count": 30,
+      "location_preserved": true,
+      "india_eligible": true
+    },
+    "status": "reviewed",
+    "enabled": true,
+    "blocker": null
   }
 ]

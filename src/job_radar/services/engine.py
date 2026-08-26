@@ -128,8 +128,12 @@ class PipelineExecutionEngine:
 
         all_candidates: List[ExtractedCandidate] = []
         seen_keys: set[str] = set()
+        seen_cursors: set[str] = set()
         offset = initial_offset
         page = 0
+
+        search_after_param = query_params.get("search_after", [None])[0]
+        search_after: Optional[Any] = search_after_param
 
         async with httpx.AsyncClient(timeout=15.0) as client:
             while page < max_pages:
@@ -140,6 +144,22 @@ class PipelineExecutionEngine:
                     "limit": str(limit),
                     "is_leadership_job": is_leadership_job
                 }
+
+                if page > 0:
+                    if not search_after:
+                        # Without cursor on page > 0, Talent500 ignores offset alone and repeats page 1
+                        break
+                    cursor_str = json.dumps(search_after) if not isinstance(search_after, str) else search_after
+                    if cursor_str in seen_cursors:
+                        # Cursor repeated; stop safely
+                        break
+                    params["search_after"] = cursor_str
+                    seen_cursors.add(cursor_str)
+                elif search_after:
+                    cursor_str = json.dumps(search_after) if not isinstance(search_after, str) else search_after
+                    params["search_after"] = cursor_str
+                    seen_cursors.add(cursor_str)
+
                 api_url = "https://prod-warmachine.talent500.co/api/v3/jobs/search/"
                 try:
                     resp = await client.get(api_url, params=params, headers=headers)
@@ -159,16 +179,24 @@ class PipelineExecutionEngine:
                     payload_json = resp.json()
                     total = payload_json.get("total", 0)
                     items_len = len(payload_json.get("data", []))
+                    next_cursor = payload_json.get("search_after")
                 except Exception:
                     total = 0
                     items_len = len(cands)
+                    next_cursor = None
 
+                new_count_on_page = 0
                 for cand in cands:
                     dedup_key = cand.extra_payload.get("talent500_id") or cand.raw_url
                     if dedup_key in seen_keys:
                         continue
                     seen_keys.add(dedup_key)
                     all_candidates.append(cand)
+                    new_count_on_page += 1
+
+                if new_count_on_page == 0:
+                    # Page IDs repeat; stop safely
+                    break
 
                 if items_len < limit:
                     break
@@ -177,6 +205,7 @@ class PipelineExecutionEngine:
                 if total > 0 and offset >= total:
                     break
 
+                search_after = next_cursor
                 page += 1
 
         return all_candidates

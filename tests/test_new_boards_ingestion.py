@@ -50,13 +50,14 @@ BOARD_FIXTURE_MAP = {
     "Evernorth": "talent500/evernorth.json",
     "Marriott Tech": "talent500/marriotttech.json",
     "McD": "talent500/mcd.json",
+    "Regal Rexnord": "workday/regalrexnord.json",
 }
 
 
-def test_65_new_boards_inventory_totals():
-    assert len(NEW_BOARDS) == 65
-    assert len(INITIAL_BOARDS) == 102
-    assert len(BOARD_FIXTURE_MAP) == 32
+def test_66_new_boards_inventory_totals():
+    assert len(NEW_BOARDS) == 66
+    assert len(INITIAL_BOARDS) == 103
+    assert len(BOARD_FIXTURE_MAP) == 33
     assert len(BLOCKED_BOARD_IDS) == 39
 
 

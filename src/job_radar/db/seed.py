@@ -7,7 +7,7 @@ from job_radar.db.models.candidate import CandidateJob, RunCandidate
 from job_radar.db.models.run import PipelineRun, BoardRun, RunRequest, ExecutionAttempt
 from job_radar.db.models.handoff import HandoffOutbox, HandoffAttempt
 
-# Baseline 37 Boards + 65 New Boards (Total 102 Boards)
+# Baseline 37 Boards + 66 New Boards (Total 103 Boards)
 INITIAL_BOARDS = [
     # --- Baseline Boards ---
     ("board-abnormalai", "Abnormal AI", "custom", "https://abnormal.ai/careers/open-roles?location=Hybrid+-+Bangalore%2C+India&category=Engineering"),
@@ -145,6 +145,7 @@ INITIAL_BOARDS = [
     ("board-evernorth", "Evernorth", "talent500", "https://talent500.com/joblist/?company=Evernorth&sort_by_created_date=1&offset=0&limit=20"),
     ("board-marriotttech", "Marriott Tech", "talent500", "https://talent500.com/joblist/?company=Marriott+Tech+Accelerator&sort_by_created_date=1&offset=0&limit=20"),
     ("board-mcd", "McD", "talent500", "https://talent500.com/joblist/?company=McDonalds+in+India&sort_by_created_date=1&offset=0&limit=20"),
+    ("board-regalrexnord", "Regal Rexnord", "workday", "https://regalrexnord.wd1.myworkdayjobs.com/en-US/Careers?locationCountry=c4f78be1a8f14da0ab49ce1162348a5e"),
 ]
 
 BLOCKED_BOARD_IDS = {

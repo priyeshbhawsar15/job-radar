@@ -1,7 +1,7 @@
 # [Adapter] Workday
 
 - **Family ID:** `workday`
-- **Target Boards:** Adobe, Walmart, Cisco, Solera, Motorola Solutions, eBay, EisnerAmper, JioStar, Thomson Reuters, TP, JLL, SOTI, Amgen.
+- **Target Boards:** Adobe, Walmart, Cisco, Solera, Motorola Solutions, eBay, EisnerAmper, JioStar, Thomson Reuters, TP, JLL, SOTI, Amgen, Regal Rexnord.
 
 ---
 

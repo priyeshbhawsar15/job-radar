@@ -79,17 +79,17 @@ async def verify_isolated_persistence():
 
         await session.commit()
 
-    # Read back 102 board rows and counts
+    # Read back 103 board rows and counts
     async with async_session_factory() as session:
         b_res = await session.execute(select(Board))
         all_boards = b_res.scalars().all()
-        assert len(all_boards) == 102, f"Expected 102 boards, got {len(all_boards)}"
+        assert len(all_boards) == 103, f"Expected 103 boards, got {len(all_boards)}"
 
         rev_boards = [b for b in all_boards if b.status in ("reviewed", "active", "enabled")]
         draft_boards = [b for b in all_boards if b.status == "draft"]
 
         print(f"✓ Total board rows persisted: {len(all_boards)} (Reviewed: {len(rev_boards)}, Draft: {len(draft_boards)})")
-        assert len(rev_boards) == 63, f"Expected 63 reviewed boards (31 baseline + 32 new), got {len(rev_boards)}"
+        assert len(rev_boards) == 64, f"Expected 64 reviewed boards (31 baseline + 33 new), got {len(rev_boards)}"
         assert len(draft_boards) == 39, f"Expected 39 draft/blocked boards (6 baseline + 33 new), got {len(draft_boards)}"
 
     # 3. Test NormalizationService & HandoffProcessor with Candidate India eligibility

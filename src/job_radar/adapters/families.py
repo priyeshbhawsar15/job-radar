@@ -168,6 +168,9 @@ class GreenhouseAdapter(BaseAdapter):
                 if departments and isinstance(departments, list):
                     dept = departments[0].get("name", "")
 
+                meta = item.get("metadata")
+                emp_type = meta.get("employment_type") if isinstance(meta, dict) else None
+
                 fp = generate_fingerprint(board_name, title, location_str)
                 results.append(
                     ExtractedCandidate(
@@ -175,7 +178,7 @@ class GreenhouseAdapter(BaseAdapter):
                         company=board_name,
                         location=location_str or None,
                         department=dept or None,
-                        employment_type=item.get("metadata", {}).get("employment_type"),
+                        employment_type=emp_type,
                         raw_url=raw_url,
                         fingerprint=fp,
                         extra_payload={"greenhouse_id": item.get("id")}
@@ -606,7 +609,9 @@ class PhenomAdapter(BaseAdapter):
                 continue
 
             parsed_url = urlparse(full_url)
-            if parsed_url.scheme != "https" or parsed_url.netloc != parsed_target.netloc:
+            target_domain = '.'.join(parsed_target.netloc.split('.')[-2:]) if '.' in parsed_target.netloc else parsed_target.netloc
+            url_domain = '.'.join(parsed_url.netloc.split('.')[-2:]) if '.' in parsed_url.netloc else parsed_url.netloc
+            if parsed_url.scheme != "https" or url_domain != target_domain:
                 continue
 
             path_match = re.search(r'/job/(\d+)/([^/?#]+)', parsed_url.path)

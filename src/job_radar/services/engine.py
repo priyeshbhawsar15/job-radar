@@ -70,6 +70,89 @@ class PipelineExecutionEngine:
         self.session_factory = session_factory
         self.browser_client = BrowserServiceClient()
 
+    async def fetch_smartrecruiters_candidates(
+        self,
+        target_url: str,
+        board_name: str,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        """Fetch SmartRecruiters job postings directly from SmartRecruiters API."""
+        parsed = urllib.parse.urlparse(target_url)
+        company_slug = parsed.path.strip("/").split("/")[0]
+        api_url = f"https://api.smartrecruiters.com/v1/companies/{company_slug}/postings"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+
+        adapter = adapter_registry.get("smartrecruiters")
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(api_url, headers=headers)
+            if resp.status_code == 200:
+                return adapter.parse_raw_payload(resp.text, board_name, target_url, selector_config)
+        return []
+
+    async def fetch_talent500_candidates(
+        self,
+        target_url: str,
+        board_name: str,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        """Fetch Talent500 job postings via API or HTML page parsing."""
+        parsed = urllib.parse.urlparse(target_url)
+        query_params = urllib.parse.parse_qs(parsed.query)
+        company = query_params.get("company", [""])[0]
+
+        adapter = adapter_registry.get("talent500")
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            if company:
+                api_url = f"https://prod-warmachine.talent500.co/api/joblist/?company={urllib.parse.quote(company)}"
+                resp = await client.get(api_url, headers=headers)
+                if resp.status_code == 200 and "application/json" in resp.headers.get("content-type", ""):
+                    cands = adapter.parse_raw_payload(resp.text, board_name, target_url, selector_config)
+                    if cands:
+                        return cands
+
+            resp_html = await client.get(target_url, headers=headers, follow_redirects=True)
+            if resp_html.status_code == 200:
+                return adapter.parse_raw_payload(resp_html.text, board_name, target_url, selector_config)
+
+        return []
+
+    async def fetch_greenhouse_candidates(
+        self,
+        target_url: str,
+        board_name: str,
+        selector_config: Optional[Dict[str, Any]] = None
+    ) -> List[ExtractedCandidate]:
+        """Fetch Greenhouse job postings directly from Greenhouse JSON API."""
+        adapter = adapter_registry.get("greenhouse")
+        slug = None
+        if "boards-api.greenhouse.io" in target_url:
+            m = re.search(r"/boards/([^/]+)/jobs", target_url)
+            if m: slug = m.group(1)
+        elif "greenhouse.io" in target_url:
+            parsed = urllib.parse.urlparse(target_url)
+            slug = parsed.path.strip("/").split("/")[0]
+
+        if not slug and "godaddy" in target_url.lower():
+            slug = "godaddy"
+
+        if slug:
+            api_url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true"
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                try:
+                    resp = await client.get(api_url, headers=headers)
+                    if resp.status_code == 200:
+                        cands = adapter.parse_raw_payload(resp.text, board_name, target_url, selector_config)
+                        if cands:
+                            return cands
+                except Exception as e:
+                    logger.info(f"Greenhouse API error for {board_name}: {e}")
+
+        raw_payload = await self.browser_client.fetch_board_html(target_url, target_url)
+        return adapter.parse_raw_payload(raw_payload, board_name, target_url, selector_config)
+
     async def fetch_rbctech_candidates(
         self,
         target_url: str,
@@ -583,6 +666,31 @@ class PipelineExecutionEngine:
 
                 try:
                     if family == "workday":
+                        extracted_candidates = await self.fetch_workday_candidates_multipage(
+                            target_url=target_url,
+                            board_name=board.name,
+                            max_pages=max_pages,
+                            selector_config=selector_config
+                        )
+                    elif family == "greenhouse":
+                        extracted_candidates = await self.fetch_greenhouse_candidates(
+                            target_url=target_url,
+                            board_name=board.name,
+                            selector_config=selector_config
+                        )
+                    elif family == "smartrecruiters":
+                        extracted_candidates = await self.fetch_smartrecruiters_candidates(
+                            target_url=target_url,
+                            board_name=board.name,
+                            selector_config=selector_config
+                        )
+                    elif family == "talent500":
+                        extracted_candidates = await self.fetch_talent500_candidates(
+                            target_url=target_url,
+                            board_name=board.name,
+                            selector_config=selector_config
+                        )
+                    elif family == "workday":
                         extracted_candidates = await self.fetch_workday_candidates_multipage(
                             target_url=target_url,
                             board_name=board.name,

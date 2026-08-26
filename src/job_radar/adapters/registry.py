@@ -1,5 +1,7 @@
 from typing import Dict, Type, List, Optional
 from job_radar.adapters.base import BaseAdapter
+from job_radar.adapters.smartrecruiters import SmartRecruitersAdapter
+from job_radar.adapters.talent500 import Talent500Adapter
 from job_radar.adapters.families import (
     GreenhouseAdapter,
     LeverAdapter,
@@ -29,6 +31,8 @@ class AdapterRegistry:
         self.register(OracleAdapter())
         self.register(AmeripriseAdapter())
         self.register(PhenomAdapter())
+        self.register(SmartRecruitersAdapter())
+        self.register(Talent500Adapter())
 
     def register(self, adapter: BaseAdapter) -> None:
         self._adapters[adapter.family.lower()] = adapter

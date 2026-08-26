@@ -89,8 +89,8 @@ async def verify_isolated_persistence():
         draft_boards = [b for b in all_boards if b.status == "draft"]
 
         print(f"✓ Total board rows persisted: {len(all_boards)} (Reviewed: {len(rev_boards)}, Draft: {len(draft_boards)})")
-        assert len(rev_boards) == 58, f"Expected 58 reviewed boards (31 baseline + 27 new), got {len(rev_boards)}"
-        assert len(draft_boards) == 44, f"Expected 44 draft/blocked boards (6 baseline + 38 new), got {len(draft_boards)}"
+        assert len(rev_boards) == 63, f"Expected 63 reviewed boards (31 baseline + 32 new), got {len(rev_boards)}"
+        assert len(draft_boards) == 39, f"Expected 39 draft/blocked boards (6 baseline + 33 new), got {len(draft_boards)}"
 
     # 3. Test NormalizationService & HandoffProcessor with Candidate India eligibility
     fail_client = FailOnCallJobOpsClient()

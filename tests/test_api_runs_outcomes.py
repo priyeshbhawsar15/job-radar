@@ -183,3 +183,72 @@ async def test_board_run_detail_serializes_india_eligibility_and_reason(
 
     assert jobs_by_id[c_null.candidate_id]["india_eligible"] is None
     assert jobs_by_id[c_null.candidate_id]["india_exclusion_reason"] is None
+
+
+@pytest.mark.asyncio
+async def test_list_runs_returns_acceptance_breakdown_and_total_equality(
+    client: AsyncClient, db_session: AsyncSession
+):
+    board = await _make_board(db_session)
+    pipeline_run = await _make_pipeline_run(db_session)
+    board_run = await _make_board_run(db_session, board, pipeline_run)
+
+    # 1. Accepted: india_eligible=True, enrichment="succeeded"
+    c1 = await _make_candidate(
+        db_session, board, canonical_url_hash="hash-acc-true", india_eligible=True, detail_enrichment_status="succeeded"
+    )
+    # 2. Accepted: india_eligible=None (admitted by policy), enrichment="succeeded"
+    c2 = await _make_candidate(
+        db_session, board, canonical_url_hash="hash-acc-null", india_eligible=None, detail_enrichment_status="succeeded"
+    )
+    # 3. Rejected Non-India: india_eligible=False, enrichment="succeeded"
+    c3 = await _make_candidate(
+        db_session, board, canonical_url_hash="hash-rej-ni-succ", india_eligible=False, detail_enrichment_status="succeeded"
+    )
+    # 4. Rejected Non-India: india_eligible=False, enrichment="failed"
+    c4 = await _make_candidate(
+        db_session, board, canonical_url_hash="hash-rej-ni-fail", india_eligible=False, detail_enrichment_status="failed"
+    )
+    # 5. Rejected Enrichment: india_eligible=True, enrichment="failed"
+    c5 = await _make_candidate(
+        db_session, board, canonical_url_hash="hash-rej-en", india_eligible=True, detail_enrichment_status="failed"
+    )
+    # 6. Pending: india_eligible=True, enrichment="pending"
+    c6 = await _make_candidate(
+        db_session, board, canonical_url_hash="hash-pending", india_eligible=True, detail_enrichment_status="pending"
+    )
+
+    for cand in [c1, c2, c3, c4, c5, c6]:
+        db_session.add(RunCandidate(run_id=board_run.board_run_id, candidate_id=cand.candidate_id, board_id=board.board_id))
+    await db_session.commit()
+
+    resp = await client.get("/api/v1/runs")
+    assert resp.status_code == 200
+    runs = resp.json()
+
+    run_data = next(r for r in runs if r["run_id"] == board_run.board_run_id)
+
+    accepted_count = run_data["accepted_count"]
+    rejected_non_india_count = run_data["rejected_non_india_count"]
+    rejected_enrichment_count = run_data["rejected_enrichment_count"]
+    pending_count = run_data["pending_count"]
+    acceptance_total = run_data["acceptance_total"]
+    acceptance_percentage = run_data["acceptance_percentage"]
+
+    assert accepted_count == 2
+    assert rejected_non_india_count == 2
+    assert rejected_enrichment_count == 1
+    assert pending_count == 1
+
+    # Mutually exclusive sum check
+    category_sum = accepted_count + rejected_non_india_count + rejected_enrichment_count + pending_count
+    assert category_sum == acceptance_total
+    assert acceptance_total == 6
+
+    # Percentage check (2/6 = 33%)
+    assert acceptance_percentage == 33
+
+    # Backward compatibility fields check
+    assert run_data["enrichment_succeeded"] == 3  # c1, c2, c3
+    assert run_data["enrichment_failed"] == 2     # c4, c5
+    assert run_data["enrichment_total"] == 5      # 3 + 2

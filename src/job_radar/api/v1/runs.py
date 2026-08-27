@@ -90,6 +90,9 @@ async def list_runs(db: AsyncSession = Depends(get_db_session)):
 
     run_ids = [r.board_run_id for r in runs]
 
+    is_not_false = (CandidateJob.india_eligible != False) | CandidateJob.india_eligible.is_(None)
+    is_false = CandidateJob.india_eligible.is_(False)
+
     enrichment_res = await db.execute(
         select(
             RunCandidate.run_id,
@@ -105,27 +108,59 @@ async def list_runs(db: AsyncSession = Depends(get_db_session)):
                     else_=0,
                 )
             ).label("enrichment_total"),
+            func.sum(
+                case((is_not_false & (CandidateJob.detail_enrichment_status == "succeeded"), 1), else_=0)
+            ).label("accepted_count"),
+            func.sum(
+                case((is_false, 1), else_=0)
+            ).label("rejected_non_india_count"),
+            func.sum(
+                case((is_not_false & (CandidateJob.detail_enrichment_status == "failed"), 1), else_=0)
+            ).label("rejected_enrichment_count"),
+            func.sum(
+                case((is_not_false & ~CandidateJob.detail_enrichment_status.in_(["succeeded", "failed"]), 1), else_=0)
+            ).label("pending_count"),
+            func.count(RunCandidate.candidate_id).label("acceptance_total"),
         )
         .join(CandidateJob, RunCandidate.candidate_id == CandidateJob.candidate_id)
         .where(RunCandidate.run_id.in_(run_ids))
         .group_by(RunCandidate.run_id)
     )
 
-    enrichment_map = {
-        row.run_id: {
+    enrichment_map = {}
+    for row in enrichment_res.all():
+        acc = int(row.accepted_count or 0)
+        rej_ni = int(row.rejected_non_india_count or 0)
+        rej_en = int(row.rejected_enrichment_count or 0)
+        pend = int(row.pending_count or 0)
+        total = int(row.acceptance_total or 0)
+        pct = round((acc / total) * 100) if total > 0 else 0
+        enrichment_map[row.run_id] = {
             "enrichment_succeeded": int(row.enrichment_succeeded or 0),
             "enrichment_failed": int(row.enrichment_failed or 0),
             "enrichment_total": int(row.enrichment_total or 0),
+            "accepted_count": acc,
+            "rejected_non_india_count": rej_ni,
+            "rejected_enrichment_count": rej_en,
+            "pending_count": pend,
+            "acceptance_total": total,
+            "acceptance_percentage": pct,
         }
-        for row in enrichment_res.all()
-    }
 
     out = []
+    default_metrics = {
+        "enrichment_succeeded": 0,
+        "enrichment_failed": 0,
+        "enrichment_total": 0,
+        "accepted_count": 0,
+        "rejected_non_india_count": 0,
+        "rejected_enrichment_count": 0,
+        "pending_count": 0,
+        "acceptance_total": 0,
+        "acceptance_percentage": 0,
+    }
     for r in runs:
-        metrics = enrichment_map.get(
-            r.board_run_id,
-            {"enrichment_succeeded": 0, "enrichment_failed": 0, "enrichment_total": 0},
-        )
+        metrics = enrichment_map.get(r.board_run_id, default_metrics)
         out.append({
             "run_id": r.board_run_id,
             "pipeline_id": r.pipeline_id,
@@ -139,6 +174,12 @@ async def list_runs(db: AsyncSession = Depends(get_db_session)):
             "enrichment_succeeded": metrics["enrichment_succeeded"],
             "enrichment_failed": metrics["enrichment_failed"],
             "enrichment_total": metrics["enrichment_total"],
+            "accepted_count": metrics["accepted_count"],
+            "rejected_non_india_count": metrics["rejected_non_india_count"],
+            "rejected_enrichment_count": metrics["rejected_enrichment_count"],
+            "pending_count": metrics["pending_count"],
+            "acceptance_total": metrics["acceptance_total"],
+            "acceptance_percentage": metrics["acceptance_percentage"],
         })
     return out
 

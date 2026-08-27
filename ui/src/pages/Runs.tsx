@@ -114,14 +114,9 @@ export const Runs: React.FC = () => {
             <div className="p-8 text-center text-slate-400 font-mono text-xs">Loading execution runs...</div>
           ) : runs.length > 0 ? (
             runs.map((r) => {
-              const isPartial = r.outcome === 'partial';
-              const succeeded = r.enrichment_succeeded ?? 0;
-              const total = r.enrichment_total ?? 0;
-              const pct = total > 0 ? Math.round((succeeded / total) * 100) : 0;
-              const metricText =
-                total > 0
-                  ? `${succeeded}/${total} jobs succeeded · ${pct}%`
-                  : 'No completed job evaluations';
+              const accepted = r.accepted_count ?? 0;
+              const total = r.acceptance_total ?? 0;
+              const pct = r.acceptance_percentage ?? (total > 0 ? Math.round((accepted / total) * 100) : 0);
 
               return (
                 <Link
@@ -147,17 +142,11 @@ export const Runs: React.FC = () => {
                     extracted
                   </div>
 
-                  <div className="text-xs text-slate-500 dark:text-slate-400">
-                    {isPartial ? (
-                      <span className="font-mono text-xs text-amber-600 dark:text-amber-400 font-semibold">
-                        {metricText}
-                      </span>
-                    ) : (
-                      <>
-                        <b className="block text-base font-bold font-mono text-slate-900 dark:text-white">{r.extracted_count}</b>
-                        accepted
-                      </>
-                    )}
+                  <div className="text-xs text-amber-600 dark:text-amber-400">
+                    <b className="block text-base font-bold font-mono text-amber-600 dark:text-amber-400">
+                      {accepted} · {pct}%
+                    </b>
+                    accepted
                   </div>
                 </Link>
               );

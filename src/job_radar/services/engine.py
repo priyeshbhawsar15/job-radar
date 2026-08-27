@@ -301,7 +301,21 @@ class PipelineExecutionEngine:
         if not slug or slug == "v0":
             slug = parsed.path.split("/postings/")[-1].split("?")[0]
 
-        api_url = f"https://api.lever.co/v0/postings/{slug}?mode=json"
+        allowed_filters = {"department", "team", "location", "commitment"}
+        provider_filters = [
+            (key, value)
+            for key, value in urllib.parse.parse_qsl(
+                parsed.query,
+                keep_blank_values=True,
+            )
+            if key in allowed_filters
+        ]
+        query = urllib.parse.urlencode(
+            [("mode", "json"), *provider_filters],
+            doseq=True,
+        )
+        api_url = f"https://api.lever.co/v0/postings/{slug}?{query}"
+        has_provider_filters = bool(provider_filters)
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
         all_candidates: List[ExtractedCandidate] = []
         seen_urls = set()
@@ -315,10 +329,16 @@ class PipelineExecutionEngine:
                     loc_str = str(cats.get("location", ""))
                     country_str = str(cats.get("country", ""))
                     text_str = str(j.get("text", ""))
-                    
-                    full_loc = f"{loc_str} {country_str} {text_str}"
-                    if "india" not in full_loc.lower():
-                        continue
+
+                    # Unfiltered Lever boards can expose a global inventory, so
+                    # retain their existing India-only acquisition gate. When a
+                    # reviewed target contains provider filters, preserve that
+                    # exact provider scope and defer location admission to the
+                    # centralized location decision service.
+                    if not has_provider_filters:
+                        full_loc = f"{loc_str} {country_str} {text_str}"
+                        if "india" not in full_loc.lower():
+                            continue
 
                     raw_u = j.get("hostedUrl") or j.get("applyUrl")
                     clean_u = canonicalize_job_url(raw_u, board_name, target_url)

@@ -1,17 +1,44 @@
 [
   {
-    "id": "86665c39-2182-4d69-8b8c-33eac104ec2b",
-    "text": "Accounts Payable  Specialist - Mumbai",
-    "hostedUrl": "https://jobs.lever.co/paytm/86665c39-2182-4d69-8b8c-33eac104ec2b",
-    "categories": {
-      "commitment": "Full-time Employment",
-      "department": "Finance",
-      "location": "Mumbai, Maharashtra",
-      "team": "Paytm Money",
-      "allLocations": [
-        "Mumbai, Maharashtra"
-      ]
-    },
-    "description": "Department: Finance / Operations Location: Corporate Office / Hybrid\nEmployment Type: Full-time Experience Required: 2\u20134 Years (SAP Mandatory)\n\nPosition Overview\nWe are seeking a detail-oriented and proactive Operations &amp; SAP Executive to manage end-to-end\nvendor operations, procurement workflows, invoice processing, and employee reimbursement\nfunctions. In this role, you will act as a critical liaison between internal departments and external\nvendors, maintaining accurate tracking systems, processing transactions in SAP, and ensuring\noperational compliance with internal financial policies.\n\nKey Responsibilities\nVendor Management &amp; User Coordination\n\uf0b7 Point of Contact: Serve as the primary liaison between external vendors and internal cross-\nfunctional teams for operational queries.\n\uf0b7 Vendor Onboarding: Coordinate end-to-end vendor onboarding processes, ensuring full compliance\nwith tax, banking, and documentation requirements.\n\uf0b7 Relationship Management: Maintain proactive communication with vendors to resolve payment,\ninvoice, or PO-related discrepancies promptly.\nProcurement &amp; SAP Operations\n\uf0b7 PR &amp; PO Creation: Generate and process Purchase Requisitions (PR) and Purchase Orders (PO)\naccurately in SAP as well as internal workflow platforms.\n\uf0b7 Scope &amp; Approval Verification: Verify scope of work, departmental approvals, and budget\nallocations prior to issuing official POs.\n\uf0b7 System Maintenance: Ensure all procurement entries, item masters, and vendor records within SAP\nreflect up-to-date data.\nInvoice Processing &amp; Tracker Management\n\uf0b7 Invoice Processing: Receive, audit, and process high-volume vendor invoices against active POs and\ndelivery/service sign-offs.\n\uf0b7 Tracker Management: Maintain meticulous, real-time Excel/system trackers to record invoice\nstatus, approval stages, and payment dates.\n\uf0b7 Accounts Payable Coordination: Collaborate closely with Finance and Accounts Payable teams to\nensure adherence to payment cycles and avoid delays.\nEmployee Reimbursements &amp; Advances\n\uf0b7 Reimbursement Auditing: Review and process employee expense reimbursement requests and\ntravel claims in compliance with company policy.\n\uf0b7 Advance Management: Handle petty cash and employee advance requests, tracking settlements\nand verifying supporting documents/receipts.\n\nQualifications &amp; Key Requirements\n\uf0b7 Experience: 2 to 4 years of hands-on experience in procurement support, finance operations,\nvendor management, or accounts payable.\n\uf0b7 SAP Proficiency: Direct operational experience with SAP (specifically MM/FI modules) is\nMANDATORY.\n\uf0b7 Technical Skills: Strong working proficiency in MS Excel (VLOOKUP, Pivot Tables, tracker\nmaintenance) and internal ticket management systems.\n\uf0b7 Detail Orientation: High accuracy in numerical data entry, document verification, and maintain\nledger/tracker consistency.\n\uf0b7 Communication: Excellent written and verbal communication skills for effective coordination across\ninternal departments and external vendors.\n\uf0b7 Time Management: Ability to prioritize tasks, meet tight payment and processing schedules, and\nhandle operational follow-ups independently.\n"
+    "id": "92b876ca-91cf-4ece-b2b7-2940ffda8dc9",
+    "text": "Data Engineering - Senior / Lead Engineer",
+    "hostedUrl": "https://jobs.lever.co/paytm/92b876ca-91cf-4ece-b2b7-2940ffda8dc9",
+    "categories": {"commitment": "Full-time Employment", "department": "Technology", "location": "Noida, Uttar Pradesh", "team": "Insurance", "allLocations": ["Noida, Uttar Pradesh"]}
+  },
+  {
+    "id": "494a9ea6-28af-4334-b887-5d1e6b57060c",
+    "text": "Deputy Manager - Data Analyst (Finance)",
+    "hostedUrl": "https://jobs.lever.co/paytm/494a9ea6-28af-4334-b887-5d1e6b57060c",
+    "categories": {"commitment": "Full-time Employment", "department": "Technology", "location": "Noida, Uttar Pradesh", "team": "Finance", "allLocations": ["Noida, Uttar Pradesh", "Gurugram, Haryana"]}
+  },
+  {
+    "id": "da537fb6-3458-4eef-a32d-a1d591d4d190",
+    "text": "Engineering Manager - DBA",
+    "hostedUrl": "https://jobs.lever.co/paytm/da537fb6-3458-4eef-a32d-a1d591d4d190",
+    "categories": {"commitment": "Full-time Employment", "department": "Technology", "location": "Noida, Uttar Pradesh", "team": "Lending", "allLocations": ["Noida, Uttar Pradesh"]}
+  },
+  {
+    "id": "2901f5e8-e5a8-4508-9122-07d34ef0b285",
+    "text": "Fraud Risk & Compliance Manager",
+    "hostedUrl": "https://jobs.lever.co/paytm/2901f5e8-e5a8-4508-9122-07d34ef0b285",
+    "categories": {"commitment": "Full-time Employment", "department": "Technology", "location": "Noida, Uttar Pradesh", "team": "Operations Risk Management", "allLocations": ["Noida, Uttar Pradesh"]}
+  },
+  {
+    "id": "e497bfd9-bce5-4b50-aad9-e9687022e1fd",
+    "text": "MySQL - Senior Lead Database Engineer",
+    "hostedUrl": "https://jobs.lever.co/paytm/e497bfd9-bce5-4b50-aad9-e9687022e1fd",
+    "categories": {"commitment": "Full-time Employment", "department": "Technology", "location": "Noida, Uttar Pradesh", "team": "Lending", "allLocations": ["Noida, Uttar Pradesh"]}
+  },
+  {
+    "id": "43143992-1517-427d-9a4a-c56fca5a0949",
+    "text": "Senior SDET - Insurance Tech",
+    "hostedUrl": "https://jobs.lever.co/paytm/43143992-1517-427d-9a4a-c56fca5a0949",
+    "categories": {"commitment": "Full-time Employment", "department": "Technology", "location": "Noida, Uttar Pradesh", "team": "Insurance", "allLocations": ["Noida, Uttar Pradesh"]}
+  },
+  {
+    "id": "3c729acc-5905-4dfa-8362-75cba28b9f40",
+    "text": "Technical Lead - Backend",
+    "hostedUrl": "https://jobs.lever.co/paytm/3c729acc-5905-4dfa-8362-75cba28b9f40",
+    "categories": {"commitment": "Full-time Employment", "department": "Technology", "location": "Noida, Uttar Pradesh", "team": "Lending", "allLocations": ["Noida, Uttar Pradesh"]}
   }
 ]

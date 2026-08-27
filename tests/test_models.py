@@ -155,6 +155,14 @@ def test_oracle_seed_uses_live_site_number_cx_45001():
     assert oracle_cfg["site_number"] == "CX_45001"
 
 
+def test_godaddy_seed_has_explicit_greenhouse_token():
+    from job_radar.db.seed import INITIAL_BOARDS, build_initial_revision_config
+
+    godaddy = next(item for item in INITIAL_BOARDS if item[0] == "board-godaddy")
+    assert godaddy[4] == {"greenhouse_token": "godaddy"}
+    assert build_initial_revision_config(godaddy)["greenhouse_token"] == "godaddy"
+
+
 def test_build_initial_revision_config_adds_listing_only_for_oracle_board():
     from job_radar.db.seed import INITIAL_BOARDS, build_initial_revision_config
 

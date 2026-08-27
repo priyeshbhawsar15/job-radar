@@ -17,25 +17,25 @@ _TOKEN_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
 
 
 def _configured_token(config: object) -> Optional[str]:
+    """Return only a token explicitly reviewed in Greenhouse provider config."""
     if not isinstance(config, dict):
         return None
-    for key in ("greenhouse_token", "token", "board_token"):
-        value = config.get(key)
-        if isinstance(value, str) and _TOKEN_RE.fullmatch(value):
-            return value
+    value = config.get("greenhouse_token")
+    if isinstance(value, str) and _TOKEN_RE.fullmatch(value):
+        return value
     for key in ("board_url", "target_url"):
         value = config.get(key)
-        parsed = parse_greenhouse_detail_url(value) if isinstance(value, str) else None
-        if parsed:
-            return parsed[0]
-        if isinstance(value, str):
-            url = urlparse(value)
-            if url.hostname in _ALLOWED_HOSTS:
-                parts = [part for part in url.path.split("/") if part]
-                if url.hostname == "boards-api.greenhouse.io" and len(parts) >= 3 and parts[:3] == ["v1", "boards", parts[2]]:
-                    return parts[2] if _TOKEN_RE.fullmatch(parts[2]) else None
-                if parts and _TOKEN_RE.fullmatch(parts[0]):
-                    return parts[0]
+        if not isinstance(value, str):
+            continue
+        url = urlparse(value)
+        if url.scheme not in ("http", "https") or url.hostname not in _ALLOWED_HOSTS:
+            continue
+        parts = [part for part in url.path.split("/") if part]
+        if url.hostname == "boards-api.greenhouse.io":
+            if len(parts) >= 3 and parts[:2] == ["v1", "boards"] and _TOKEN_RE.fullmatch(parts[2]):
+                return parts[2]
+        elif parts and _TOKEN_RE.fullmatch(parts[0]):
+            return parts[0]
     return None
 
 
@@ -44,16 +44,18 @@ def parse_greenhouse_detail_url(public_url: str, provider_config: object = None)
     if not isinstance(public_url, str):
         return None
     parsed = urlparse(public_url)
-    if parsed.scheme not in ("http", "https") or parsed.hostname not in _ALLOWED_HOSTS:
+    if parsed.scheme not in ("http", "https"):
         return None
     parts = [part for part in parsed.path.split("/") if part]
     token = job_id = None
     if parsed.hostname in {"job-boards.greenhouse.io", "job-boards.eu.greenhouse.io"}:
         if len(parts) >= 3 and parts[1] == "jobs":
             token, job_id = parts[0], parts[2]
-    elif len(parts) >= 5 and parts[:3] == ["v1", "boards", parts[2]] and parts[3] == "jobs":
-        token, job_id = parts[2], parts[4]
-    # gh_jid URLs are usable only with an explicitly reviewed token in config.
+    elif parsed.hostname == "boards-api.greenhouse.io":
+        if len(parts) >= 5 and parts[:2] == ["v1", "boards"] and parts[3] == "jobs":
+            token, job_id = parts[2], parts[4]
+    # A branded/custom candidate URL is never trusted for its host or token.  Its
+    # numeric gh_jid may be resolved only through a reviewed provider token.
     if not job_id:
         gh_jid = parse_qs(parsed.query).get("gh_jid", [None])[0]
         token, job_id = _configured_token(provider_config), gh_jid

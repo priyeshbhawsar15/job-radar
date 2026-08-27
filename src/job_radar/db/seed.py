@@ -92,7 +92,7 @@ INITIAL_BOARDS = [
     ("board-uber", "Uber", "custom", "https://jobs.uber.com/en/jobs/?search=software&countries=India"),
     ("board-gitlab", "Gitlab", "greenhouse", "https://job-boards.greenhouse.io/gitlab"),
     ("board-hobspot", "Hobspot", "greenhouse", "https://job-boards.greenhouse.io/hubspot"),
-    ("board-godaddy", "GoDaddy", "greenhouse", "https://careers.godaddy/jobs/search?page=1&query=&department_uids[]=6ed98616cdc63adf0b08529f08290235&country_codes[]=IN"),
+    ("board-godaddy", "GoDaddy", "greenhouse", "https://careers.godaddy/jobs/search?page=1&query=&department_uids[]=6ed98616cdc63adf0b08529f08290235&country_codes[]=IN", {"greenhouse_token": "godaddy"}),
     ("board-phonepay", "PhonePe", "greenhouse", "https://job-boards.greenhouse.io/phonepe?gh_src=961e65dc3us"),
     ("board-buffer", "Buffer", "ashby", "https://jobs.ashbyhq.com/buffer"),
     ("board-sourcegraph", "Sourcegraph", "greenhouse", "https://boards-api.greenhouse.io/v1/boards/sourcegraph91/jobs?content=true"),
@@ -228,6 +228,8 @@ def build_initial_revision_config(item: tuple) -> dict:
             cfg_json["oracle_detail"] = dict(family_cfg)
         elif family == "phenom":
             cfg_json["phenom_detail"] = dict(family_cfg)
+        elif family == "greenhouse":
+            cfg_json.update(dict(family_cfg))
 
     if revision_extras:
         for key, value in revision_extras.items():

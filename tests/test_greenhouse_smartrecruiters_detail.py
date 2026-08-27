@@ -17,11 +17,36 @@ def test_parse_greenhouse_exact_canonical_tokens(url, expected):
     assert parse_greenhouse_detail_url(url) == expected
 
 
+def test_greenhouse_custom_gh_jid_requires_a_reviewed_token():
+    bitwarden_url = "https://bitwarden.com/careers/7770756003/?gh_jid=7770756003"
+    assert parse_greenhouse_detail_url(bitwarden_url, {"target_url": "https://job-boards.greenhouse.io/bitwarden"}) == ("bitwarden", "7770756003")
+    assert parse_greenhouse_detail_url(bitwarden_url, {"board_url": "https://job-boards.greenhouse.io/bitwarden"}) == ("bitwarden", "7770756003")
+    assert parse_greenhouse_detail_url(bitwarden_url) is None
+    assert parse_greenhouse_detail_url(bitwarden_url, {"token": "bitwarden"}) is None
+    assert parse_greenhouse_detail_url(bitwarden_url, {"target_url": "https://evil.example/bitwarden"}) is None
+    assert parse_greenhouse_detail_url(bitwarden_url, {"greenhouse_token": "bad token"}) is None
+    assert parse_greenhouse_detail_url("https://bitwarden.com/careers?gh_jid=not-a-number", {"greenhouse_token": "bitwarden"}) is None
+
+
 def test_greenhouse_rejects_unapproved_hosts_and_unconfigured_gh_jid():
     assert parse_greenhouse_detail_url("https://evil.example/razorpay/jobs/1") is None
     assert parse_greenhouse_detail_url("https://job-boards.greenhouse.io/razorpay/jobs/not-a-number") is None
     assert parse_greenhouse_detail_url("https://job-boards.greenhouse.io/razorpay?gh_jid=1") is None
     assert parse_greenhouse_detail_url("https://job-boards.greenhouse.io/razorpay?gh_jid=1", {"greenhouse_token": "razorpaysoftwareprivatelimited"}) == ("razorpaysoftwareprivatelimited", "1")
+
+
+@pytest.mark.asyncio
+async def test_greenhouse_custom_gh_jid_calls_fixed_api_endpoint():
+    req = DetailRequest("greenhouse", "https://careers.godaddy/jobs?gh_jid=7823365003", "GoDaddy", "old", {"greenhouse_token": "godaddy"})
+    payload = {"title": "Engineer", "location": {"name": "India"}, "content": "<h2>Responsibilities</h2><p>Build reliable systems with a thoughtful engineering team, communicate clearly with stakeholders, and improve services used by customers.</p><h2>Qualifications</h2><p>Experience with distributed systems, Python, cloud infrastructure, debugging, and collaborative software development is required.</p>"}
+
+    def handler(request):
+        assert str(request.url) == "https://boards-api.greenhouse.io/v1/boards/godaddy/jobs/7823365003"
+        return httpx.Response(200, json=payload)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        result = await fetch_greenhouse_detail(req, client)
+    assert result.error_code is None
 
 
 @pytest.mark.asyncio

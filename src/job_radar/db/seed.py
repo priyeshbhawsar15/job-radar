@@ -149,6 +149,14 @@ INITIAL_BOARDS = [
     ("board-marriotttech", "Marriott Tech", "talent500", "https://talent500.com/joblist/?company=Marriott+Tech+Accelerator&sort_by_created_date=1&offset=0&limit=20"),
     ("board-mcd", "McD", "talent500", "https://talent500.com/joblist/?company=McDonalds+in+India&sort_by_created_date=1&offset=0&limit=20"),
     ("board-regalrexnord", "Regal Rexnord", "workday", "https://regalrexnord.wd1.myworkdayjobs.com/en-US/Careers?locationCountry=c4f78be1a8f14da0ab49ce1162348a5e"),
+    ("board-levistrauss", "Levi Strauss", "workday", "https://levistraussandco.wd5.myworkdayjobs.com/en-US/External?Location_Country=c4f78be1a8f14da0ab49ce1162348a5e&jobFamilyGroup=cf6792ac2be9108725fe33775db3593e&jobFamilyGroup=52c304728b9f10011014dbb434830000", None, {
+        "source_country_scope": "IN",
+        "source_scope_evidence": "workday_location_country_filter"
+    }),
+    ("board-epicor", "Epicor", "workday", "https://epicorsoftware.wd5.myworkdayjobs.com/epicorjobs?locations=bac801da606910010b29863a25640000&locations=e23509d8aa44100205d8750add280000&jobFamilyGroup=bac801da60691001591dc29c07ac0000", None, {
+        "source_country_scope": "IN",
+        "source_scope_evidence": "workday_verified_india_location_filters"
+    }),
 ]
 
 BLOCKED_BOARD_IDS = {

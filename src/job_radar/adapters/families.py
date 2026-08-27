@@ -331,7 +331,17 @@ class WorkdayAdapter(BaseAdapter):
                 title = item.get("title", "").strip()
                 if not title:
                     continue
-                location_str = item.get("locationsText", "")
+
+                locations_text = item.get("locationsText")
+                if isinstance(locations_text, str) and locations_text.strip() and not re.match(r"^\d+\s+locations?$", locations_text.strip(), re.IGNORECASE):
+                    location_str = locations_text.strip()
+                else:
+                    bullet_fields = item.get("bulletFields") or []
+                    loc_parts = [b.strip() for b in bullet_fields if isinstance(b, str) and b.strip() and not re.match(r"^(?:R-\d+|JR\d+|\d+)$", b.strip(), re.IGNORECASE)]
+                    if loc_parts:
+                        location_str = "; ".join(loc_parts)
+                    else:
+                        location_str = locations_text.strip() if isinstance(locations_text, str) and locations_text.strip() else ""
 
                 if location_filter and location_filter.lower() not in (location_str or "").lower():
                     continue

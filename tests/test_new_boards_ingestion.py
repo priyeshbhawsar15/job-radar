@@ -51,13 +51,15 @@ BOARD_FIXTURE_MAP = {
     "Marriott Tech": "talent500/marriotttech.json",
     "McD": "talent500/mcd.json",
     "Regal Rexnord": "workday/regalrexnord.json",
+    "Levi Strauss": "workday/levistrauss.json",
+    "Epicor": "workday/epicor.json",
 }
 
 
 def test_66_new_boards_inventory_totals():
-    assert len(NEW_BOARDS) == 66
-    assert len(INITIAL_BOARDS) == 103
-    assert len(BOARD_FIXTURE_MAP) == 33
+    assert len(NEW_BOARDS) == 68
+    assert len(INITIAL_BOARDS) == 105
+    assert len(BOARD_FIXTURE_MAP) == 35
     assert len(BLOCKED_BOARD_IDS) == 39
 
 

@@ -580,7 +580,12 @@ class PipelineExecutionEngine:
         parsed_url = urllib.parse.urlparse(target_url)
         qs = urllib.parse.parse_qs(parsed_url.query)
 
-        valid_facet_keys = {"workerSubType", "jobFamilyGroup", "timeType", "locationCountry", "locationHierarchy1", "locationRegion", "jobFamily"}
+        valid_facet_keys = {
+            "workerSubType", "jobFamilyGroup", "timeType", "locationCountry", "Location_Country",
+            "locations", "locationHierarchy1", "locationHierarchy2", "locationRegion", "jobFamily",
+            "Job_Family", "Job_Application_ID", "CF_Job_Posting_Anchor_Job_Category_EEB_Extended",
+            "EEB_-_Job_Categories_for_External_Site_Extended"
+        }
         facets = {k: v for k, v in qs.items() if k in valid_facet_keys}
 
         cxs_url = f"https://{domain}/wday/cxs/{tenant}/{site}/jobs"
@@ -601,8 +606,9 @@ class PipelineExecutionEngine:
                 payload = {"appliedFacets": facets, "limit": 20, "offset": offset, "searchText": ""}
                 try:
                     resp = await client.post(cxs_url, json=payload, headers=headers)
-                    if resp.status_code != 200 and "locationCountry" in facets:
-                        fallback_facets = {k: v for k, v in facets.items() if k != "locationCountry"}
+                    loc_keys = {"locationCountry", "Location_Country", "locations"}
+                    if resp.status_code != 200 and any(k in facets for k in loc_keys):
+                        fallback_facets = {k: v for k, v in facets.items() if k not in loc_keys}
                         payload["appliedFacets"] = fallback_facets
                         resp = await client.post(cxs_url, json=payload, headers=headers)
 

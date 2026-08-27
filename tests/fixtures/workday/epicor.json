@@ -1,0 +1,216 @@
+{
+  "total": 4,
+  "jobPostings": [
+    {
+      "title": "Development Operations Analyst",
+      "externalPath": "/job/India-Bangalore/Development-Operations-Analyst_JR104223",
+      "locationsText": "2 Locations",
+      "postedOn": "Posted 7 Days Ago",
+      "remoteType": "Hybrid",
+      "bulletFields": [
+        "India, Hyderabad; India, Bangalore",
+        "JR104223"
+      ]
+    },
+    {
+      "title": "Product Developer, Sr",
+      "externalPath": "/job/India-Hyderabad/Product-Developer--Sr_JR105131",
+      "locationsText": "India, Hyderabad",
+      "postedOn": "Posted 29 Days Ago",
+      "remoteType": "Hybrid",
+      "bulletFields": [
+        "India, Hyderabad",
+        "JR105131"
+      ]
+    },
+    {
+      "title": "Principal Product Designer",
+      "externalPath": "/job/India-Hyderabad/Principal-Product-Designer_JR104536",
+      "locationsText": "2 Locations",
+      "postedOn": "Posted 30+ Days Ago",
+      "remoteType": "Hybrid",
+      "bulletFields": [
+        "India, Hyderabad; India, Bangalore",
+        "JR104536"
+      ]
+    },
+    {
+      "title": "Product Design Manager",
+      "externalPath": "/job/India-Hyderabad/Product-Design-Manager_JR104538",
+      "locationsText": "2 Locations",
+      "postedOn": "Posted 30+ Days Ago",
+      "remoteType": "Hybrid",
+      "bulletFields": [
+        "India, Hyderabad; India, Bangalore",
+        "JR104538"
+      ]
+    }
+  ],
+  "facets": [
+    {
+      "facetParameter": "jobFamilyGroup",
+      "descriptor": "Job Category",
+      "values": [
+        {
+          "descriptor": "Global Product",
+          "id": "bac801da60691001591dc29c07ac0000",
+          "count": 4
+        },
+        {
+          "descriptor": "Sales",
+          "id": "bac801da60691001591e3b878f890000",
+          "count": 1
+        },
+        {
+          "descriptor": "Consulting Services",
+          "id": "bac801da60691001591e2f85b1640000",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "facetParameter": "workerSubType",
+      "descriptor": "Job Type",
+      "values": [
+        {
+          "descriptor": "Regular",
+          "id": "bac801da6069100106abf672045f0000",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "facetParameter": "timeType",
+      "descriptor": "Time Type",
+      "values": [
+        {
+          "descriptor": "Full time",
+          "id": "cf1fd42a849a1012d1963a50baba0002",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "facetParameter": "remoteType",
+      "descriptor": "Remote Type",
+      "values": [
+        {
+          "descriptor": "Hybrid",
+          "id": "d79058ec50641001f6cf527c285c0000",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "facetParameter": "locationMainGroup",
+      "values": [
+        {
+          "facetParameter": "locations",
+          "descriptor": "Locations",
+          "values": [
+            {
+              "descriptor": "US, Herndon",
+              "id": "1571b469a9421002040401fbd0540000",
+              "count": 10
+            },
+            {
+              "descriptor": "US, Lehi",
+              "id": "bac801da606910010b29b180d4fb0000",
+              "count": 9
+            },
+            {
+              "descriptor": "India, Bangalore",
+              "id": "bac801da606910010b298cdd65770000",
+              "count": 9
+            },
+            {
+              "descriptor": "US, Austin Las Cimas",
+              "id": "bac801da606910010b293b19b78d0000",
+              "count": 9
+            },
+            {
+              "descriptor": "US, Dublin",
+              "id": "bac801da606910010b293c4d85450000",
+              "count": 8
+            },
+            {
+              "descriptor": "US, Minneapolis",
+              "id": "bac801da606910010b294a1eef600000",
+              "count": 7
+            },
+            {
+              "descriptor": "US, Bensalem",
+              "id": "bac801da606910010b29b6e8a25d0000",
+              "count": 5
+            },
+            {
+              "descriptor": "India, Hyderabad",
+              "id": "e23509d8aa44100205d8750add280000",
+              "count": 4
+            },
+            {
+              "descriptor": "Mexico, Monterrey",
+              "id": "bac801da606910010b299a1353b90000",
+              "count": 4
+            },
+            {
+              "descriptor": "US, Solon",
+              "id": "bac801da606910010b29d31f6ee80000",
+              "count": 2
+            },
+            {
+              "descriptor": "US, Eau Claire",
+              "id": "bac801da606910010b296790a42d0000",
+              "count": 2
+            },
+            {
+              "descriptor": "US, Milton",
+              "id": "bac801da606910010b2938b1fbd30000",
+              "count": 2
+            },
+            {
+              "descriptor": "US, Cleveland",
+              "id": "1ce7f84f9ff91001b54eba196c7e0000",
+              "count": 2
+            },
+            {
+              "descriptor": "US, Chicago Remote",
+              "id": "d9dee77c7f28100166aea10e5ac40000",
+              "count": 1
+            },
+            {
+              "descriptor": "Australia, Melbourne",
+              "id": "bac801da606910010b289bfa47210000",
+              "count": 1
+            },
+            {
+              "descriptor": "US, Rochester Hills",
+              "id": "bac801da606910010b29bfe9a28d0000",
+              "count": 1
+            },
+            {
+              "descriptor": "UK, Peterborough",
+              "id": "bac801da606910010b29b51b4d150000",
+              "count": 1
+            },
+            {
+              "descriptor": "US, Austin Warehouse",
+              "id": "bac801da606910010b29a27c0dac0000",
+              "count": 1
+            },
+            {
+              "descriptor": "UK, Bracknell",
+              "id": "bac801da606910010b2939e5eb040000",
+              "count": 1
+            },
+            {
+              "descriptor": "India, Remote",
+              "id": "bac801da606910010b29863a25640000"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "userAuthenticated": false
+}

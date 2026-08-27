@@ -1,0 +1,44 @@
+{
+  "jobPostingInfo": {
+    "id": "a6790333b9b610010805c06d70cb0000",
+    "title": "Development Operations Analyst",
+    "jobDescription": "<p><b><u>Duties &amp; Responsibilities</u></b></p><p></p><ul><li><p>Tests implemented designs.</p></li><li><p>Handles code deployments in all environments.</p></li><li><p>Monitors metrics.</p></li><li><p>Consults with peers for feedback during testing stages.</p></li><li><p>Builds, maintains, and monitors configuration standards.</p></li><li><p>Maintains day-to-day management and administration of projects.</p></li><li><p>Manages CI and CD tools with team.</p></li><li><p>Documents and designs various processes, updates existing processes.</p></li><li><p>Improves infrastructure development and application development.</p></li><li><p>Follows all best practices and procedures as established by the company.</p></li><li><p>Proficient in Database design and/or database administration DevOps/GitOps</p></li></ul><p></p><p><b><u>Knowledge, Skills &amp; Abilities </u></b></p><ul><li><p>Complete and maintain basic work and project records.</p></li><li><p>Debugging skills.</p></li><li><p>Ability to work as part of a team.</p></li><li><p>Detail oriented.</p></li><li><p>Problem solving skills.</p></li><li><p>Basic Shell scripting skills.</p></li><li><p>Proficient with Terraform or similar for IaC through DevOps/GitOps</p></li><li><p>Proficient with Ansible or similar for CaC through DevOps/GitOps</p></li></ul><p></p><p><b><u>Qualifications</u></b></p><ul><li><p>3&#43; years applicable experience and demonstrated success/knowledge.</p></li><li><p>High school diploma.</p></li><li><p>Bachelor\u2019s degree preferred.</p></li></ul><p></p><div><p><b><span>About Epicor</span></b><span>\u00a0</span></p><p></p></div><div><p><span><span>At Epicor, </span><span>we\u2019re</span><span> truly a team. Join </span><span>5,000</span><span> </span><span>talented professionals in creating a world of better business through data, AI, and cognitive ERP. We help businesses stay future-ready by connecting people, processes, and technology. From software engineers who command the latest AI technology to business development reps who help us seize new opportunities, the work we do matters. Together, Epicor employees are creating a more resilient global supply chain.</span></span><span>\u00a0</span></p></div><p></p><div><p><b><span>We\u2019re</span><span> Proactive, Proud, Partners</span><span>.\u00a0\u00a0</span></b></p></div><p><br /><span><span>Whatever your career journey, we\u2019ll help you find the right path. Through our training courses, mentorship, and continuous support, you\u2019ll get everything you need to thrive. At Epicor, your success is our success. And that success really matters, because we\u2019re the essential partners for the world\u2019s most essential businesses\u2014the hardworking companies who make, move, and sell the things the world needs.</span></span></p><p></p><div><p><b><span>Competitive Pay &amp; Benefits</span></b><span>\u00a0</span></p></div><div><ul><li><p><b><span>Health and Wellness:</span></b><span><span> Comprehensive health and wellness benefits designed to support your overall well-being.</span></span><span>\u00a0</span></p></li></ul></div><div><ul><li><p><b><span>Internal Mobility:</span></b><span><span> Opportunities for mentorship, continuing education, and focused career goal setting, with 25% of positions filled internally.</span></span><span>\u00a0</span></p></li></ul></div><div><ul><li><p><b><span>Career Development:</span></b><span><span> Free LinkedIn Learning licenses for everyone, along with our Mentoring Program to boost your personal development.</span></span><span>\u00a0</span></p></li></ul></div><div><ul><li><p><b><span>Education Support:</span></b><span><span> Geographically specific programs to balance the cost of education with the benefits of continued learning and personal development.</span></span><span>\u00a0</span></p></li></ul></div><div><ul><li><p><b><span>Inclusive Workplace: </span></b><span><span>Collaborate with a diverse team in an inclusive, global workplace that fosters innovation and celebrates partnership.</span></span><span>\u00a0</span></p></li></ul></div><div><ul><li><p><b><span>Work-Life Balance: </span></b><span><span>Policies built on mutual trust and support, encouraging time off to rest, recharge, and reconnect.</span></span><span>\u00a0</span></p></li></ul></div><div><ul><li><p><b><span>Global Mobility:</span><span> </span></b><span><span>Comprehensive support for international relocations and permanent residency processes.\u00a0</span></span><span>\u00a0</span></p></li></ul><p></p></div><div><p><b><span>Equal Opportunities and Accommodations Statement</span></b><span><span>\u202f</span></span><span>\u00a0</span></p></div><p></p><div><p><span><span>Epicor is committed to creating a workplace and global community where inclusion is valued; where you bring the whole and real you\u2014</span><span>that\u2019s</span><span> who </span><span>we\u2019re</span><span> interested in. If you have interest in this or any role- but your experience </span><span>doesn\u2019t</span><span> match every qualification of the job description, </span><span>that\u2019s</span><span> okay- consider applying regardless.\u202f</span></span><span>\u00a0</span></p></div><p></p><div><p><span><span>We are an equal-opportunity employer.\u202f</span></span><span>\u00a0</span></p></div><p></p><p></p><p style=\"text-align:inherit\"></p><p style=\"text-align:left\"><b>Recruiter:</b></p>Archana Singh",
+    "location": "India, Bangalore",
+    "additionalLocations": [
+      "India, Hyderabad"
+    ],
+    "postedOn": "Posted 7 Days Ago",
+    "startDate": "2026-08-20",
+    "timeType": "Full time",
+    "jobReqId": "JR104223",
+    "jobPostingId": "Development-Operations-Analyst_JR104223",
+    "jobPostingSiteId": "epicorjobs",
+    "country": {
+      "descriptor": "India",
+      "id": "c4f78be1a8f14da0ab49ce1162348a5e"
+    },
+    "logoImage": {
+      "src": "/wday/cxs/epicorsoftware/epicorjobs/sidebarimage/3af0833a396d10013affb1ae81150003",
+      "alt": "Epicor Logo"
+    },
+    "canApply": true,
+    "posted": true,
+    "includeResumeParsing": true,
+    "jobRequisitionLocation": {
+      "descriptor": "India, Bangalore",
+      "country": {
+        "descriptor": "India",
+        "id": "c4f78be1a8f14da0ab49ce1162348a5e",
+        "alpha2Code": "IN"
+      }
+    },
+    "remoteType": "Hybrid",
+    "externalUrl": "https://epicorsoftware.wd5.myworkdayjobs.com/epicorjobs/job/India-Bangalore/Development-Operations-Analyst_JR104223"
+  },
+  "hiringOrganization": {
+    "name": "EPIND Epicor India",
+    "url": ""
+  },
+  "similarJobs": [],
+  "userAuthenticated": false
+}

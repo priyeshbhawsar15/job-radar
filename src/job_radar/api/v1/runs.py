@@ -2,7 +2,7 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func, case
 from sqlalchemy.orm import selectinload
 
 from job_radar.db.session import get_db_session, AsyncSessionLocal
@@ -85,8 +85,47 @@ async def list_runs(db: AsyncSession = Depends(get_db_session)):
         .limit(100)
     )
     runs = res.scalars().all()
+    if not runs:
+        return []
+
+    run_ids = [r.board_run_id for r in runs]
+
+    enrichment_res = await db.execute(
+        select(
+            RunCandidate.run_id,
+            func.sum(
+                case((CandidateJob.detail_enrichment_status == "succeeded", 1), else_=0)
+            ).label("enrichment_succeeded"),
+            func.sum(
+                case((CandidateJob.detail_enrichment_status == "failed", 1), else_=0)
+            ).label("enrichment_failed"),
+            func.sum(
+                case(
+                    (CandidateJob.detail_enrichment_status.in_(["succeeded", "failed"]), 1),
+                    else_=0,
+                )
+            ).label("enrichment_total"),
+        )
+        .join(CandidateJob, RunCandidate.candidate_id == CandidateJob.candidate_id)
+        .where(RunCandidate.run_id.in_(run_ids))
+        .group_by(RunCandidate.run_id)
+    )
+
+    enrichment_map = {
+        row.run_id: {
+            "enrichment_succeeded": int(row.enrichment_succeeded or 0),
+            "enrichment_failed": int(row.enrichment_failed or 0),
+            "enrichment_total": int(row.enrichment_total or 0),
+        }
+        for row in enrichment_res.all()
+    }
+
     out = []
     for r in runs:
+        metrics = enrichment_map.get(
+            r.board_run_id,
+            {"enrichment_succeeded": 0, "enrichment_failed": 0, "enrichment_total": 0},
+        )
         out.append({
             "run_id": r.board_run_id,
             "pipeline_id": r.pipeline_id,
@@ -97,6 +136,9 @@ async def list_runs(db: AsyncSession = Depends(get_db_session)):
             "outcome": r.outcome,
             "extracted_count": r.extracted_count,
             "created_at": r.started_at.isoformat() if r.started_at else None,
+            "enrichment_succeeded": metrics["enrichment_succeeded"],
+            "enrichment_failed": metrics["enrichment_failed"],
+            "enrichment_total": metrics["enrichment_total"],
         })
     return out
 
@@ -152,6 +194,8 @@ async def get_board_run_detail(run_id: str, db: AsyncSession = Depends(get_db_se
             "salary_raw": j.salary_raw,
             "detail_enrichment_status": j.detail_enrichment_status,
             "detail_enrichment_error_code": j.detail_enrichment_error_code,
+            "india_eligible": j.india_eligible,
+            "india_exclusion_reason": j.india_exclusion_reason,
             "job_ops_status": ops_status,
             "created_at": j.discovered_at.isoformat() if j.discovered_at else None,
             "observation_outcome": observation_outcome

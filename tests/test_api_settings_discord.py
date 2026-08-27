@@ -9,6 +9,7 @@ from job_radar.config import settings as app_config
 
 @pytest.fixture(autouse=True)
 def isolated_settings_file(tmp_path, monkeypatch):
+    monkeypatch.delenv("SETTINGS_FILE_PATH", raising=False)
     path = tmp_path / "app_settings.json"
     monkeypatch.setattr(settings_store, "DEFAULT_CONFIG_PATH", path)
     monkeypatch.setattr(app_config, "JOBOPS_ENDPOINT", None)

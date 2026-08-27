@@ -12,15 +12,17 @@ export type StatusType =
   | 'warning'
   | 'failed'
   | 'error'
+  | 'rejected'
   | 'neutral';
 
 interface StatusBadgeProps {
   status: StatusType | string;
   label?: string;
   size?: 'sm' | 'md';
+  title?: string;
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label, size = 'md' }) => {
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label, size = 'md', title }) => {
   const normalized = status.toLowerCase();
 
   let styles = "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700";
@@ -32,7 +34,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label, size = 
   } else if (['attention', 'held', 'draft', 'warning', 'queued', 'dispatching', 'uncertain', 'untracked'].includes(normalized)) {
     styles = "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200 dark:border-amber-800/60";
     dotColor = "bg-amber-500 dark:bg-amber-400";
-  } else if (['failed', 'error'].includes(normalized)) {
+  } else if (['failed', 'error', 'rejected'].includes(normalized)) {
     styles = "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-200 dark:border-rose-800/60";
     dotColor = "bg-rose-500 dark:bg-rose-400";
   } else if (['running'].includes(normalized)) {
@@ -43,12 +45,12 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label, size = 
   const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs font-medium';
 
   let displayLabel = label || status.charAt(0).toUpperCase() + status.slice(1);
-  if (normalized === 'accepted') {
+  if (normalized === 'accepted' && !label) {
     displayLabel = 'Imported';
   }
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border ${sizeClasses} ${styles}`}>
+    <span title={title} className={`inline-flex items-center gap-1.5 rounded-full border ${sizeClasses} ${styles}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
       {displayLabel}
     </span>

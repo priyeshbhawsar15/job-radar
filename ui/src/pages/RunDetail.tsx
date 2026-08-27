@@ -155,6 +155,16 @@ export const RunDetail: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
+                  {j.india_eligible === false ? (
+                    <StatusBadge
+                      status="rejected"
+                      label="Rejected · Non-India"
+                      size="sm"
+                      title={j.india_exclusion_reason ? `Rejected: ${j.india_exclusion_reason}` : 'Rejected · Non-India'}
+                    />
+                  ) : (
+                    <StatusBadge status="healthy" label="Accepted" size="sm" />
+                  )}
                   {j.observation_outcome === 'discovered' && (
                     <span className="px-2 py-1 rounded-md text-[11px] font-semibold bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
                       Discovered

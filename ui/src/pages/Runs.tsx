@@ -113,36 +113,55 @@ export const Runs: React.FC = () => {
           {loading ? (
             <div className="p-8 text-center text-slate-400 font-mono text-xs">Loading execution runs...</div>
           ) : runs.length > 0 ? (
-            runs.map((r) => (
-              <Link
-                key={r.run_id}
-                to={'/runs/' + r.run_id}
-                className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-500 dark:hover:border-teal-500 transition-all group shadow-xs"
-              >
-                <div>
-                  <b className="block text-sm font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
-                    {r.board_name}
-                  </b>
-                  <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
-                    {r.run_id.slice(0, 8)}... · {r.created_at ? new Date(r.created_at).toLocaleTimeString() : 'Recently'}
-                  </span>
-                </div>
+            runs.map((r) => {
+              const isPartial = r.outcome === 'partial';
+              const succeeded = r.enrichment_succeeded ?? 0;
+              const total = r.enrichment_total ?? 0;
+              const pct = total > 0 ? Math.round((succeeded / total) * 100) : 0;
+              const metricText =
+                total > 0
+                  ? `${succeeded}/${total} jobs succeeded · ${pct}%`
+                  : 'No completed job evaluations';
 
-                <div>
-                  <StatusBadge status={r.outcome === 'success' ? 'completed' : r.outcome} />
-                </div>
+              return (
+                <Link
+                  key={r.run_id}
+                  to={'/runs/' + r.run_id}
+                  className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-500 dark:hover:border-teal-500 transition-all group shadow-xs"
+                >
+                  <div>
+                    <b className="block text-sm font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                      {r.board_name}
+                    </b>
+                    <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
+                      {r.run_id.slice(0, 8)}... · {r.created_at ? new Date(r.created_at).toLocaleTimeString() : 'Recently'}
+                    </span>
+                  </div>
 
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  <b className="block text-base font-bold font-mono text-slate-900 dark:text-white">{r.extracted_count}</b>
-                  extracted
-                </div>
+                  <div>
+                    <StatusBadge status={r.outcome === 'success' ? 'completed' : r.outcome} />
+                  </div>
 
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  <b className="block text-base font-bold font-mono text-slate-900 dark:text-white">{r.extracted_count}</b>
-                  accepted
-                </div>
-              </Link>
-            ))
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    <b className="block text-base font-bold font-mono text-slate-900 dark:text-white">{r.extracted_count}</b>
+                    extracted
+                  </div>
+
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    {isPartial ? (
+                      <span className="font-mono text-xs text-amber-600 dark:text-amber-400 font-semibold">
+                        {metricText}
+                      </span>
+                    ) : (
+                      <>
+                        <b className="block text-base font-bold font-mono text-slate-900 dark:text-white">{r.extracted_count}</b>
+                        accepted
+                      </>
+                    )}
+                  </div>
+                </Link>
+              );
+            })
           ) : (
             <div className="p-8 text-center text-xs text-slate-400 font-mono border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
               No pipeline runs recorded yet. Click "Run Pipeline" to execute a scan tick.

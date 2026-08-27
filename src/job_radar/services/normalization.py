@@ -14,7 +14,7 @@ from job_radar.db.models.run import PipelineRun, BoardRun, ExecutionAttempt
 from job_radar.adapters.base import ExtractedCandidate
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
 from job_radar.services.detail_contracts import DetailResult
-from job_radar.services.location import is_india_eligible
+from job_radar.services.location import evaluate_location, is_india_eligible
 from job_radar.services.oracle_detail import extract_oracle_public_id
 from job_radar.services.handoff import HandoffProcessor, handoff_processor
 
@@ -85,6 +85,12 @@ class NormalizationService:
         enrichment_succeeded_count = 0
         enrichment_failed_count = 0
 
+        source_scope = None
+        source_evidence = None
+        if provider_config and isinstance(provider_config, dict):
+            source_scope = provider_config.get("source_country_scope") or provider_config.get("country_scope") or provider_config.get("location_country_scope")
+            source_evidence = provider_config.get("source_scope_evidence") or provider_config.get("scope_evidence")
+
         async with self.session_factory() as session:
             for item in extracted_candidates:
                 title_capped = item.title.strip()[:500]
@@ -103,7 +109,7 @@ class NormalizationService:
                 existing_job = res.scalars().first()
 
                 loc = (item.location.strip()[:200] if item.location and item.location.strip() else None)
-                is_elig, elig_reason = is_india_eligible(loc)
+                eval_res = evaluate_location(loc, source_scope=source_scope, source_evidence=source_evidence)
                 emp_type = (item.employment_type.strip() if item.employment_type else "Full-time")[:200]
                 dept = (item.department.strip() if item.department else "Engineering")[:200]
                 raw_desc = item.extra_payload.get("description")
@@ -112,8 +118,11 @@ class NormalizationService:
                 if existing_job:
                     candidate_id = existing_job.candidate_id
                     existing_job.last_seen_at = datetime.now(timezone.utc)
-                    existing_job.india_eligible = is_elig
-                    existing_job.india_exclusion_reason = elig_reason
+                    existing_job.location_decision = eval_res.decision
+                    existing_job.location_evidence = eval_res.evidence
+                    existing_job.location_confidence = eval_res.confidence
+                    existing_job.india_eligible = eval_res.eligible
+                    existing_job.india_exclusion_reason = eval_res.reason
                     if valid_extra_desc:
                         if not existing_job.description or not description_is_valid(existing_job.description, title=existing_job.title) or len(valid_extra_desc) > len(existing_job.description or ""):
                             existing_job.description = valid_extra_desc
@@ -138,8 +147,11 @@ class NormalizationService:
                         company=company_capped,
                         title=title_capped,
                         location=loc,
-                        india_eligible=is_elig,
-                        india_exclusion_reason=elig_reason,
+                        location_decision=eval_res.decision,
+                        location_evidence=eval_res.evidence,
+                        location_confidence=eval_res.confidence,
+                        india_eligible=eval_res.eligible,
+                        india_exclusion_reason=eval_res.reason,
                         department=dept,
                         employment_type=emp_type,
                         public_apply_url=url_capped,
@@ -177,13 +189,18 @@ class NormalizationService:
                 async with self.session_factory() as session:
                     res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == c_id))
                     cand = res.scalar_one_or_none()
-                    cand_loc = cand.location if cand else None
-                is_eligible, reason = is_india_eligible(cand_loc)
-                if is_eligible:
-                    processor = HandoffProcessor(session_factory=self.session_factory)
-                    await processor.enqueue_candidate_handoff(c_id)
-                else:
-                    logger.info(f"Skipping handoff for candidate {c_id}: excluded by India gate ({reason})")
+                    if cand:
+                        if cand.location_decision:
+                            is_eligible = (cand.location_decision != "NON_INDIA")
+                            reason = cand.india_exclusion_reason
+                        else:
+                            is_eligible, reason = is_india_eligible(cand.location, source_scope=source_scope, source_evidence=source_evidence)
+
+                        if is_eligible:
+                            processor = HandoffProcessor(session_factory=self.session_factory)
+                            await processor.enqueue_candidate_handoff(c_id)
+                        else:
+                            logger.info(f"Skipping handoff for candidate {c_id}: excluded by India gate ({reason})")
             except Exception as h_err:
                 logger.warning(f"Failed to enqueue handoff for valid candidate {c_id}: {h_err}")
 
@@ -221,9 +238,12 @@ class NormalizationService:
                                 job.description = result.description[:40000]
                                 if result.location and result.location.strip() not in ("India", "in", "pageData", ""):
                                     job.location = result.location.strip()[:200]
-                                is_elig, elig_reason = is_india_eligible(job.location)
-                                job.india_eligible = is_elig
-                                job.india_exclusion_reason = elig_reason
+                                eval_res = evaluate_location(job.location, source_scope=source_scope, source_evidence=source_evidence)
+                                job.location_decision = eval_res.decision
+                                job.location_evidence = eval_res.evidence
+                                job.location_confidence = eval_res.confidence
+                                job.india_eligible = eval_res.eligible
+                                job.india_exclusion_reason = eval_res.reason
                                 if result.employment_type:
                                     job.employment_type = result.employment_type[:200]
                                 if result.department:
@@ -245,12 +265,11 @@ class NormalizationService:
                                     f"board={board_id}, family={family}, source={getattr(result, 'source', None)}"
                                 )
                                 try:
-                                    is_eligible, reason = is_india_eligible(job.location)
-                                    if is_eligible:
+                                    if eval_res.eligible:
                                         processor = HandoffProcessor(session_factory=self.session_factory)
                                         await processor.enqueue_candidate_handoff(cand_id)
                                     else:
-                                        logger.info(f"Skipping handoff for candidate {cand_id} post-enrichment: excluded by India gate ({reason})")
+                                        logger.info(f"Skipping handoff for candidate {cand_id} post-enrichment: excluded by India gate ({eval_res.reason})")
                                 except Exception as h_err:
                                     logger.warning(f"Failed to enqueue handoff for {cand_id}: {h_err}")
                                 await session.commit()

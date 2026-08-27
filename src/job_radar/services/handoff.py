@@ -88,11 +88,19 @@ class HandoffProcessor:
         async with self.session_factory() as session:
             cand_res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == candidate_id))
             cand = cand_res.scalar_one_or_none()
-            if cand and cand.location:
-                is_eligible, reason = is_india_eligible(cand.location)
-                if not is_eligible:
-                    logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: {reason}")
+            if cand:
+                if cand.location_decision:
+                    if cand.location_decision == "NON_INDIA":
+                        logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: NON_INDIA location decision ({cand.india_exclusion_reason})")
+                        return None
+                elif cand.india_eligible is False:
+                    logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: {cand.india_exclusion_reason}")
                     return None
+                elif cand.location_decision is None and cand.india_eligible is None and cand.location:
+                    is_eligible, reason = is_india_eligible(cand.location)
+                    if not is_eligible:
+                        logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: {reason}")
+                        return None
 
             # Avoid duplicate outbox queueing for the same candidate
             existing_res = await session.execute(

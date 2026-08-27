@@ -12,7 +12,7 @@ from job_radar.db.models.candidate import CandidateJob
 from job_radar.db.models.handoff import HandoffOutbox
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
 from job_radar.services.handoff import handoff_processor
-from job_radar.services.location import is_india_eligible
+from job_radar.services.location import evaluate_location, is_india_eligible
 
 router = APIRouter(prefix="/jobs", tags=["Normalized Jobs"])
 
@@ -51,6 +51,9 @@ def _serialize_job(j: CandidateJob, job_ops_status: Optional[str] = None) -> dic
         "observation_outcome": getattr(j, "observation_outcome", "discovered"),
         "detail_enrichment_status": j.detail_enrichment_status,
         "detail_enrichment_error_code": j.detail_enrichment_error_code,
+        "location_decision": getattr(j, "location_decision", None),
+        "location_evidence": getattr(j, "location_evidence", None),
+        "location_confidence": getattr(j, "location_confidence", None),
         "india_eligible": elig,
         "india_exclusion_reason": reason,
         "job_ops_status": state or "untracked",
@@ -94,6 +97,9 @@ async def retry_enrichment(
     if isinstance(provider_config, dict):
         family = provider_config.get("family", family)
 
+    source_scope = provider_config.get("source_country_scope") or provider_config.get("country_scope") or provider_config.get("location_country_scope") if isinstance(provider_config, dict) else None
+    source_evidence = provider_config.get("source_scope_evidence") or provider_config.get("scope_evidence") if isinstance(provider_config, dict) else None
+
     err_code = "description_missing"
     result = None
     try:
@@ -113,6 +119,12 @@ async def retry_enrichment(
         candidate.description = result.description[:40000]
         if result.location and result.location.strip() not in ("India", "in", "pageData", ""):
             candidate.location = result.location.strip()[:200]
+        eval_res = evaluate_location(candidate.location, source_scope=source_scope, source_evidence=source_evidence)
+        candidate.location_decision = eval_res.decision
+        candidate.location_evidence = eval_res.evidence
+        candidate.location_confidence = eval_res.confidence
+        candidate.india_eligible = eval_res.eligible
+        candidate.india_exclusion_reason = eval_res.reason
         if result.employment_type:
             candidate.employment_type = result.employment_type[:200]
         if result.department:
@@ -146,7 +158,15 @@ async def push_candidate_to_jobops(
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate job not found")
 
-    is_eligible, reason = is_india_eligible(candidate.location)
+    if candidate.location_decision:
+        is_eligible = (candidate.location_decision != "NON_INDIA")
+        reason = candidate.india_exclusion_reason
+    elif candidate.india_eligible is not None:
+        is_eligible = candidate.india_eligible
+        reason = candidate.india_exclusion_reason
+    else:
+        is_eligible, reason = is_india_eligible(candidate.location)
+
     if not is_eligible:
         return PushJobOpsResponse(status="excluded_non_india", detail=f"Job excluded by India gate: {reason}")
 

@@ -80,7 +80,10 @@ INITIAL_BOARDS = [
     ("board-wynploy", "Wynploy", "zoho", "https://wynploy.zohorecruit.in/jobs/Careers"),
 
     # --- 65 New Boards ---
-    ("board-jll", "JLL", "workday", "https://jll.wd1.myworkdayjobs.com/en-US/jllcareers?locationCountry=c4f78be1a8f14da0ab49ce1162348a5e&timeType=72e81fa31e6f01cf9aa5a4251a4e4e00&jobFamilyGroup=c608fc06410f01484a9fec7aba539450&jobFamilyGroup=f134f8e1c0811001fe9e2695d0c80000"),
+    ("board-jll", "JLL", "workday", "https://jll.wd1.myworkdayjobs.com/en-US/jllcareers?locationCountry=c4f78be1a8f14da0ab49ce1162348a5e&timeType=72e81fa31e6f01cf9aa5a4251a4e4e00&jobFamilyGroup=c608fc06410f01484a9fec7aba539450&jobFamilyGroup=f134f8e1c0811001fe9e2695d0c80000", None, {
+        "source_country_scope": "IN",
+        "source_scope_evidence": "workday_location_country_filter"
+    }),
     ("board-razorpay", "Razorpay", "greenhouse", "https://job-boards.greenhouse.io/razorpaysoftwareprivatelimited?departments%5B%5D=4024806005"),
     ("board-soti", "SOTI", "workday", "https://soti.wd3.myworkdayjobs.com/en-US/Careers?locations=f35dd6d3a7da01adef33e8916446200f&locations=27190dd10fff1074b213f2d1500595ed&EEB_-_Job_Categories_for_External_Site_Extended=267bdbcbbd671001697698c0843a0001"),
     ("board-amgen", "Amgen", "workday", "https://amgen.wd1.myworkdayjobs.com/en-US/Careers?locations=be0893cb78ed012e9c728ee58144ec3b&jobFamilyGroup=3b16b67900e510859633b621ace7c537"),

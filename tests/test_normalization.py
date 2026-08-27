@@ -27,6 +27,36 @@ async def test_session_factory():
     await engine.dispose()
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("family, url, source", [
+    ("greenhouse", "https://job-boards.greenhouse.io/razorpaysoftwareprivatelimited/jobs/4718628005", "greenhouse_api"),
+    ("smartrecruiters", "https://jobs.smartrecruiters.com/Vmware2/83557431", "smartrecruiters_api"),
+])
+async def test_provider_native_detail_enrichment_persists_succeeded(test_session_factory, family, url, source):
+    extractor = AsyncMock()
+    extractor.fetch_and_enrich.return_value = DetailResult(
+        description="Responsibilities include building durable services for customers across global production systems.\nQualifications require experience with Python, cloud systems, and clear communication with engineering partners.\nRequirements include reliable engineering practices, testing discipline, operational ownership, and collaborative problem solving for complex distributed services.",
+        title="Provider Engineer (provider truth)", location="Bengaluru, KA, India", source=source,
+    )
+    service = NormalizationService(session_factory=test_session_factory, detail_extractor=extractor)
+    async with test_session_factory() as session:
+        session.add_all([
+            Board(board_id="provider-board", name="Provider", family=family, status="active"),
+            PipelineRun(pipeline_id="provider-pipeline", trigger="manual", status="running"),
+            BoardRun(board_run_id="provider-run", pipeline_id="provider-pipeline", board_id="provider-board", stage="running", outcome="in_progress"),
+        ])
+        await session.commit()
+    result = await service.ingest_candidates("provider-board", "provider-run", [ExtractedCandidate(
+        title="Provider Engineer", company="Provider", location="Bengaluru, India", raw_url=url, fingerprint=f"fp-{family}",
+    )], family=family)
+    assert result.enrichment_succeeded == 1
+    async with test_session_factory() as session:
+        job = (await session.execute(select(CandidateJob))).scalar_one()
+        assert job.detail_enrichment_status == "succeeded"
+        assert job.title == "Provider Engineer (provider truth)"
+        assert job.detail_enrichment_error_code is None
+
+
+@pytest.mark.asyncio
 async def test_deduplication_and_normalization(test_session_factory):
     mock_extractor = AsyncMock()
     mock_extractor.fetch_and_enrich.return_value = DetailResult(

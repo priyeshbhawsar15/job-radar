@@ -254,6 +254,8 @@ class NormalizationService:
                                     job.employment_type = result.employment_type[:200]
                                 if result.department:
                                     job.department = result.department[:200]
+                                if family in ("greenhouse", "smartrecruiters") and getattr(result, "title", None):
+                                    job.title = result.title.strip()[:500]
                                 if family == "oracle":
                                     new_title = oracle_detail_title_replacement(
                                         current_title=job.title,

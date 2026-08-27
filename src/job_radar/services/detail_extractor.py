@@ -17,6 +17,8 @@ from job_radar.services.phenom_detail import fetch_phenom_detail
 from job_radar.services.workday_detail import fetch_workday_detail
 from job_radar.services.zoho_detail import fetch_zoho_detail_from_html
 from job_radar.services.talent500_detail import fetch_talent500_detail
+from job_radar.services.greenhouse_detail import fetch_greenhouse_detail
+from job_radar.services.smartrecruiters_detail import fetch_smartrecruiters_detail
 
 logger = logging.getLogger(__name__)
 
@@ -206,49 +208,22 @@ class DetailExtractor:
                     public_apply_url, wait_for_selector="div.cw-jobdescription"
                 )
                 return fetch_zoho_detail_from_html(raw_html, public_apply_url)
+            elif family == "greenhouse":
+                result = await fetch_greenhouse_detail(req, client)
+                if result.error_code is None:
+                    return result
+                # A bounded provider-native failure may still have a usable public page.
+            elif family == "smartrecruiters":
+                result = await fetch_smartrecruiters_detail(req, client)
+                if result.error_code is None:
+                    return result
+                # A bounded provider-native failure may still have a usable public page.
 
-            # Greenhouse or Generic fallback logic
+            # Generic fallback logic
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
             }
-            if 'gh_jid=' in public_apply_url or 'greenhouse.io' in public_apply_url:
-                gh_id = None
-                if 'gh_jid=' in public_apply_url:
-                    gh_id = public_apply_url.split('gh_jid=')[-1].split('&')[0]
-                elif '/jobs/' in public_apply_url:
-                    gh_id = public_apply_url.split('/jobs/')[-1].split('?')[0]
-
-                if gh_id and gh_id.isdigit():
-                    slug = "abnormalsecurity" if 'abnormal' in board_name.lower() else ("cognite" if 'cognite' in board_name.lower() else board_name.lower().replace(' ', ''))
-                    api_url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs/{gh_id}"
-                    try:
-                        resp = await client.get(api_url, headers=headers)
-                        if resp.status_code == 200:
-                            data = resp.json()
-                            desc_clean = clean_html_to_text(data.get('content', ''))[:40000]
-                            loc_name = data.get('location', {}).get('name', '')
-                            if 'bangalore' in loc_name.lower() or 'bengaluru' in loc_name.lower():
-                                loc_clean = "Bangalore, India"
-                            elif 'hyderabad' in loc_name.lower():
-                                loc_clean = "Hyderabad, India"
-                            elif loc_name and loc_name.strip() != 'India':
-                                loc_clean = loc_name.strip()[:200]
-                            else:
-                                loc_clean = "Bangalore, India" if 'abnormal' in board_name.lower() else "India"
-
-                            if description_is_valid(desc_clean, title=title):
-                                return DetailResult(
-                                    description=desc_clean,
-                                    location=loc_clean[:200],
-                                    employment_type="Full-time",
-                                    department="Engineering",
-                                    salary_raw="Competitive / Not specified",
-                                    source="greenhouse_api",
-                                )
-                    except Exception:
-                        pass
-
             try:
                 resp = await client.get(public_apply_url, headers=headers)
                 if resp.status_code == 200 and len(resp.text) > 800:

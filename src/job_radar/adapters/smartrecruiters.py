@@ -46,7 +46,9 @@ class SmartRecruitersAdapter(BaseAdapter):
                     continue
 
                 job_id = item.get("id")
-                raw_url = f"https://jobs.smartrecruiters.com/{board_name}/{job_id}" if job_id else target_url
+                company = item.get("company") if isinstance(item.get("company"), dict) else {}
+                company_identifier = company.get("identifier") if isinstance(company.get("identifier"), str) else None
+                raw_url = f"https://jobs.smartrecruiters.com/{company_identifier}/{job_id}" if company_identifier and job_id else target_url
 
                 dept = ""
                 dept_obj = item.get("department", {})
@@ -72,7 +74,7 @@ class SmartRecruitersAdapter(BaseAdapter):
                         employment_type=emp_type or None,
                         raw_url=raw_url,
                         fingerprint=fp,
-                        extra_payload={"smartrecruiters_id": job_id}
+                        extra_payload={"smartrecruiters_id": job_id, "smartrecruiters_company_identifier": company_identifier}
                     )
                 )
             if results:

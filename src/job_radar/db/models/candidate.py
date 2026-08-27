@@ -16,7 +16,7 @@ class CandidateJob(Base):
 
     candidate_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     board_id: Mapped[str] = mapped_column(String(36), ForeignKey("boards.board_id", ondelete="CASCADE"), nullable=False)
-    identity_key: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    identity_key: Mapped[str] = mapped_column(String(255), nullable=False)
     canonical_url_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     company: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -46,6 +46,7 @@ class CandidateJob(Base):
 
     __table_args__ = (
         UniqueConstraint("canonical_url_hash", "board_id", name="uq_candidate_canonical_board"),
+        Index("idx_candidate_identity_key", "identity_key"),
         Index("idx_candidate_discovered", "discovered_at"),
         Index("idx_candidate_enrichment_status", "detail_enrichment_status"),
     )

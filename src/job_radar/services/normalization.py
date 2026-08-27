@@ -6,7 +6,7 @@ import httpx
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Tuple, Optional, Mapping
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, or_
+from sqlalchemy import select, delete
 
 from job_radar.db.session import AsyncSessionLocal
 from job_radar.db.models.candidate import CandidateJob, RunCandidate
@@ -102,8 +102,8 @@ class NormalizationService:
 
                 res = await session.execute(
                     select(CandidateJob).where(
-                        (CandidateJob.board_id == board_id) &
-                        or_(CandidateJob.canonical_url_hash == url_hash, CandidateJob.identity_key == identity_key)
+                        CandidateJob.board_id == board_id,
+                        CandidateJob.canonical_url_hash == url_hash,
                     )
                 )
                 existing_job = res.scalars().first()

@@ -4,10 +4,11 @@ import pytest_asyncio
 from datetime import datetime, timezone, timedelta
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy import select
+from pathlib import Path
 
 from job_radar.db.base import Base
 from job_radar.db.models.board import Board
-from job_radar.db.models.candidate import CandidateJob
+from job_radar.db.models.candidate import CandidateJob, RunCandidate
 from job_radar.db.models.run import PipelineRun, BoardRun
 from job_radar.adapters.base import ExtractedCandidate
 from job_radar.services.normalization import NormalizationService, IngestionResult
@@ -454,3 +455,103 @@ async def test_missing_location_preservation_and_outbox_queueing(test_session_fa
         outbox_entry = outbox_res.scalar_one_or_none()
         assert outbox_entry is not None, "Candidate with missing location must have handoff outbox row queued"
         assert outbox_entry.state == "queued"
+
+
+@pytest.mark.asyncio
+async def test_distinct_urls_with_same_semantic_identity_are_independent_candidates(test_session_factory):
+    from job_radar.db.models.handoff import HandoffOutbox
+
+    valid_description = (
+        "<p>Responsibilities include building reliable distributed services for customers.</p>\n"
+        "<p>Qualifications include five years of Python and database experience.</p>\n"
+        "<p>Requirements include excellent communication and system design skills.</p>"
+    )
+    extractor = AsyncMock()
+    extractor.fetch_and_enrich.return_value = DetailResult(
+        description=valid_description,
+        location="Bengaluru, India",
+        source="test",
+        error_code=None,
+    )
+    norm_svc = NormalizationService(session_factory=test_session_factory, detail_extractor=extractor)
+    async with test_session_factory() as session:
+        session.add_all([
+            Board(board_id="board-url", name="Acme", family="generic", status="active"),
+            PipelineRun(pipeline_id="p-url", trigger="manual", status="running"),
+            BoardRun(board_run_id="br-url", pipeline_id="p-url", board_id="board-url", stage="running", outcome="in_progress"),
+        ])
+        await session.commit()
+
+    candidates = [
+        ExtractedCandidate(title="Engineer", company="Acme", location="Bengaluru, India", raw_url="https://jobs.acme.test/T500-1", fingerprint="same-semantic-key"),
+        ExtractedCandidate(title="Engineer", company="Acme", location="Bengaluru, India", raw_url="https://jobs.acme.test/T500-2", fingerprint="same-semantic-key"),
+    ]
+    result = await norm_svc.ingest_candidates("board-url", "br-url", candidates)
+    assert result.created_count == 2
+    assert result.enrichment_succeeded == 2
+    assert extractor.fetch_and_enrich.await_count == 2
+
+    async with test_session_factory() as session:
+        jobs = (await session.execute(select(CandidateJob).where(CandidateJob.board_id == "board-url"))).scalars().all()
+        assert len(jobs) == 2
+        assert len({job.identity_key for job in jobs}) == 1
+        assert len({job.canonical_url_hash for job in jobs}) == 2
+        assert len((await session.execute(select(RunCandidate).where(RunCandidate.run_id == "br-url"))).scalars().all()) == 2
+        assert len((await session.execute(select(HandoffOutbox))).scalars().all()) == 2
+
+
+@pytest.mark.asyncio
+async def test_same_board_url_is_reobserved_but_same_url_on_another_board_is_allowed(test_session_factory):
+    extractor = AsyncMock()
+    extractor.fetch_and_enrich.return_value = DetailResult.empty(error_code="description_missing")
+    norm_svc = NormalizationService(session_factory=test_session_factory, detail_extractor=extractor)
+    async with test_session_factory() as session:
+        session.add_all([
+            Board(board_id="board-one", name="Acme", family="generic", status="active"),
+            Board(board_id="board-two", name="Acme Two", family="generic", status="active"),
+            PipelineRun(pipeline_id="p-reobs", trigger="manual", status="running"),
+            BoardRun(board_run_id="br-one", pipeline_id="p-reobs", board_id="board-one", stage="running", outcome="in_progress"),
+            BoardRun(board_run_id="br-two", pipeline_id="p-reobs", board_id="board-one", stage="running", outcome="in_progress"),
+            BoardRun(board_run_id="br-other", pipeline_id="p-reobs", board_id="board-two", stage="running", outcome="in_progress"),
+        ])
+        await session.commit()
+
+    item = ExtractedCandidate(title="Engineer", company="Acme", location="Bengaluru, India", raw_url="https://jobs.acme.test/role/1", fingerprint="same-semantic-key")
+    assert (await norm_svc.ingest_candidates("board-one", "br-one", [item])).created_count == 1
+    assert (await norm_svc.ingest_candidates("board-one", "br-two", [item])).created_count == 0
+    assert (await norm_svc.ingest_candidates("board-two", "br-other", [item])).created_count == 1
+
+    async with test_session_factory() as session:
+        jobs = (await session.execute(select(CandidateJob))).scalars().all()
+        assert len(jobs) == 2
+        board_one_candidate = next(job for job in jobs if job.board_id == "board-one")
+        one_links = (await session.execute(select(RunCandidate).where(RunCandidate.candidate_id == board_one_candidate.candidate_id))).scalars().all()
+        assert {link.observation_outcome for link in one_links} == {"discovered", "re_observed"}
+
+
+@pytest.mark.asyncio
+async def test_talent500_fixture_duplicate_title_and_location_urls_persist_separately(test_session_factory):
+    from job_radar.adapters.talent500 import Talent500Adapter
+
+    payload = Path("tests/fixtures/talent500/mcd.json").read_text()
+    extracted = Talent500Adapter().parse_raw_payload(payload, "McD", "https://talent500.com/joblist/")
+    duplicates = [candidate for candidate in extracted if candidate.title == "Coordinator, Accounting Operations"]
+    assert len(duplicates) == 2
+    assert len({candidate.raw_url for candidate in duplicates}) == 2
+    assert all("T500-" in candidate.raw_url for candidate in duplicates)
+
+    norm_svc = NormalizationService(session_factory=test_session_factory, detail_extractor=AsyncMock())
+    async with test_session_factory() as session:
+        session.add_all([
+            Board(board_id="board-mcd-fixture", name="McD", family="talent500", status="active"),
+            PipelineRun(pipeline_id="p-mcd-fixture", trigger="manual", status="running"),
+            BoardRun(board_run_id="br-mcd-fixture", pipeline_id="p-mcd-fixture", board_id="board-mcd-fixture", stage="running", outcome="in_progress"),
+        ])
+        await session.commit()
+    result = await norm_svc.ingest_candidates("board-mcd-fixture", "br-mcd-fixture", duplicates, family="talent500")
+    assert result.created_count == 2
+    async with test_session_factory() as session:
+        jobs = (await session.execute(select(CandidateJob).where(CandidateJob.board_id == "board-mcd-fixture"))).scalars().all()
+        assert len(jobs) == 2
+        assert len({job.identity_key for job in jobs}) == 1
+        assert len({job.public_apply_url for job in jobs}) == 2

@@ -217,6 +217,167 @@ async def test_manual_push_and_handoff_processor_same_policy(session_factory):
             assert res_ni.status == "excluded_non_india"
 
 
+def test_join_us_remotely_decision():
+    res = evaluate_location("Join us remotely")
+    assert res.decision == LocationDecision.UNKNOWN
+    assert res.eligible is True
+
+
+def test_lowercase_in_vs_uppercase_in():
+    res_lower = evaluate_location("in")
+    assert res_lower.decision == LocationDecision.UNKNOWN
+    assert res_lower.eligible is True
+
+    res_upper = evaluate_location("IN")
+    assert res_upper.decision == LocationDecision.INDIA
+    assert res_upper.eligible is True
+
+
+def test_multiword_foreign_cities():
+    for loc in ["New York", "San Francisco, CA", "Tel Aviv", "San Jose", "Sao Paulo"]:
+        res = evaluate_location(loc)
+        assert res.decision == LocationDecision.NON_INDIA, f"Failed for location: {loc}"
+        assert res.eligible is False
+
+
+@pytest.mark.asyncio
+async def test_legacy_candidate_handling(session_factory):
+    processor = HandoffProcessor(session_factory=session_factory)
+
+    async with session_factory() as session:
+        b = Board(board_id="b-legacy", name="B Legacy", family="g", status="reviewed")
+        session.add(b)
+        # Legacy row: location_decision is None, stale india_eligible=False, location="2 Locations"
+        c_legacy_allowed = CandidateJob(
+            candidate_id="c-leg-allowed",
+            board_id="b-legacy",
+            identity_key="ik-leg-1",
+            canonical_url_hash="hash-leg-1",
+            title="T1",
+            company="C",
+            location="2 Locations",
+            public_apply_url="https://a.com/leg1",
+            location_decision=None,
+            india_eligible=False,
+            india_exclusion_reason="Stale reason",
+            description="Valid detail description for legacy candidate",
+        )
+        # Legacy row: location_decision is None, stale india_eligible=True, location="London, UK"
+        c_legacy_blocked = CandidateJob(
+            candidate_id="c-leg-blocked",
+            board_id="b-legacy",
+            identity_key="ik-leg-2",
+            canonical_url_hash="hash-leg-2",
+            title="T2",
+            company="C",
+            location="London, UK",
+            public_apply_url="https://a.com/leg2",
+            location_decision=None,
+            india_eligible=True,
+            description="Valid detail description for legacy candidate",
+        )
+        session.add_all([c_legacy_allowed, c_legacy_blocked])
+        await session.commit()
+
+    # Automatic enqueue check (without real Job Ops calls)
+    out_allowed = await processor.enqueue_candidate_handoff("c-leg-allowed")
+    assert out_allowed is not None
+
+    out_blocked = await processor.enqueue_candidate_handoff("c-leg-blocked")
+    assert out_blocked is None
+
+    # Manual gate check via push_candidate_to_jobops
+    with patch("job_radar.api.v1.jobs.handoff_processor.session_factory", session_factory), \
+         patch("job_radar.api.v1.jobs.handoff_processor.client.push_candidate", new_callable=AsyncMock) as mock_push, \
+         patch("job_radar.services.handoff.load_settings") as mock_settings:
+        mock_settings.return_value.handoff_enabled = True
+        mock_settings.return_value.jobops_import_batch_size = 50
+        mock_push.return_value = True
+
+        async with session_factory() as db:
+            res_allowed = await push_candidate_to_jobops("c-leg-allowed", db=db)
+            assert res_allowed.status in ("imported", "queued")
+
+            res_blocked = await push_candidate_to_jobops("c-leg-blocked", db=db)
+            assert res_blocked.status == "excluded_non_india"
+
+
+@pytest.mark.asyncio
+async def test_reobservation_updates_raw_location_and_evidence(session_factory):
+    async with session_factory() as session:
+        pr = PipelineRun(pipeline_id="pipe-reobs", trigger="manual", status="running", total_boards=1)
+        session.add(pr)
+        b = Board(board_id="board-reobs", name="Reobs Board", family="generic", status="reviewed")
+        session.add(b)
+        br = BoardRun(board_run_id="run-reobs-1", pipeline_id="pipe-reobs", board_id="board-reobs", stage="running", outcome="in_progress")
+        br2 = BoardRun(board_run_id="run-reobs-2", pipeline_id="pipe-reobs", board_id="board-reobs", stage="running", outcome="in_progress")
+        session.add_all([br, br2])
+
+        # Pre-existing candidate in DB with location "2 Locations"
+        cand = CandidateJob(
+            candidate_id="c-reobs-1",
+            board_id="board-reobs",
+            identity_key="reobs-fp-1",
+            canonical_url_hash=compute_url_hash_val("https://example.com/reobs"),
+            title="Engineer",
+            company="Acme Corp",
+            location="2 Locations",
+            location_decision=LocationDecision.UNKNOWN,
+            location_evidence="unresolved_location: 2 Locations",
+            india_eligible=True,
+            public_apply_url="https://example.com/reobs",
+            description="Valid detail description for reobs candidate",
+        )
+        session.add(cand)
+        await session.commit()
+
+    norm_svc = NormalizationService(session_factory=session_factory, detail_extractor=MagicMock())
+
+    # Re-observe candidate with updated location "London, UK"
+    reobs_cand = ExtractedCandidate(
+        title="Engineer",
+        company="Acme Corp",
+        location="London, UK",
+        department="Eng",
+        employment_type="Full-time",
+        raw_url="https://example.com/reobs",
+        fingerprint="reobs-fp-1",
+        extra_payload={"description": "Valid detail description for reobs candidate"},
+    )
+
+    with patch("job_radar.services.normalization.HandoffProcessor.enqueue_candidate_handoff", new_callable=AsyncMock):
+        await norm_svc.ingest_candidates("board-reobs", "run-reobs-1", [reobs_cand])
+
+    async with session_factory() as session:
+        j = (await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == "c-reobs-1"))).scalar_one()
+        assert j.location == "London, UK"
+        assert j.location_decision == LocationDecision.NON_INDIA
+        assert "London" in j.location_evidence or "UK" in j.location_evidence
+        assert j.india_eligible is False
+
+    # Re-observe candidate with blank location: should retain existing "London, UK" and classify it
+    reobs_blank_cand = ExtractedCandidate(
+        title="Engineer",
+        company="Acme Corp",
+        location="",
+        department="Eng",
+        employment_type="Full-time",
+        raw_url="https://example.com/reobs",
+        fingerprint="reobs-fp-1",
+        extra_payload={"description": "Valid detail description for reobs candidate"},
+    )
+
+    with patch("job_radar.services.normalization.HandoffProcessor.enqueue_candidate_handoff", new_callable=AsyncMock):
+        await norm_svc.ingest_candidates("board-reobs", "run-reobs-2", [reobs_blank_cand])
+
+    async with session_factory() as session:
+        j2 = (await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == "c-reobs-1"))).scalar_one()
+        assert j2.location == "London, UK"
+        assert j2.location_decision == LocationDecision.NON_INDIA
+        assert "London" in j2.location_evidence or "UK" in j2.location_evidence
+        assert j2.india_eligible is False
+
+
 @pytest.mark.asyncio
 async def test_jll_multilocations_with_config_not_rejected(session_factory):
     async with session_factory() as session:

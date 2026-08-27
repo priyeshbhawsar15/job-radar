@@ -109,7 +109,6 @@ class NormalizationService:
                 existing_job = res.scalars().first()
 
                 loc = (item.location.strip()[:200] if item.location and item.location.strip() else None)
-                eval_res = evaluate_location(loc, source_scope=source_scope, source_evidence=source_evidence)
                 emp_type = (item.employment_type.strip() if item.employment_type else "Full-time")[:200]
                 dept = (item.department.strip() if item.department else "Engineering")[:200]
                 raw_desc = item.extra_payload.get("description")
@@ -118,6 +117,12 @@ class NormalizationService:
                 if existing_job:
                     candidate_id = existing_job.candidate_id
                     existing_job.last_seen_at = datetime.now(timezone.utc)
+
+                    if loc:
+                        existing_job.location = loc
+                    target_loc = existing_job.location
+
+                    eval_res = evaluate_location(target_loc, source_scope=source_scope, source_evidence=source_evidence)
                     existing_job.location_decision = eval_res.decision
                     existing_job.location_evidence = eval_res.evidence
                     existing_job.location_confidence = eval_res.confidence
@@ -137,6 +142,7 @@ class NormalizationService:
                     else:
                         enrichment_succeeded_count += 1
                 else:
+                    eval_res = evaluate_location(loc, source_scope=source_scope, source_evidence=source_evidence)
                     initial_status = "succeeded" if valid_extra_desc else "pending"
                     initial_enriched_at = datetime.now(timezone.utc) if valid_extra_desc else None
 

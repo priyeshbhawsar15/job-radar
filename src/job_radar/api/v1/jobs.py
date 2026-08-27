@@ -25,11 +25,13 @@ def _serialize_job(j: CandidateJob, job_ops_status: Optional[str] = None) -> dic
                 state = j.handoff_outbox.state
         except Exception:
             state = "untracked"
-    if getattr(j, "india_eligible", None) is not None:
-        elig = j.india_eligible
+    if getattr(j, "location_decision", None):
+        elig = (j.location_decision != "NON_INDIA")
         reason = j.india_exclusion_reason
     else:
-        elig, reason = is_india_eligible(j.location)
+        eval_res = evaluate_location(j.location)
+        elig = eval_res.eligible
+        reason = eval_res.reason
 
     return {
         "candidate_id": j.candidate_id,
@@ -161,11 +163,11 @@ async def push_candidate_to_jobops(
     if candidate.location_decision:
         is_eligible = (candidate.location_decision != "NON_INDIA")
         reason = candidate.india_exclusion_reason
-    elif candidate.india_eligible is not None:
-        is_eligible = candidate.india_eligible
-        reason = candidate.india_exclusion_reason
     else:
-        is_eligible, reason = is_india_eligible(candidate.location)
+        # Legacy candidate with location_decision is None: do not trust stale india_eligible boolean.
+        eval_res = evaluate_location(candidate.location)
+        is_eligible = (eval_res.decision != "NON_INDIA")
+        reason = eval_res.reason
 
     if not is_eligible:
         return PushJobOpsResponse(status="excluded_non_india", detail=f"Job excluded by India gate: {reason}")

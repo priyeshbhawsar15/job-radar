@@ -14,7 +14,7 @@ from job_radar.db.models.handoff import HandoffOutbox, HandoffAttempt
 from job_radar.db.models.candidate import CandidateJob
 from job_radar.services.detail_extractor import description_is_valid
 from job_radar.services.settings_store import load_settings
-from job_radar.services.location import is_india_eligible
+from job_radar.services.location import is_india_eligible, evaluate_location
 
 logger = logging.getLogger(__name__)
 
@@ -93,13 +93,12 @@ class HandoffProcessor:
                     if cand.location_decision == "NON_INDIA":
                         logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: NON_INDIA location decision ({cand.india_exclusion_reason})")
                         return None
-                elif cand.india_eligible is False:
-                    logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: {cand.india_exclusion_reason}")
-                    return None
-                elif cand.location_decision is None and cand.india_eligible is None and cand.location:
-                    is_eligible, reason = is_india_eligible(cand.location)
-                    if not is_eligible:
-                        logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: {reason}")
+                else:
+                    # Legacy candidate with location_decision is None: do not trust stale india_eligible boolean.
+                    # Recompute with evaluate_location from raw location and block ONLY if recomputed decision is NON_INDIA.
+                    eval_res = evaluate_location(cand.location)
+                    if eval_res.decision == "NON_INDIA":
+                        logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: recomputed NON_INDIA location decision ({eval_res.reason})")
                         return None
 
             # Avoid duplicate outbox queueing for the same candidate

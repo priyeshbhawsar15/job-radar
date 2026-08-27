@@ -69,69 +69,50 @@ def _extract_signals(loc_str: str) -> Tuple[List[str], List[str]]:
     if not loc_str:
         return [], []
 
-    loc_clean = loc_str.strip().lower()
+    loc_raw = loc_str.strip()
+    loc_clean = loc_raw.lower()
     indian_signals: List[str] = []
     foreign_signals: List[str] = []
 
-    # 1. Multi-word Indian phrases
-    for phrase in ["new delhi", "delhi ncr", "tamil nadu", "uttar pradesh", "west bengal", "andhra pradesh", "madhya pradesh"]:
-        if phrase in loc_clean:
-            indian_signals.append(phrase.title())
+    def _add_signal(target_list: List[str], sig: str):
+        if sig not in target_list:
+            target_list.append(sig)
 
-    # 2. Check explicit country name "india"
-    tokens_lower = set(re.split(r'[^a-zA-Z0-9]+', loc_clean))
+    # 1. Indian Cities & States (multi-word and single-word phrases)
+    all_indian_phrases = sorted(
+        list(INDIAN_CITIES_HUB | INDIAN_STATES | {"india"}),
+        key=lambda x: len(x),
+        reverse=True
+    )
+    for phrase in all_indian_phrases:
+        if re.search(r'\b' + re.escape(phrase) + r'\b', loc_clean):
+            _add_signal(indian_signals, "India" if phrase == "india" else phrase.title())
 
-    if "india" in tokens_lower:
-        indian_signals.append("India")
+    # 2. Indian country codes & state codes (case-sensitive structured or exact uppercase)
+    all_indian_codes = INDIAN_STATE_CODES | {"IN", "IND"}
+    for code in all_indian_codes:
+        if loc_raw == code:
+            _add_signal(indian_signals, code)
+        elif re.search(r'(?:^|[\s,(\[/-])' + re.escape(code) + r'(?:[\s,)\]/-]|$)', loc_raw):
+            _add_signal(indian_signals, code)
 
-    # 3. Check exact uppercase or structured country code for India (IN / IND)
-    # Must NOT match preposition "in" (e.g. "Remote in Europe")
-    loc_raw = loc_str.strip()
-    if loc_raw.upper() in ("IN", "IND"):
-        indian_signals.append(loc_raw.upper())
-    elif re.search(r'(?:,\s*|\(\s*|\[\s*|-\s*|/\s*)\b(IN|IND)\b(?:\s*,|\s*\)|\s*\]|\s*-|\s*/|$)', loc_raw):
-        indian_signals.append("IN")
-    elif re.search(r',\s*(?:in|ind)\s*$', loc_clean):
-        indian_signals.append("IN")
+    # 3. Foreign Cities & Countries/Regions (multi-word and single-word phrases)
+    # Exclude short codes/ambiguous tokens ("us", "uk", "usa", "ca", "in") from case-insensitive phrase matching
+    all_foreign_phrases = sorted(
+        list(FOREIGN_CITIES | (FOREIGN_COUNTRIES_REGIONS - {"us", "uk", "usa", "ca", "in"})),
+        key=lambda x: len(x),
+        reverse=True
+    )
+    for phrase in all_foreign_phrases:
+        if re.search(r'\b' + re.escape(phrase) + r'\b', loc_clean):
+            _add_signal(foreign_signals, phrase.title())
 
-    # 4. Check Indian state codes (e.g. ", KA", "(HR)", "Bengaluru, KA")
-    for st_code in INDIAN_STATE_CODES:
-        if re.search(r'(?:,\s*|\(\s*|\[\s*|-\s*|/\s*)\b' + st_code + r'\b(?:\s*,|\s*\)|\s*\]|\s*-|\s*/|$)', loc_raw):
-            if st_code not in indian_signals:
-                indian_signals.append(st_code)
-
-    # 5. Check Indian city and state keywords
-    for tok in tokens_lower:
-        if tok in INDIAN_CITIES_HUB:
-            if tok.title() not in indian_signals:
-                indian_signals.append(tok.title())
-        elif tok in INDIAN_STATES:
-            if tok.title() not in indian_signals:
-                indian_signals.append(tok.title())
-
-    # 6. Check Foreign multi-word phrases
-    for phrase in ["united states", "united kingdom", "north america", "south america"]:
-        if phrase in loc_clean:
-            foreign_signals.append(phrase.title())
-
-    # 7. Check Foreign cities, countries, and regions
-    for tok in tokens_lower:
-        if tok in FOREIGN_CITIES:
-            if tok.title() not in foreign_signals:
-                foreign_signals.append(tok.title())
-        elif tok in FOREIGN_COUNTRIES_REGIONS and tok not in ("us", "uk", "in"):
-            if tok.title() not in foreign_signals:
-                foreign_signals.append(tok.title())
-
-    # 8. Check Foreign country/state codes in structured format or capital tokens
+    # 4. Foreign Country Codes (case-sensitive structured or exact uppercase)
     for f_code in FOREIGN_COUNTRY_CODES:
-        if f_code in ("US", "UK", "USA", "CA"):
-            if f_code.lower() in tokens_lower or re.search(r'(?:,\s*|\(\s*|\[\s*|-\s*|/\s*)\b' + f_code + r'\b(?:\s*,|\s*\)|\s*\]|\s*-|\s*/|$)', loc_raw):
-                if f_code not in foreign_signals:
-                    foreign_signals.append(f_code)
-        elif re.search(r'(?:,\s*|\(\s*|\[\s*|-\s*|/\s*)\b' + f_code + r'\b(?:\s*,|\s*\)|\s*\]|\s*-|\s*/|$)', loc_raw):
-            if f_code not in foreign_signals:
-                foreign_signals.append(f_code)
+        if loc_raw == f_code:
+            _add_signal(foreign_signals, f_code)
+        elif re.search(r'(?:^|[\s,(\[/-])' + re.escape(f_code) + r'(?:[\s,)\]/-]|$)', loc_raw):
+            _add_signal(foreign_signals, f_code)
 
     return indian_signals, foreign_signals
 

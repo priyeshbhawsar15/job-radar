@@ -26,9 +26,66 @@ async def test_get_settings_returns_defaults(client: AsyncClient):
     data = resp.json()
     assert data["scheduler_enabled"] is False
     assert data["scheduler_interval_hours"] is None
+    assert data["scheduler_anchor_time"] == "18:00"
     assert data["selected_board_ids"] == []
     assert data["handoff_enabled"] is False
     assert data["jobops_endpoint"] is None
+
+
+@pytest.mark.asyncio
+async def test_legacy_settings_file_without_anchor_defaults_to_1800(client: AsyncClient, isolated_settings_file):
+    isolated_settings_file.parent.mkdir(parents=True, exist_ok=True)
+    isolated_settings_file.write_text(json.dumps({"scheduler_enabled": True, "scheduler_interval_hours": 12}))
+
+    resp = await client.get("/api/v1/settings")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["scheduler_anchor_time"] == "18:00"
+    assert data["scheduler_enabled"] is True
+    assert data["scheduler_interval_hours"] == 12
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("valid_value", ["00:00", "18:00", "23:59", "06:30"])
+async def test_patch_settings_accepts_valid_anchor_times(client: AsyncClient, valid_value):
+    resp = await client.patch("/api/v1/settings", json={"scheduler_anchor_time": valid_value})
+    assert resp.status_code == 200
+    assert resp.json()["scheduler_anchor_time"] == valid_value
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "invalid_value", ["24:00", "18:60", "9:05", "18:5", "1800", "", "abc", "18:00:00"]
+)
+async def test_patch_settings_rejects_invalid_anchor_times(
+    client: AsyncClient, isolated_settings_file, invalid_value
+):
+    # Persist a known-good baseline first.
+    await client.patch("/api/v1/settings", json={"scheduler_anchor_time": "09:15"})
+
+    resp = await client.patch("/api/v1/settings", json={"scheduler_anchor_time": invalid_value})
+    assert resp.status_code == 422
+
+    # Persisted settings must not be corrupted by the rejected request.
+    resp2 = await client.get("/api/v1/settings")
+    assert resp2.json()["scheduler_anchor_time"] == "09:15"
+
+
+@pytest.mark.asyncio
+async def test_patch_settings_anchor_time_persists(client: AsyncClient, isolated_settings_file):
+    resp = await client.patch("/api/v1/settings", json={"scheduler_anchor_time": "07:45"})
+    assert resp.status_code == 200
+    assert resp.json()["scheduler_anchor_time"] == "07:45"
+
+    persisted = json.loads(isolated_settings_file.read_text())
+    assert persisted["scheduler_anchor_time"] == "07:45"
+
+
+@pytest.mark.asyncio
+async def test_patch_settings_anchor_time_does_not_enable_scheduler(client: AsyncClient):
+    resp = await client.patch("/api/v1/settings", json={"scheduler_anchor_time": "10:00"})
+    assert resp.status_code == 200
+    assert resp.json()["scheduler_enabled"] is False
 
 
 @pytest.mark.asyncio
@@ -73,6 +130,33 @@ async def test_patch_settings_partial_update_preserves_other_fields(client: Asyn
     assert data["scheduler_interval_hours"] == 6
     assert data["selected_board_ids"] == ["board-a"]
     assert data["handoff_enabled"] is True
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("valid_value", [6, 12, 24, None])
+async def test_patch_settings_accepts_valid_interval_hours(client: AsyncClient, valid_value):
+    resp = await client.patch("/api/v1/settings", json={"scheduler_interval_hours": valid_value})
+    assert resp.status_code == 200
+    assert resp.json()["scheduler_interval_hours"] == valid_value
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("invalid_value", [5, 0, 8, 1, 23, -6])
+async def test_patch_settings_rejects_invalid_interval_hours(
+    client: AsyncClient, isolated_settings_file, invalid_value
+):
+    # Persist a known-good baseline first.
+    await client.patch("/api/v1/settings", json={"scheduler_interval_hours": 12})
+
+    resp = await client.patch("/api/v1/settings", json={"scheduler_interval_hours": invalid_value})
+    assert resp.status_code == 422
+
+    # Persisted settings must not be corrupted by the rejected request.
+    resp2 = await client.get("/api/v1/settings")
+    assert resp2.json()["scheduler_interval_hours"] == 12
+
+    persisted = json.loads(isolated_settings_file.read_text())
+    assert persisted["scheduler_interval_hours"] == 12
 
 
 _ORIGINAL_ASYNC_CLIENT_POST = httpx.AsyncClient.post

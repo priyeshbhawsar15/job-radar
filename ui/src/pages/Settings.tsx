@@ -5,6 +5,7 @@ import { formatLocalTimestamp } from '../utils/dateUtils';
 interface AppSettings {
   scheduler_enabled: boolean;
   scheduler_interval_hours: number | null;
+  scheduler_anchor_time: string;
   selected_board_ids: string[];
   handoff_enabled: boolean;
   jobops_endpoint: string | null;
@@ -30,6 +31,7 @@ export const Settings: React.FC = () => {
   const [boards, setBoards] = useState<BoardOption[]>([]);
   const [schedulerEnabled, setSchedulerEnabled] = useState<boolean>(false);
   const [intervalHours, setIntervalHours] = useState<string>('disabled');
+  const [anchorTime, setAnchorTime] = useState<string>('18:00');
   const [selectedBoardIds, setSelectedBoardIds] = useState<string[]>([]);
   const [handoffEnabled, setHandoffEnabled] = useState<boolean>(false);
   const [jobopsEndpoint, setJobopsEndpoint] = useState<string>('');
@@ -43,6 +45,7 @@ export const Settings: React.FC = () => {
   const [webhookTestStatus, setWebhookTestStatus] = useState<WebhookTestStatus>('idle');
   const [webhookTestMessage, setWebhookTestMessage] = useState<string>('');
   const [savedMsg, setSavedMsg] = useState<boolean>(false);
+  const [saveError, setSaveError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -57,6 +60,7 @@ export const Settings: React.FC = () => {
           setIntervalHours(
             settingsData.scheduler_interval_hours ? String(settingsData.scheduler_interval_hours) : 'disabled'
           );
+          setAnchorTime(settingsData.scheduler_anchor_time || '18:00');
           setSelectedBoardIds(settingsData.selected_board_ids || []);
           setHandoffEnabled(settingsData.handoff_enabled);
           setJobopsEndpoint(settingsData.jobops_endpoint || '');
@@ -84,12 +88,14 @@ export const Settings: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    setSaveError('');
     fetch('/api/v1/settings', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         scheduler_enabled: schedulerEnabled,
         scheduler_interval_hours: intervalHours === 'disabled' ? null : Number(intervalHours),
+        scheduler_anchor_time: anchorTime,
         selected_board_ids: selectedBoardIds,
         handoff_enabled: handoffEnabled,
         jobops_endpoint: jobopsEndpoint || null,
@@ -101,13 +107,26 @@ export const Settings: React.FC = () => {
         jobops_import_batch_size: jobopsImportBatchSize,
       }),
     })
-      .then((res) => res.json())
-      .then((data: AppSettings) => {
+      .then((res) =>
+        res.json().then((data) => ({ ok: res.ok, status: res.status, data })).catch(() => ({
+          ok: res.ok,
+          status: res.status,
+          data: null,
+        }))
+      )
+      .then(({ ok, status, data }) => {
+        if (!ok || !data) {
+          const detail =
+            (data && (data.detail?.[0]?.msg || data.detail || data.message)) ||
+            `Request failed with status ${status}`;
+          setSaveError(typeof detail === 'string' ? detail : 'Failed to save settings.');
+          return;
+        }
         setSettings(data);
         setSavedMsg(true);
         setTimeout(() => setSavedMsg(false), 3000);
       })
-      .catch((err) => alert('Error saving settings: ' + err));
+      .catch((err) => setSaveError('Error saving settings: ' + err));
   };
 
   const handleTestConnection = () => {
@@ -185,6 +204,12 @@ export const Settings: React.FC = () => {
         <div className="p-3.5 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-900 dark:text-teal-300 text-xs flex items-center gap-2 font-bold">
           <CheckCircle className="w-4 h-4 text-teal-500 shrink-0" />
           <span>Settings saved successfully.</span>
+        </div>
+      )}
+
+      {saveError && (
+        <div className="p-3.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-800 dark:text-red-300 text-xs flex items-center gap-2 font-bold">
+          <span>Failed to save settings: {saveError}</span>
         </div>
       )}
 
@@ -276,6 +301,22 @@ export const Settings: React.FC = () => {
               <option value="12">Every 12 hours</option>
               <option value="24">Every 24 hours</option>
             </select>
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="anchorTime" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Schedule anchor time (IST)
+            </label>
+            <input
+              id="anchorTime"
+              type="time"
+              value={anchorTime}
+              onChange={(e) => setAnchorTime(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            />
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              All scheduled runs are phase-aligned to this time in Asia/Kolkata (IST). Default is 18:00.
+            </p>
           </div>
 
           <div className="space-y-2">

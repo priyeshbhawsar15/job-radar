@@ -2,11 +2,12 @@ from typing import List, Optional
 
 import httpx
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from job_radar.config import settings as app_config
 from job_radar.services.settings_store import AppSettingsModel, load_settings, save_settings
 from job_radar.services.scheduler import scheduler_service
+from job_radar.services.scheduler_alignment import ALLOWED_INTERVAL_HOURS, DEFAULT_ANCHOR_TIME, is_valid_anchor_time
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 
@@ -14,6 +15,7 @@ router = APIRouter(prefix="/settings", tags=["Settings"])
 class SettingsResponse(BaseModel):
     scheduler_enabled: bool
     scheduler_interval_hours: Optional[int] = None
+    scheduler_anchor_time: str = DEFAULT_ANCHOR_TIME
     selected_board_ids: List[str] = []
     handoff_enabled: bool
     jobops_endpoint: Optional[str] = None
@@ -29,6 +31,7 @@ class SettingsResponse(BaseModel):
 class UpdateSettingsRequest(BaseModel):
     scheduler_enabled: Optional[bool] = None
     scheduler_interval_hours: Optional[int] = None
+    scheduler_anchor_time: Optional[str] = None
     selected_board_ids: Optional[List[str]] = None
     handoff_enabled: Optional[bool] = None
     jobops_endpoint: Optional[str] = None
@@ -38,6 +41,24 @@ class UpdateSettingsRequest(BaseModel):
     discord_webhook_url: Optional[str] = None
     global_browser_concurrency: Optional[int] = None
     jobops_import_batch_size: Optional[int] = None
+
+    @field_validator("scheduler_anchor_time")
+    @classmethod
+    def _validate_anchor_time(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and not is_valid_anchor_time(value):
+            raise ValueError(
+                f"scheduler_anchor_time must be a strict HH:mm value (00:00-23:59), got {value!r}"
+            )
+        return value
+
+    @field_validator("scheduler_interval_hours")
+    @classmethod
+    def _validate_interval_hours(cls, value: Optional[int]) -> Optional[int]:
+        if value is not None and value not in ALLOWED_INTERVAL_HOURS:
+            raise ValueError(
+                f"scheduler_interval_hours must be one of {ALLOWED_INTERVAL_HOURS} or None, got {value!r}"
+            )
+        return value
 
 
 class TestJobOpsResponse(BaseModel):
@@ -74,6 +95,7 @@ def _to_response(stored) -> SettingsResponse:
     return SettingsResponse(
         scheduler_enabled=stored.scheduler_enabled,
         scheduler_interval_hours=stored.scheduler_interval_hours,
+        scheduler_anchor_time=stored.scheduler_anchor_time,
         selected_board_ids=stored.selected_board_ids,
         handoff_enabled=stored.handoff_enabled,
         jobops_endpoint=stored.jobops_endpoint or app_config.JOBOPS_ENDPOINT,

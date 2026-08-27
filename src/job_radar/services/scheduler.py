@@ -1,13 +1,12 @@
 import logging
-from datetime import datetime, timezone
 from typing import List
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.interval import IntervalTrigger
 from sqlalchemy import select
 
 from job_radar.db.session import AsyncSessionLocal
 from job_radar.db.models.board import Board
 from job_radar.services.settings_store import load_settings
+from job_radar.services.scheduler_alignment import build_pipeline_trigger, next_aligned_run_after
 from job_radar.services.engine import execution_engine
 from job_radar.services.handoff import handoff_processor
 from job_radar.services.discord_notifier import send_pipeline_summary_notification
@@ -46,18 +45,24 @@ class SchedulerService:
             return
 
         interval_hours = stored.scheduler_interval_hours
-        trigger = IntervalTrigger(hours=interval_hours)
+        trigger = build_pipeline_trigger(stored.scheduler_anchor_time, interval_hours)
+        next_run_time = next_aligned_run_after(stored.scheduler_anchor_time, interval_hours)
 
-        # Setting next_run_time to now() causes APScheduler to trigger immediately on startup,
-        # then recur every N hours thereafter.
+        # next_run_time is computed as the first aligned fire strictly after
+        # now (never the current instant, even if now sits exactly on a
+        # boundary); the CronTrigger itself remains phase-aligned for all
+        # subsequent fires, so cadence is never shifted.
         self.scheduler.add_job(
             self.run_scheduled_pipeline,
             trigger=trigger,
             id=job_id,
             replace_existing=True,
-            next_run_time=datetime.now(timezone.utc),
+            next_run_time=next_run_time,
         )
-        logger.info(f"Scheduled automated pipeline job every {interval_hours} hours.")
+        logger.info(
+            f"Scheduled automated pipeline job every {interval_hours} hours, "
+            f"anchored at {stored.scheduler_anchor_time} IST."
+        )
 
     async def run_scheduled_pipeline(self):
         """Execute automated pipeline for selected active boards."""

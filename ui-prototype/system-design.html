@@ -68,7 +68,10 @@
             <div class="stat"><b>Scheduler</b><span class="muted">In-process APScheduler</span></div>
           </div>
           <div class="callout" style="margin-top:14px">
-            <strong>Boundary:</strong> this document does not authorize code, database creation, source enablement, Job Ops calls, or deployment.
+            <strong>Boundary:</strong> this document does not authorize merge, push, production deployment, source enablement, or Job Ops calls.
+          </div>
+          <div class="callout good" style="margin-top:14px">
+            <strong>Local implementation status · 2026-08-28:</strong> provider-aware India admission is verified on isolated branch <code>feature/new-boards-india-filter</code> at commit <code>acdeb5c</code>. Typed provider geography is persisted with the raw location; explicit foreign-only evidence is <code>NON_INDIA</code> and ineligible; eligibility is revalidated before handoff. SQLite was used for local validation while PostgreSQL remains the authoritative production design.
           </div>
         </section>
 
@@ -146,11 +149,12 @@
             <article class="component" id="component-ui-api"><h4>Operator UI / API</h4><span class="tag">FastAPI</span><span class="tag">Storage: PostgreSQL</span><p>Single operator-facing boundary for boards, runs, jobs, safe logs, and live updates.</p></article>
             <article class="component" id="component-config-service"><h4>Config service</h4><span class="tag">Python + SQLAlchemy</span><span class="tag">Storage: PostgreSQL</span><p>Owns draft/reviewed revisions and enable/pause/retire transitions.</p></article>
             <article class="component" id="component-run-control"><h4>Run control</h4><span class="tag">Python + SQLAlchemy</span><span class="tag">Storage: PostgreSQL</span><p>Owns durable run requests, admission, cancellation, and execution tracking.</p></article>
-            <article class="component" id="component-scheduler"><h4>Scheduler</h4><span class="tag">APScheduler</span><span class="tag">Storage: PostgreSQL</span><p>In-process due-board scheduling that creates durable run requests.</p></article>
+            <article class="component" id="component-scheduler"><h4>Scheduler</h4><span class="tag">APScheduler</span><span class="tag">Asia/Kolkata</span><p>In-process scheduling with a persisted strict <code>HH:mm</code> anchor (default <code>18:00</code>) and 6/12/24-hour phase-aligned recurrence. Startup selects the first future point, does not replay missed slots, and never shifts cadence after restarts or delayed runs.</p></article>
             <article class="component" id="component-worker"><h4>Board run worker</h4><span class="tag">Python async worker</span><span class="tag">Storage: PostgreSQL</span><p>Executes one approved board run at a time initially and records staged safe outcomes.</p></article>
+            <article class="component" id="component-detail-extractor"><h4>Detail extraction service</h4><span class="tag">Python + Playwright</span><span class="tag">Storage: PostgreSQL</span><p>Fetches full detail pages, parses clean markdown description & salary metadata, and enriches candidates.</p></article>
             <article class="component" id="component-adapters"><h4>Adapter registry</h4><span class="tag">Python modules</span><span class="tag">Storage: none</span><p>Application-owned family-specific extraction logic.</p></article>
             <article class="component" id="component-browser-client"><h4>Browser client</h4><span class="tag">Typed internal API</span><span class="tag">Storage: none</span><p>Narrow interface to the Shell Playwright dependency; never an operator tunnel.</p></article>
-            <article class="component" id="component-policy-normalization"><h4>Policy + normalization</h4><span class="tag">Python</span><span class="tag">Storage: PostgreSQL</span><p>Canonicalization, route validation, deduplication, and normalized field shaping.</p></article>
+            <article class="component" id="component-policy-normalization"><h4>Policy + normalization</h4><span class="tag">Python</span><span class="tag">Storage: PostgreSQL</span><p>Canonicalization, route validation, URL-aware deduplication, and location admission. Raw location remains intact while bounded provider country, region, alternative-location, source-scope, and family evidence is persisted and classified.</p></article>
             <article class="component" id="component-outbox"><h4>Outbox + Job Ops client</h4><span class="tag">Python + SQLAlchemy</span><span class="tag">Storage: PostgreSQL</span><p>Durable eligibility and future handoff boundary; disabled until exact contract exists.</p></article>
             <article class="component" id="component-observability"><h4>Audit + retention + metrics</h4><span class="tag">Python jobs + SQL</span><span class="tag">Storage: PostgreSQL + logs</span><p>Seven-day detail retention and privacy-safe observability only.</p></article>
           </div>
@@ -161,12 +165,12 @@
           <div class="card">
             <h3>Scheduled run summary</h3>
             <ol>
-              <li>APScheduler creates a durable due-board run request.</li>
+              <li>APScheduler selects the first future <code>anchor + N × interval</code> point in Asia/Kolkata and creates a durable due-board run request; missed slots are not replayed.</li>
               <li>Run control admits it only when service state, board state, and capacity allow.</li>
               <li>The worker sends a typed request to the browser client or approved direct source path.</li>
               <li>Adapters emit bounded candidate records.</li>
-              <li>Policy + normalization validate URLs, normalize fields, and upsert identities.</li>
-              <li>Eligible jobs create outbox intent only if the future Job Ops contract is enabled.</li>
+              <li>Policy + normalization validate URLs, preserve raw locations, classify typed provider geography, and upsert identities plus auditable decisions.</li>
+              <li>Explicit foreign-only evidence becomes <code>NON_INDIA</code>; only currently eligible jobs create outbox intent.</li>
             </ol>
           </div>
           <div class="callout good">
@@ -204,7 +208,7 @@
               <tr><td><code>execution_attempts</code></td><td>Concrete worker execution state</td><td>Seven-day detail + audit metadata</td></tr>
               <tr><td><code>pipeline_runs</code></td><td>Run aggregate</td><td>Seven-day detail</td></tr>
               <tr><td><code>board_runs</code></td><td>Per-board contribution and stage/outcome</td><td>Seven-day detail</td></tr>
-              <tr><td><code>candidate_jobs</code></td><td>Canonical discovered identity</td><td>Durable identity ledger</td></tr>
+              <tr><td><code>candidate_jobs</code></td><td>Canonical discovered identity and current location admission. Duplicate matching requires the same board and canonical URL; raw location, decision, eligibility, bounded explanation, and typed provider-evidence JSON are persisted.</td><td>Durable identity ledger</td></tr>
               <tr><td><code>run_candidates</code></td><td>Observation edge for a run</td><td>Seven-day detail</td></tr>
               <tr><td><code>handoff_outbox</code></td><td>Durable future handoff intent</td><td>Until reconciliation complete</td></tr>
               <tr><td><code>audit_events</code></td><td>Append-only audit history</td><td>Durable</td></tr>
@@ -233,7 +237,7 @@
             <div class="card">
               <h3>Handoff lifecycle</h3>
               <pre>not_eligible → queued → dispatching → accepted | held | rejected | uncertain</pre>
-              <p><code>uncertain</code> requires reconciliation, not blind resend.</p>
+              <p><code>uncertain</code> requires reconciliation, not blind resend. Manual and queued dispatch revalidate persisted location evidence; newly foreign rows are refused without HTTP and stale queued rows are held. Reconciliation is dry-run by default.</p>
             </div>
           </div>
           <div class="callout bad" style="margin-top:14px">
@@ -295,6 +299,8 @@
             <li>adapter contract tests</li>
             <li>browser boundary safety tests</li>
             <li>candidate identity and handoff idempotency tests</li>
+            <li>provider geography parsing plus foreign-country, subdivision, city, and ambiguity regression matrices</li>
+            <li>pre-handoff revalidation and dry-run/apply stale-outbox reconciliation tests</li>
             <li>retention and audit tests</li>
           </ul>
           <h3>Implementation sequence after review</h3>
@@ -312,5 +318,6 @@
       </main>
     </div>
   </div>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"474ad7a325a94021bea1cba722e8600e","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>

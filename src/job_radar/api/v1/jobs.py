@@ -11,8 +11,8 @@ from job_radar.db.models.board import Board
 from job_radar.db.models.candidate import CandidateJob
 from job_radar.db.models.handoff import HandoffOutbox
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
-from job_radar.services.handoff import handoff_processor
-from job_radar.services.location import evaluate_location, is_india_eligible
+from job_radar.services.handoff import handoff_processor, current_location_decision
+from job_radar.services.location import evaluate_location
 
 router = APIRouter(prefix="/jobs", tags=["Normalized Jobs"])
 
@@ -121,12 +121,9 @@ async def retry_enrichment(
         candidate.description = result.description[:40000]
         if result.location and result.location.strip() not in ("India", "in", "pageData", ""):
             candidate.location = result.location.strip()[:200]
-        eval_res = evaluate_location(candidate.location, source_scope=source_scope, source_evidence=source_evidence)
-        candidate.location_decision = eval_res.decision
-        candidate.location_evidence = eval_res.evidence
-        candidate.location_confidence = eval_res.confidence
-        candidate.india_eligible = eval_res.eligible
-        candidate.india_exclusion_reason = eval_res.reason
+        # Keep durable provider geography (including structured countries) in the
+        # decision after enrichment replaces only the display location.
+        current_location_decision(candidate, source_scope=source_scope, source_evidence=source_evidence)
         if result.employment_type:
             candidate.employment_type = result.employment_type[:200]
         if result.department:
@@ -160,14 +157,11 @@ async def push_candidate_to_jobops(
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate job not found")
 
-    if candidate.location_decision:
-        is_eligible = (candidate.location_decision != "NON_INDIA")
-        reason = candidate.india_exclusion_reason
-    else:
-        # Legacy candidate with location_decision is None: do not trust stale india_eligible boolean.
-        eval_res = evaluate_location(candidate.location)
-        is_eligible = (eval_res.decision != "NON_INDIA")
-        reason = eval_res.reason
+    # Recompute from durable raw location and provider evidence at the manual
+    # boundary; do not trust a stale stored decision/boolean.
+    eval_res = current_location_decision(candidate)
+    is_eligible, reason = eval_res.eligible, eval_res.reason
+    await db.commit()
 
     if not is_eligible:
         return PushJobOpsResponse(status="excluded_non_india", detail=f"Job excluded by India gate: {reason}")

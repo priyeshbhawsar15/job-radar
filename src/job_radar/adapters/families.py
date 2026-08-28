@@ -23,7 +23,66 @@ import json
 import re
 from urllib.parse import urlparse, urlunparse
 from typing import List, Dict, Any, Optional
-from job_radar.adapters.base import BaseAdapter, ExtractedCandidate
+from job_radar.adapters.base import BaseAdapter, ExtractedCandidate, ProviderLocationEvidence
+
+
+def _bounded_strings(values, limit=12):
+    return [str(value).strip()[:200] for value in values if isinstance(value, str) and value.strip()][:limit]
+
+
+def _country_values(value):
+    """Accept only scalar/list Country metadata, never arbitrary metadata prose."""
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, (list, tuple)):
+        return [item for item in value if isinstance(item, str)]
+    return []
+
+
+def _greenhouse_location_evidence(item: Dict[str, Any], location_str: str) -> ProviderLocationEvidence:
+    countries, country_paths, displays = [], [], [location_str] if location_str else []
+    metadata = item.get("metadata")
+    if isinstance(metadata, dict):
+        for key, value in metadata.items():
+            if isinstance(key, str) and key.strip().lower() in {"country", "country code", "country_code"}:
+                countries.extend(_country_values(value)); country_paths.extend([f"metadata.{key}"] * len(_country_values(value)))
+    elif isinstance(metadata, list):
+        for entry in metadata:
+            if isinstance(entry, dict) and str(entry.get("name", "")).strip().lower() in {"country", "country code", "country_code"}:
+                values = _country_values(entry.get("value"))
+                countries.extend(values); country_paths.extend(["metadata.Country"] * len(values))
+    for office in item.get("offices") or []:
+        if isinstance(office, dict):
+            for key in ("name", "location"):
+                value = office.get(key)
+                if isinstance(value, str): displays.append(value)
+                elif isinstance(value, dict):
+                    displays.extend(_country_values(value.get("name")))
+                    countries.extend(_country_values(value.get("country")))
+                    country_paths.extend([f"offices.{key}.country"] * len(_country_values(value.get("country"))))
+    return ProviderLocationEvidence(provider_family="greenhouse", countries=_bounded_strings(countries), country_paths=_bounded_strings(country_paths), display_locations=_bounded_strings(displays))
+
+
+def _ashby_location_evidence(item: Dict[str, Any], location_str: str) -> ProviderLocationEvidence:
+    countries, country_paths, regions, region_paths, displays = [], [], [], [], [location_str] if location_str else []
+    def add_address(value, path):
+        if not isinstance(value, dict): return
+        for country in _country_values(value.get("addressCountry")):
+            countries.append(country); country_paths.append(f"{path}.addressCountry")
+        if isinstance(value.get("addressRegion"), str):
+            regions.append(value["addressRegion"]); region_paths.append(f"{path}.addressRegion")
+        if isinstance(value.get("postalAddress"), dict):
+            add_address(value["postalAddress"], f"{path}.postalAddress")
+    address = item.get("address") or {}
+    add_address(address.get("postalAddress") if isinstance(address, dict) else None, "address.postalAddress")
+    for secondary in item.get("secondaryLocations") or []:
+        if isinstance(secondary, str): displays.append(secondary)
+        elif isinstance(secondary, dict):
+            for key in ("location", "name"):
+                if isinstance(secondary.get(key), str): displays.append(secondary[key])
+            add_address(secondary, "secondaryLocations")
+            add_address(secondary.get("address") or secondary.get("postalAddress"), "secondaryLocations.address")
+    return ProviderLocationEvidence(provider_family="ashby", countries=_bounded_strings(countries), country_paths=_bounded_strings(country_paths), regions=_bounded_strings(regions), region_paths=_bounded_strings(region_paths), display_locations=_bounded_strings(displays))
 
 def generate_fingerprint(company: str, title: str, location: Optional[str] = None) -> str:
     raw = f"{company.strip().lower()}|{title.strip().lower()}|{(location or '').strip().lower()}"
@@ -157,8 +216,18 @@ class GreenhouseAdapter(BaseAdapter):
                 location_obj = item.get("location", {})
                 location_str = location_obj.get("name") if isinstance(location_obj, dict) else str(location_obj or "")
 
-                if country_filter and country_filter.lower() not in location_str.lower():
-                    continue
+                provider_evidence = _greenhouse_location_evidence(item, location_str)
+                if (selector_config or {}).get("source_country_scope"):
+                    provider_evidence.source_scope = str(selector_config["source_country_scope"])
+                    provider_evidence.source_evidence = str((selector_config or {}).get("source_scope_evidence") or "reviewed_source_filter")
+                # A translated reviewed Greenhouse country filter is enforced only
+                # against independently supplied Country metadata; absence is retained
+                # for central classification rather than fabricated as India.
+                if country_filter and provider_evidence.countries:
+                    normalized = {value.strip().upper() for value in provider_evidence.countries}
+                    wanted = country_filter.strip().upper()
+                    if wanted not in normalized and not (wanted in {"IN", "IND"} and "INDIA" in normalized):
+                        continue
                 if location_filter and location_filter.lower() not in location_str.lower():
                     continue
 
@@ -181,7 +250,8 @@ class GreenhouseAdapter(BaseAdapter):
                         employment_type=emp_type,
                         raw_url=raw_url,
                         fingerprint=fp,
-                        extra_payload={"greenhouse_id": item.get("id")}
+                        extra_payload={"greenhouse_id": item.get("id")},
+                        location_provider_evidence=provider_evidence
                     )
                 )
         except Exception:
@@ -284,6 +354,7 @@ class AshbyAdapter(BaseAdapter):
                 if location_filter and location_filter.lower() not in (location_str or "").lower():
                     continue
 
+                provider_evidence = _ashby_location_evidence(item, location_str)
                 dept = item.get("department", "")
                 employment = item.get("employmentType", "")
                 raw_url = item.get("jobUrl") or f"{target_url}#job-{item.get('id')}"
@@ -298,7 +369,8 @@ class AshbyAdapter(BaseAdapter):
                         employment_type=employment or None,
                         raw_url=raw_url,
                         fingerprint=fp,
-                        extra_payload={"ashby_id": item.get("id")}
+                        extra_payload={"ashby_id": item.get("id")},
+                        location_provider_evidence=provider_evidence
                     )
                 )
         except Exception:

@@ -230,13 +230,23 @@ class PipelineExecutionEngine:
             slug = "godaddy"
 
         if slug:
+            # The native careers URL may carry a reviewed country filter which the
+            # global API cannot express. Preserve it as an adapter-local structured
+            # Country admission filter (not a display-location substring filter).
+            parsed_target = urllib.parse.urlparse(target_url)
+            country_codes = urllib.parse.parse_qs(parsed_target.query).get("country_codes[]", [])
+            effective_config = dict(selector_config or {})
+            if country_codes:
+                effective_config["country"] = country_codes[0]
+                effective_config["source_country_scope"] = country_codes[0]
+                effective_config["source_scope_evidence"] = "greenhouse_country_codes_filter"
             api_url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true"
             headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
             async with httpx.AsyncClient(timeout=15.0) as client:
                 try:
                     resp = await client.get(api_url, headers=headers)
                     if resp.status_code == 200:
-                        cands = adapter.parse_raw_payload(resp.text, board_name, target_url, selector_config)
+                        cands = adapter.parse_raw_payload(resp.text, board_name, target_url, effective_config)
                         if cands:
                             return cands
                 except Exception as e:
@@ -449,33 +459,16 @@ class PipelineExecutionEngine:
             resp = await client.get(api_url, headers=headers)
             if resp.status_code == 200:
                 data = resp.json()
-                jobs = data.get("jobs", [])
-                for j in jobs:
-                    raw_u = j.get("jobUrl") or f"https://jobs.ashbyhq.com/{org_slug}/{j.get('id')}"
-                    clean_u = canonicalize_job_url(raw_u, board_name, target_url)
-                    if clean_u in seen_urls:
+                adapter = adapter_registry.get("ashby")
+                parsed_candidates = adapter.parse_raw_payload(resp.text, board_name, target_url) if adapter else []
+                descriptions = {str(j.get("id")): (j.get("descriptionPlain", "") or j.get("descriptionHtml", "")) for j in data.get("jobs", []) if isinstance(j, dict)}
+                for candidate in parsed_candidates:
+                    if candidate.raw_url in seen_urls:
                         continue
-                    seen_urls.add(clean_u)
-
-                    title = j.get("title", "").strip()
-                    loc = j.get("location", "India").strip()
-                    dept = j.get("department", "Technology").strip()
-                    emp = j.get("employmentType", "Full-time").strip()
-                    desc = j.get("descriptionPlain", "") or j.get("descriptionHtml", "")
-                    fp = generate_fingerprint(board_name, f"{title} {j.get('id')}", loc)
-
-                    all_candidates.append(
-                        ExtractedCandidate(
-                            title=title,
-                            company=board_name,
-                            location=loc,
-                            department=dept,
-                            employment_type=emp,
-                            raw_url=clean_u,
-                            fingerprint=fp,
-                            extra_payload={"description": desc[:40000]}
-                        )
-                    )
+                    seen_urls.add(candidate.raw_url)
+                    job_id = str(candidate.extra_payload.get("ashby_id"))
+                    candidate.extra_payload["description"] = str(descriptions.get(job_id, ""))[:40000]
+                    all_candidates.append(candidate)
 
         return all_candidates
 

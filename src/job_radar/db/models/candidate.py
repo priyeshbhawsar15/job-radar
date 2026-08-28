@@ -36,6 +36,7 @@ class CandidateJob(Base):
     detail_enriched_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     location_decision: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     location_evidence: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    location_provider_evidence: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     location_confidence: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     india_eligible: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     india_exclusion_reason: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)

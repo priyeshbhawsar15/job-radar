@@ -78,6 +78,27 @@ def test_remote_in_europe_decision():
     assert "NON_INDIA_LOCATION" in res.reason
 
 
+def test_madrid_is_explicit_foreign_city():
+    res = evaluate_location("Madrid")
+    assert res.decision == LocationDecision.NON_INDIA
+    assert res.eligible is False
+    assert "Madrid" in res.evidence
+
+
+def test_remote_ksa_is_structural_foreign_country_alias():
+    res = evaluate_location("Remote, KSA")
+    assert res.decision == LocationDecision.NON_INDIA
+    assert res.eligible is False
+    assert "Saudi Arabia" in res.evidence
+    assert evaluate_location("Remote KSATeam").decision == LocationDecision.UNKNOWN
+
+
+def test_generic_remote_remains_eligible_unknown():
+    res = evaluate_location("Remote")
+    assert res.decision == LocationDecision.UNKNOWN
+    assert res.eligible is True
+
+
 def test_india_london_credible_conflict():
     res = evaluate_location("Bengaluru, India and London, UK")
     assert res.decision == LocationDecision.CONFLICT
@@ -85,16 +106,33 @@ def test_india_london_credible_conflict():
     assert "location_conflict" in res.evidence
 
 
-def test_in_scope_london_only_detail():
-    res = evaluate_location(
-        "London, UK",
-        source_scope="IN",
-        source_evidence="workday_location_country_filter"
-    )
-    assert res.decision == LocationDecision.CONFLICT
-    assert res.eligible is True
-    assert "source_scope: IN" in res.evidence
+def test_in_scope_london_only_detail_is_not_admitted():
+    # A nominal source scope never overrides explicit foreign-only job evidence.
+    res = evaluate_location("London, UK", source_scope="IN", source_evidence="workday_location_country_filter")
+    assert res.decision == LocationDecision.NON_INDIA
+    assert res.eligible is False
     assert "London" in res.evidence
+
+
+@pytest.mark.parametrize("location", [
+    "Dubai, UAE", "United Arab Emirates", "Istanbul, Turkey", "Belgrade, Serbia",
+    "Sofia, Bulgaria", "Bogota, Colombia", "Tallinn, Estonia", "Riyadh, Saudi Arabia",
+    "Vienna, Austria", "Copenhagen, Denmark", "Seoul, Republic of Korea", "Bermuda",
+    "Toronto, Ontario", "Vancouver, British Columbia", "San Francisco, California",
+    "Seattle, Washington", "Wilmington, Delaware", "Charlotte, North Carolina", "Washington DC",
+])
+def test_reported_foreign_locations_are_non_india(location):
+    result = evaluate_location(location)
+    assert result.decision == LocationDecision.NON_INDIA
+    assert not result.eligible
+
+
+def test_city_collision_requires_structural_context():
+    assert evaluate_location("Charlotte").decision == LocationDecision.UNKNOWN
+    assert evaluate_location("Charlotte", provider_evidence={"regions": ["North Carolina"]}).decision == LocationDecision.NON_INDIA
+    assert evaluate_location("in").decision == LocationDecision.UNKNOWN
+    assert evaluate_location("CA").decision == LocationDecision.NON_INDIA
+    assert evaluate_location("DE").decision == LocationDecision.NON_INDIA
 
 
 def compute_url_hash_val(url: str) -> str:

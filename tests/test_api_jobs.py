@@ -63,6 +63,30 @@ async def test_retry_enrichment_endpoint_success(client: AsyncClient, db_session
 
 
 @pytest.mark.asyncio
+async def test_retry_enrichment_preserves_durable_foreign_country_decision(client: AsyncClient, db_session: AsyncSession):
+    board = await _make_board(db_session)
+    candidate = await _make_candidate(
+        db_session,
+        board,
+        location="Remote",
+        location_provider_evidence='{"provider_family":"greenhouse","countries":["Canada"]}',
+    )
+    success_result = DetailResult(
+        description="About the role\n\n" + "A" * 200 + "\n\nResponsibilities and qualifications for this role.",
+        location="Remote",
+        source="generic",
+    )
+    with patch("job_radar.api.v1.jobs.detail_extractor.fetch_and_enrich", new=AsyncMock(return_value=success_result)):
+        response = await client.post(f"/api/v1/jobs/{candidate.candidate_id}/retry-enrichment")
+
+    assert response.status_code == 200
+    assert response.json()["location_decision"] == "NON_INDIA"
+    await db_session.refresh(candidate)
+    assert candidate.location_decision == "NON_INDIA"
+    assert candidate.india_eligible is False
+
+
+@pytest.mark.asyncio
 async def test_retry_enrichment_endpoint_failure(client: AsyncClient, db_session: AsyncSession):
     board = await _make_board(db_session)
     candidate = await _make_candidate(db_session, board)
@@ -84,6 +108,19 @@ async def test_retry_enrichment_endpoint_failure(client: AsyncClient, db_session
 async def test_retry_enrichment_endpoint_not_found(client: AsyncClient, db_session: AsyncSession):
     resp = await client.post("/api/v1/jobs/does-not-exist/retry-enrichment")
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_manual_push_revalidates_durable_location_evidence(client: AsyncClient, db_session: AsyncSession):
+    board = await _make_board(db_session)
+    candidate = await _make_candidate(
+        db_session, board, location="Remote", location_decision="INDIA", india_eligible=True,
+        location_provider_evidence='{"provider_family":"greenhouse","countries":["Canada"]}',
+    )
+    with patch("job_radar.api.v1.jobs.handoff_processor.enqueue_candidate_handoff", new=AsyncMock(side_effect=AssertionError("must not enqueue"))):
+        response = await client.post(f"/api/v1/jobs/{candidate.candidate_id}/push-jobops")
+    assert response.status_code == 200
+    assert response.json()["status"] == "excluded_non_india"
 
 
 @pytest.mark.asyncio

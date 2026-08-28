@@ -1,4 +1,5 @@
 import logging
+import json
 import asyncio
 import uuid
 from datetime import datetime, timezone, timedelta
@@ -14,9 +15,31 @@ from job_radar.db.models.handoff import HandoffOutbox, HandoffAttempt
 from job_radar.db.models.candidate import CandidateJob
 from job_radar.services.detail_extractor import description_is_valid
 from job_radar.services.settings_store import load_settings
-from job_radar.services.location import is_india_eligible, evaluate_location
+from job_radar.services.location import evaluate_location
 
 logger = logging.getLogger(__name__)
+
+
+def current_location_decision(candidate: CandidateJob, source_scope: Optional[str] = None, source_evidence: Optional[str] = None):
+    """Single durable admission decision used by enrichment, enqueue, and dispatch.
+
+    Durable provider scope wins; callers may supply the board's reviewed scope for
+    legacy records that predate durable scope persistence.
+    """
+    try:
+        evidence = json.loads(candidate.location_provider_evidence) if candidate.location_provider_evidence else None
+    except (TypeError, json.JSONDecodeError):
+        evidence = None
+    if isinstance(evidence, dict):
+        source_scope = evidence.get("source_scope") or source_scope
+        source_evidence = evidence.get("source_evidence") or source_evidence
+    result = evaluate_location(candidate.location, source_scope, source_evidence, evidence)
+    candidate.location_decision = result.decision
+    candidate.location_evidence = result.evidence
+    candidate.location_confidence = result.confidence
+    candidate.india_eligible = result.eligible
+    candidate.india_exclusion_reason = result.reason
+    return result
 
 
 class JobOpsClient:
@@ -88,18 +111,13 @@ class HandoffProcessor:
         async with self.session_factory() as session:
             cand_res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == candidate_id))
             cand = cand_res.scalar_one_or_none()
-            if cand:
-                if cand.location_decision:
-                    if cand.location_decision == "NON_INDIA":
-                        logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: NON_INDIA location decision ({cand.india_exclusion_reason})")
-                        return None
-                else:
-                    # Legacy candidate with location_decision is None: do not trust stale india_eligible boolean.
-                    # Recompute with evaluate_location from raw location and block ONLY if recomputed decision is NON_INDIA.
-                    eval_res = evaluate_location(cand.location)
-                    if eval_res.decision == "NON_INDIA":
-                        logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: recomputed NON_INDIA location decision ({eval_res.reason})")
-                        return None
+            if not cand:
+                return None
+            eval_res = current_location_decision(cand)
+            if not eval_res.eligible:
+                await session.commit()
+                logger.info(f"Refusing to enqueue candidate {candidate_id} for handoff: {eval_res.decision} ({eval_res.reason})")
+                return None
 
             # Avoid duplicate outbox queueing for the same candidate
             existing_res = await session.execute(
@@ -119,6 +137,34 @@ class HandoffProcessor:
             await session.commit()
             await session.refresh(outbox)
             return outbox
+
+    async def reconcile_stale_outbox(self, apply: bool = False) -> List[Dict[str, Any]]:
+        """Dry-run-first audit/quarantine of stale foreign outbox rows.
+
+        Accepted rows are reported but deliberately never mutated automatically.
+        """
+        report: List[Dict[str, Any]] = []
+        async with self.session_factory() as session:
+            rows = (await session.execute(select(HandoffOutbox).options(selectinload(HandoffOutbox.candidate)))).scalars().all()
+            for row in rows:
+                candidate = row.candidate
+                if not candidate:
+                    continue
+                old_decision, old_eligible = candidate.location_decision, candidate.india_eligible
+                decision = current_location_decision(candidate)
+                item = {"candidate_id": candidate.candidate_id, "board": candidate.board_id, "url": candidate.public_apply_url, "raw_location": candidate.location, "old_decision": old_decision, "new_decision": decision.decision, "old_eligible": old_eligible, "outbox_state": row.state, "proposed_action": None}
+                if decision.decision == "NON_INDIA":
+                    if row.state == "accepted":
+                        item["proposed_action"] = "report_accepted_for_approval"
+                    elif row.state in {"queued", "uncertain", "dispatching"}:
+                        item["proposed_action"] = "quarantine"
+                        if apply:
+                            row.state = "held"
+                            row.next_retry_at = None
+                report.append(item)
+            if apply:
+                await session.commit()
+        return report
 
     async def process_pending_outbox(self, max_batch: Optional[int] = None, loop_until_empty: bool = True) -> int:
         stored = load_settings()
@@ -162,6 +208,16 @@ class HandoffProcessor:
                     try:
                         cand_res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == record.candidate_id))
                         cand = cand_res.scalar_one_or_none()
+                        if not cand:
+                            raise RuntimeError("candidate_missing")
+                        eval_res = current_location_decision(cand)
+                        if not eval_res.eligible:
+                            record.state = "held"
+                            attempt.safe_outcome = "rejected"
+                            attempt.error_message = eval_res.reason or "NON_INDIA_LOCATION"
+                            attempt.finished_at = datetime.now(timezone.utc)
+                            await session.commit()
+                            continue
 
                         payload = {
                             "skipTailoring": True,

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import hashlib
+import json
 import logging
 import asyncio
 import httpx
@@ -14,11 +15,33 @@ from job_radar.db.models.run import PipelineRun, BoardRun, ExecutionAttempt
 from job_radar.adapters.base import ExtractedCandidate
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
 from job_radar.services.detail_contracts import DetailResult
-from job_radar.services.location import evaluate_location, is_india_eligible
+from job_radar.services.location import evaluate_location
 from job_radar.services.oracle_detail import extract_oracle_public_id
-from job_radar.services.handoff import HandoffProcessor, handoff_processor
+from job_radar.services.handoff import HandoffProcessor, handoff_processor, current_location_decision
 
 logger = logging.getLogger(__name__)
+
+
+def _serialize_provider_location_evidence(evidence, source_scope=None, source_evidence=None):
+    """Persist bounded geography facts as valid JSON, never a sliced document."""
+    data = evidence.model_dump() if evidence is not None else {}
+    if source_scope:
+        data["source_scope"] = str(source_scope)[:32]
+    if source_evidence:
+        data["source_evidence"] = str(source_evidence)[:200]
+    for key in ("countries", "country_paths", "regions", "region_paths", "display_locations"):
+        data[key] = [str(value)[:160] for value in data.get(key, []) if isinstance(value, str)][:12]
+    data["provider_family"] = str(data.get("provider_family") or "unknown")[:80]
+    # Text is unbounded, but retain a conservative operational cap without invalid JSON.
+    while len(json.dumps(data, separators=(",", ":"))) > 3500:
+        for key in ("display_locations", "region_paths", "country_paths", "regions", "countries"):
+            if data.get(key):
+                data[key].pop()
+                break
+        else:
+            break
+    return data, json.dumps(data, separators=(",", ":"))
+
 
 @dataclass(frozen=True)
 class IngestionResult:
@@ -113,6 +136,14 @@ class NormalizationService:
                 dept = (item.department.strip() if item.department else "Engineering")[:200]
                 raw_desc = item.extra_payload.get("description")
                 valid_extra_desc = raw_desc[:40000] if raw_desc and description_is_valid(raw_desc, title=title_capped) else None
+                provider_evidence = item.location_provider_evidence
+                if provider_evidence is not None or source_scope:
+                    provider_evidence_data, provider_evidence_json = _serialize_provider_location_evidence(
+                        provider_evidence, source_scope, source_evidence
+                    )
+                else:
+                    provider_evidence_data = None
+                    provider_evidence_json = None
 
                 if existing_job:
                     candidate_id = existing_job.candidate_id
@@ -122,7 +153,14 @@ class NormalizationService:
                         existing_job.location = loc
                     target_loc = existing_job.location
 
-                    eval_res = evaluate_location(target_loc, source_scope=source_scope, source_evidence=source_evidence)
+                    if provider_evidence_data is not None:
+                        existing_job.location_provider_evidence = provider_evidence_json
+                    elif existing_job.location_provider_evidence:
+                        try:
+                            provider_evidence_data = json.loads(existing_job.location_provider_evidence)
+                        except (TypeError, json.JSONDecodeError):
+                            provider_evidence_data = None
+                    eval_res = evaluate_location(target_loc, source_scope=source_scope, source_evidence=source_evidence, provider_evidence=provider_evidence_data)
                     existing_job.location_decision = eval_res.decision
                     existing_job.location_evidence = eval_res.evidence
                     existing_job.location_confidence = eval_res.confidence
@@ -142,7 +180,7 @@ class NormalizationService:
                     else:
                         enrichment_succeeded_count += 1
                 else:
-                    eval_res = evaluate_location(loc, source_scope=source_scope, source_evidence=source_evidence)
+                    eval_res = evaluate_location(loc, source_scope=source_scope, source_evidence=source_evidence, provider_evidence=provider_evidence_data)
                     initial_status = "succeeded" if valid_extra_desc else "pending"
                     initial_enriched_at = datetime.now(timezone.utc) if valid_extra_desc else None
 
@@ -155,6 +193,7 @@ class NormalizationService:
                         location=loc,
                         location_decision=eval_res.decision,
                         location_evidence=eval_res.evidence,
+                        location_provider_evidence=provider_evidence_json,
                         location_confidence=eval_res.confidence,
                         india_eligible=eval_res.eligible,
                         india_exclusion_reason=eval_res.reason,
@@ -196,11 +235,8 @@ class NormalizationService:
                     res = await session.execute(select(CandidateJob).where(CandidateJob.candidate_id == c_id))
                     cand = res.scalar_one_or_none()
                     if cand:
-                        if cand.location_decision:
-                            is_eligible = (cand.location_decision != "NON_INDIA")
-                            reason = cand.india_exclusion_reason
-                        else:
-                            is_eligible, reason = is_india_eligible(cand.location, source_scope=source_scope, source_evidence=source_evidence)
+                        decision = current_location_decision(cand)
+                        is_eligible, reason = decision.eligible, decision.reason
 
                         if is_eligible:
                             processor = HandoffProcessor(session_factory=self.session_factory)
@@ -244,7 +280,11 @@ class NormalizationService:
                                 job.description = result.description[:40000]
                                 if result.location and result.location.strip() not in ("India", "in", "pageData", ""):
                                     job.location = result.location.strip()[:200]
-                                eval_res = evaluate_location(job.location, source_scope=source_scope, source_evidence=source_evidence)
+                                try:
+                                    persisted_evidence = json.loads(job.location_provider_evidence) if job.location_provider_evidence else None
+                                except (TypeError, json.JSONDecodeError):
+                                    persisted_evidence = None
+                                eval_res = evaluate_location(job.location, source_scope=source_scope, source_evidence=source_evidence, provider_evidence=persisted_evidence)
                                 job.location_decision = eval_res.decision
                                 job.location_evidence = eval_res.evidence
                                 job.location_confidence = eval_res.confidence

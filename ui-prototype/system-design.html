@@ -71,7 +71,7 @@
             <strong>Boundary:</strong> this document does not authorize merge, push, production deployment, source enablement, or Job Ops calls.
           </div>
           <div class="callout good" style="margin-top:14px">
-            <strong>Local implementation status · 2026-08-28:</strong> provider-aware India admission is verified on isolated branch <code>feature/new-boards-india-filter</code> at commit <code>acdeb5c</code>. Typed provider geography is persisted with the raw location; explicit foreign-only evidence is <code>NON_INDIA</code> and ineligible; eligibility is revalidated before handoff. SQLite was used for local validation while PostgreSQL remains the authoritative production design.
+            <strong>Production status · 2026-08-31:</strong> the separately authorized deployment runs on The Shell from branch <code>feature/provider-aware-location-admission</code>, application commit <code>c819bcb</code>, with PostgreSQL at Alembic head <code>20260828_provider_geo</code>. Typed provider geography is persisted with the raw location; explicit foreign-only evidence is <code>NON_INDIA</code> and ineligible; eligibility is revalidated before handoff. Production has 71 reviewed boards (37 existing + 34 live-verified additions); Okta is excluded after two 300-second timeouts. All 71 are selected for the existing 18:00 Asia/Kolkata schedule, and deployment itself triggered no pipeline.
           </div>
         </section>
 
@@ -319,5 +319,6 @@
     </div>
   </div>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"474ad7a325a94021bea1cba722e8600e","r":1}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v3d52b47920f24c319d37e2661827c42b1787588026925" integrity="sha512-d9sL6GJLXn6fInD1+TVXhTcQOsmxeHfmHAvwGDIxp5TO+uo1fiWW7mHomMj4MLRlCsJDTqXzWLHJFFlPCEIj/A==" data-cf-beacon='{"version":"2024.11.0","token":"474ad7a325a94021bea1cba722e8600e","r":1}' crossorigin="anonymous"></script>
 </body>
 </html>

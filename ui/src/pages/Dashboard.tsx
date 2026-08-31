@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { StatusBadge } from '../components/StatusBadge';
 import { PlaySquare, Layers, Briefcase, AlertCircle, ArrowUpRight, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ActivePipelineStatus } from '../components/ActivePipelineStatus';
+import { useActivePipeline } from '../hooks/useActivePipeline';
 
 interface DashboardProps {
   onRunClick: () => void;
@@ -11,6 +13,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onRunClick }) => {
   const [boards, setBoards] = useState<any[]>([]);
   const [runs, setRuns] = useState<any[]>([]);
   const [jobs, setJobs] = useState<any[]>([]);
+  const { activePipeline, error: activePipelineError } = useActivePipeline();
 
   useEffect(() => {
     Promise.all([
@@ -56,6 +59,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onRunClick }) => {
           <span>Manual Pipeline Trigger</span>
         </button>
       </div>
+
+      <ActivePipelineStatus pipeline={activePipeline} error={activePipelineError} />
 
       {/* Overview Stat Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

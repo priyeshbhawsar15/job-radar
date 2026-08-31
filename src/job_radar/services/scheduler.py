@@ -10,6 +10,7 @@ from job_radar.services.scheduler_alignment import build_pipeline_trigger, next_
 from job_radar.services.engine import execution_engine
 from job_radar.services.handoff import handoff_processor
 from job_radar.services.discord_notifier import send_pipeline_summary_notification
+from job_radar.services.pipeline_progress import finalize_pipeline_run
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +109,11 @@ class SchedulerService:
             logger.error(f"Scheduled run outbox error for pipeline {pipeline_id}: {e}")
 
         async with AsyncSessionLocal() as session:
+            try:
+                await finalize_pipeline_run(pipeline_id, session)
+            except Exception as e:
+                logger.error(f"Scheduled pipeline finalization error for {pipeline_id}: {e}")
+
             try:
                 await send_pipeline_summary_notification(pipeline_id, session)
             except Exception as e:

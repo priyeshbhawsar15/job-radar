@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel
@@ -13,6 +14,7 @@ from job_radar.db.models.handoff import HandoffOutbox
 from job_radar.services.engine import execution_engine
 from job_radar.services.discord_notifier import send_pipeline_summary_notification
 from job_radar.services.handoff import handoff_processor
+from job_radar.services.pipeline_progress import finalize_pipeline_run
 
 router = APIRouter(prefix="/runs", tags=["Pipeline Runs"])
 
@@ -23,6 +25,18 @@ class TriggerRunResponse(BaseModel):
     message: str
     pipeline_id: str
     triggered_boards: List[str]
+
+
+class ActiveRunResponse(BaseModel):
+    pipeline_id: str
+    status: str
+    started_at: datetime
+    total_boards: int
+    completed_boards: int
+    remaining_boards: int
+    progress_percentage: int
+    current_board_name: Optional[str] = None
+    current_stage: Optional[str] = None
 
 async def run_pipeline_task(board_ids: List[str], pipeline_id: str):
     for b_id in board_ids:
@@ -37,6 +51,11 @@ async def run_pipeline_task(board_ids: List[str], pipeline_id: str):
         print(f"Error processing pending handoff outbox for pipeline {pipeline_id}: {e}")
 
     async with AsyncSessionLocal() as session:
+        try:
+            await finalize_pipeline_run(pipeline_id, session)
+        except Exception as e:
+            print(f"Error finalizing pipeline {pipeline_id}: {e}")
+
         try:
             await send_pipeline_summary_notification(pipeline_id, session)
         except Exception as e:
@@ -74,6 +93,57 @@ async def trigger_run(
         message=f"Pipeline execution started for {len(board_ids)} board(s)",
         pipeline_id=pipeline.pipeline_id,
         triggered_boards=board_ids
+    )
+
+
+@router.get("/active", response_model=Optional[ActiveRunResponse])
+async def get_active_run(db: AsyncSession = Depends(get_db_session)):
+    newest_result = await db.execute(
+        select(PipelineRun)
+        .order_by(PipelineRun.started_at.desc(), PipelineRun.pipeline_id.desc())
+        .limit(1)
+    )
+    pipeline = newest_result.scalar_one_or_none()
+    if pipeline is None or pipeline.status != "running":
+        return None
+
+    board_runs_result = await db.execute(
+        select(BoardRun)
+        .options(selectinload(BoardRun.board))
+        .where(BoardRun.pipeline_id == pipeline.pipeline_id)
+        .order_by(BoardRun.started_at.desc())
+    )
+    board_runs = list(board_runs_result.scalars().all())
+    completed_boards = sum(
+        board_run.terminal_at is not None for board_run in board_runs
+    )
+    remaining_boards = max(pipeline.total_boards - completed_boards, 0)
+    progress_percentage = (
+        round((completed_boards / pipeline.total_boards) * 100)
+        if pipeline.total_boards > 0
+        else 0
+    )
+    current_board_run = next(
+        (board_run for board_run in board_runs if board_run.terminal_at is None),
+        None,
+    )
+
+    return ActiveRunResponse(
+        pipeline_id=pipeline.pipeline_id,
+        status=pipeline.status,
+        started_at=pipeline.started_at,
+        total_boards=pipeline.total_boards,
+        completed_boards=completed_boards,
+        remaining_boards=remaining_boards,
+        progress_percentage=progress_percentage,
+        current_board_name=(
+            current_board_run.board.name
+            if current_board_run is not None and current_board_run.board is not None
+            else None
+        ),
+        current_stage=(
+            current_board_run.stage if current_board_run is not None else None
+        ),
     )
 
 @router.get("", response_model=List[dict])

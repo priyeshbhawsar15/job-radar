@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Play, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { PIPELINE_TRIGGERED_EVENT } from '../hooks/useActivePipeline';
 
 interface RunModalProps {
   isOpen: boolean;
@@ -44,6 +45,13 @@ export const RunModal: React.FC<RunModalProps> = ({ isOpen, onClose }) => {
       if (!res.ok) {
         throw new Error('Server error');
       }
+
+      const triggeredRun = await res.json();
+      window.dispatchEvent(
+        new CustomEvent(PIPELINE_TRIGGERED_EVENT, {
+          detail: { pipelineId: triggeredRun.pipeline_id },
+        }),
+      );
 
       setSubmitting(false);
       setSuccess(true);

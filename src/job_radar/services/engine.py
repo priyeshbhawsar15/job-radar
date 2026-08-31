@@ -1005,7 +1005,7 @@ class PipelineExecutionEngine:
                 board.consecutive_parser_failures = 0
             else:
                 board_run.outcome = "provider_failure"
-                board_run.error_code = error_msg
+                board_run.error_code = error_msg[:255] if error_msg else error_msg
                 board.consecutive_parser_failures += 1
                 if board.consecutive_parser_failures >= 3:
                     board.status = "held"

@@ -82,7 +82,7 @@ class BoardRun(Base):
     outcome: Mapped[str] = mapped_column(String(50), nullable=False)  # success, empty_verified, partial, challenge, timeout, parser_contract, provider_failure
     duration_ms: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     extracted_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    error_code: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    error_code: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
     terminal_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 

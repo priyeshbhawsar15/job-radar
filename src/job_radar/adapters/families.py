@@ -850,7 +850,7 @@ class EightfoldAdapter(BaseAdapter):
             payload = payload.decode("utf-8")
 
         html_text = html.unescape(payload)
-        parsed_target = urllib.parse.urlparse(target_url)
+        parsed_target = urlparse(target_url)
         base_domain = f"https://{parsed_target.netloc}"
 
         # 1. Parse JSON-LD if present (e.g. Microsoft / HP / Qualcomm single job or page)

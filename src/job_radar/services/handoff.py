@@ -43,17 +43,20 @@ def current_location_decision(candidate: CandidateJob, source_scope: Optional[st
 
 
 class JobOpsClient:
-    """Client for forwarding candidate jobs to Job Ops intake API (/api/manual-jobs/import)."""
+    """Client for forwarding candidate jobs to Job Ops intake API (/api/manual-jobs/import-discovered)."""
 
     def __init__(self, endpoint: Optional[str] = None, username: Optional[str] = None, password: Optional[str] = None):
         stored = load_settings()
         raw_ep = endpoint or stored.jobops_endpoint or settings.JOBOPS_ENDPOINT or "http://192.168.2.201:3005"
         self.base_endpoint = raw_ep.rstrip("/")
-        if self.base_endpoint.endswith("/api/manual-jobs/import"):
+        if self.base_endpoint.endswith("/api/manual-jobs/import-discovered"):
             self.import_endpoint = self.base_endpoint
+            self.base_endpoint = self.base_endpoint[:-34]
+        elif self.base_endpoint.endswith("/api/manual-jobs/import"):
             self.base_endpoint = self.base_endpoint[:-23]
+            self.import_endpoint = f"{self.base_endpoint}/api/manual-jobs/import-discovered"
         else:
-            self.import_endpoint = f"{self.base_endpoint}/api/manual-jobs/import"
+            self.import_endpoint = f"{self.base_endpoint}/api/manual-jobs/import-discovered"
 
         self.username = username or stored.jobops_username or settings.JOBOPS_USERNAME
         self.password = password or stored.jobops_password or settings.JOBOPS_PASSWORD

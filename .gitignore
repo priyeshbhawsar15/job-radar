@@ -79,3 +79,4 @@ app_settings.json
 .DS_Store
 .vscode/
 .idea/
+src/job_radar.egg-info/

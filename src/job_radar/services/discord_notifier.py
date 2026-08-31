@@ -60,7 +60,8 @@ async def send_pipeline_summary_notification(pipeline_id: str, db_session: Async
                 re_observed += 1
                 run_re_observed += 1
 
-        board_breakdown.append(f"**{board_name}** — {run_discovered} new, {run_re_observed} re-observed")
+        if run_discovered > 0:
+            board_breakdown.append(f"**{board_name}** — {run_discovered} new, {run_re_observed} re-observed")
 
         if board_run.outcome != "success":
             detail = board_run.error_code or board_run.outcome
@@ -84,7 +85,7 @@ async def send_pipeline_summary_notification(pipeline_id: str, db_session: Async
         truncated_items = board_breakdown[:15]
         breakdown_val = "\n".join(truncated_items) + f"\n*...and {len(board_breakdown) - 15} more boards*"
     else:
-        breakdown_val = "\n".join(board_breakdown) if board_breakdown else "No boards run"
+        breakdown_val = "\n".join(board_breakdown) if board_breakdown else "No new jobs discovered"
 
     if len(breakdown_val) > 1024:
         breakdown_val = breakdown_val[:1000] + "\n*...truncated*"

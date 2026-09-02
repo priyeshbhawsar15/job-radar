@@ -94,6 +94,15 @@ class JobOpsClient:
                 headers["Authorization"] = f"Bearer {token}"
 
             response = await client.post(self.import_endpoint, json=candidate_data, headers=headers)
+            if response.status_code == 401 and token:
+                logger.info("JobOps returned 401 Unauthorized. Clearing cached token and re-authenticating.")
+                self._token = None
+                token = await self._ensure_token(client)
+                headers = {}
+                if token:
+                    headers["Authorization"] = f"Bearer {token}"
+                response = await client.post(self.import_endpoint, json=candidate_data, headers=headers)
+
             # If 409 Conflict, job is already present in Job Ops workspace -- count as success
             if response.status_code == 409:
                 logger.info(f"Candidate already exists in Job Ops workspace: {candidate_data.get('job', {}).get('sourceJobId')}")

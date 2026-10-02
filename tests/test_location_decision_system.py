@@ -444,7 +444,7 @@ async def test_jll_multilocations_with_config_not_rejected(session_factory):
 
     valid_desc = (
         "Position Responsibilities and Duties:\n"
-        "- We are seeking an experienced candidate for this role to join our team.\n"
+        "- Manage property systems and coordinate operational requests with engineering teams.\n"
         "- Requirements include experience with engineering and operations.\n"
         "- Full time position with competitive compensation and benefits included."
     )

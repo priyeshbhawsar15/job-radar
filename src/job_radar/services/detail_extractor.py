@@ -19,21 +19,19 @@ from job_radar.services.zoho_detail import fetch_zoho_detail_from_html
 from job_radar.services.talent500_detail import fetch_talent500_detail
 from job_radar.services.greenhouse_detail import fetch_greenhouse_detail
 from job_radar.services.smartrecruiters_detail import fetch_smartrecruiters_detail
+from job_radar.services.ashby_detail import fetch_ashby_detail
+from job_radar.services.ashby_detail import parse_ashby_job_url
+from job_radar.services.eightfold_detail import fetch_eightfold_detail, parse_eightfold_job_url
 
 logger = logging.getLogger(__name__)
 
-REJECTION_MARKERS = [
-    "window.vanityurlenabled",
-    "page not found. - oracle careers",
-    "candidate experience page careers",
-    "accessibility assistance",
-    "sorry! we couldn’t find any jobs",
-    "sorry! we couldn't find any jobs",
-    "full job description for ",
-    "position for ",
-    ".job-details-wrapper",
-    "privacy policy",
-    "terms of use",
+REJECTION_PATTERNS = [
+    re.compile(r'window\.vanityurlenabled', re.IGNORECASE),
+    re.compile(r'page not found(?:\.|\s*-)', re.IGNORECASE),
+    re.compile(r'candidate experience page careers', re.IGNORECASE),
+    re.compile(r'sorry!?\s+we\s+couldn[\'\u2019]t\s+find\s+any\s+jobs', re.IGNORECASE),
+    re.compile(r'^(?:full\s+job\s+description\s+for|position\s+for)\b', re.IGNORECASE),
+    re.compile(r'^\.job-details-wrapper\b', re.IGNORECASE),
 ]
 
 CONTENT_INDICATORS = [
@@ -48,11 +46,88 @@ CONTENT_INDICATORS = [
     "what you will need",
     "what you'll need",
     "what you’ll need",
+    "what you bring",
+    "what we're looking for",
+    "what we are looking for",
+    "who you are",
     "about the role",
+    "about the job",
     "job description",
-    "duties",
+    "job summary",
+    "role summary",
     "role overview",
+    "overview",
+    "duties",
+    "key accountabilities",
+    "job purpose",
+    "education and experience",
+    "preferred qualifications",
+    "basic qualifications",
+    "minimum qualifications",
+    "required qualifications",
+    "key responsibilities",
+    "we are looking for",
+    "in this role",
+    "about us",
+    "the role",
+    "job overview",
 ]
+
+_FUTURE_ONLY = re.compile(
+    r"\b(?:talent pool|talent community|future opportunities|future vacancies|"
+    r"upcoming vacancy|no current (?:vacanc(?:y|ies)|openings?|positions?)|"
+    r"not tied to a specific (?:role|position)|"
+    r"bolsa de (?:trabajo|talento)|futuras oportunidades|sin vacantes actuales)\b",
+    re.IGNORECASE,
+)
+_ROLE_SECTION = re.compile(
+    r"^(?:about the role|about the job|job (?:description|summary|overview)|"
+    r"role (?:summary|overview)|introduction|(?:core |key |position )?responsibilities(?: and duties)?|"
+    r"duties|key accountabilities|your (?:impact|day-to-day)|"
+    r"what you(?:'|’)ll (?:do|be responsible for)|how you(?:'|’)ll demonstrate|"
+    r"what you will (?:do|accomplish)|"
+    r"the impact you will have|in this role|"
+    r"responsabilidades|funciones|tareas del puesto|sobre el puesto|"
+    r"resumen de posici[oó]n|el impacto que tendr[aá]s|en este puesto)\b\s*:?(?:\s|$)",
+    re.IGNORECASE,
+)
+_OTHER_SECTION = re.compile(
+    r"^(?:about (?!the (?:role|job)\b)\S+(?:\s+\S+){0,3}|"
+    r"who are we|what .{1,35} is|benefits?|perks?|what we (?:offer|look for)|"
+    r"what you (?:will )?bring|about you|qualifications?|(?:minimum|preferred|basic|required|desired) (?:qualifications?|requirements?)|"
+    r"education and experience|location|work (?:model|location|mode)|"
+    r"equal opportunity|compliance|disclaimer|notification to agencies|"
+    r"privacy|accommodations|posting statement|learn more about us|"
+    r"lo que buscamos|(?:a snapshot of )?our (?:many )?perks)\b",
+    re.IGNORECASE,
+)
+_DUTY_ACTION = re.compile(
+    r"\b(?:build(?:ing)?|develop(?:ing)?|design(?:ing)?|implement(?:ing)?|maintain(?:ing)?|manage|lead|drive|create|"
+    r"deliver|support|collaborate|partner|analy[sz]e|review|monitor|improve|"
+    r"coordinate|resolv(?:e|ing)|ensure|provide|prepare|perform|own|write|test|"
+    r"book(?:ing)?|settle(?:ment)?|reconcil(?:e|iation)|"
+    r"construir|desarrollar|diseñar|implementar|mantener|gestionar|"
+    r"liderar|crear|colaborar|analizar|revisar|supervisar|mejorar|"
+    r"coordinar|resolver|garantizar|preparar|realizar|diseñará|"
+    r"desarrollará|gestionará|liderará|colaborará)\b",
+    re.IGNORECASE,
+)
+_BOILERPLATE_LINE = re.compile(
+    r"\b(?:benefits?|perks?|about us|our company|privacy|cookie|"
+    r"terms of use|equal opportunity|apply now|sign in|navigation|"
+    r"explore jobs|search jobs|build your career|create (?:a |your )?profile|"
+    r"job alerts?|browse (?:jobs|roles)|salario|beneficios)\b",
+    re.IGNORECASE,
+)
+
+_DUTY_SUBJECT = re.compile(
+    r"^(?:you(?:'|’)ll|you will|this role|the (?:role|position)|"
+    r"as an?\s+.{3,55}?\s+you will|our\s+.{3,55}?\s+(?:will|engage|build|own)|"
+    r"tendr[aá]s|comunicar[aá]s|asignar[aá]s|te reunir[aá]s|"
+    r"superar[aá]s|utilizar[aá]s|desarrollar[aá]s)\b",
+    re.IGNORECASE,
+)
+_BULLET = re.compile(r"^(?:[•*–-]|\d+[.)])\s*")
 
 
 def _is_job_posting_type(value: Any) -> bool:
@@ -77,7 +152,7 @@ def extract_job_posting(raw_html: str) -> Optional[Dict[str, Any]]:
         return None
     unescaped = html.unescape(raw_html)
     script_blocks = re.findall(
-        r'<script\b[^>]*\btype=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+        r'<script\b[^>]*\btype=[\"\']application/ld\+json[\"\'][^>]*>(.*?)</script>',
         unescaped,
         re.DOTALL | re.IGNORECASE,
     )
@@ -97,18 +172,46 @@ def description_is_valid(text: Optional[str], *, title: str = "") -> bool:
     if not text or not isinstance(text, str):
         return False
     cleaned = text.strip()
-    if not cleaned or len(cleaned) < 200:
+    if not cleaned or len(cleaned) < 150:
         return False
 
-    low = cleaned.lower()
-    if any(marker in low for marker in REJECTION_MARKERS):
+    for pat in REJECTION_PATTERNS:
+        if pat.search(cleaned):
+            if len(cleaned) < 500 or 'window' in pat.pattern or 'sorry' in pat.pattern or 'page not found' in pat.pattern:
+                return False
+
+    if _FUTURE_ONLY.search(cleaned):
         return False
 
-    lines = [l.strip() for l in cleaned.splitlines() if l.strip()]
-    has_boundaries = len(lines) >= 3 or "\n\n" in cleaned or "<p>" in text.lower() or "<li>" in text.lower()
-    indicator_count = sum(1 for ind in CONTENT_INDICATORS if ind in low)
-
-    return (has_boundaries or len(cleaned) > 500) and indicator_count >= 2
+    plain = re.sub(r"<[^>]+>", "\n", html.unescape(cleaned))
+    lines = [line.strip() for line in plain.splitlines() if line.strip()]
+    section = "unknown"
+    role_duties = 0
+    unheaded_bullets = 0
+    for raw in lines:
+        line = _BULLET.sub("", raw).strip()
+        role_match = _ROLE_SECTION.match(line)
+        if role_match:
+            section = "role"
+            line = line[role_match.end():].strip()
+            if not line:
+                continue
+        elif len(line) < 90 and _OTHER_SECTION.match(line):
+            section = "other"
+            continue
+        if section == "other" or len(line.split()) < 4 or _BOILERPLATE_LINE.search(line):
+            continue
+        # Action words in product narratives are not duties. Require a role section,
+        # a candidate-directed sentence, or a run of explicit task bullets before
+        # any company/benefits section (some feeds omit a duties heading entirely).
+        action = bool(_DUTY_ACTION.search(line) or _DUTY_SUBJECT.match(line))
+        if not action:
+            continue
+        if section == "role":
+            role_duties += 1
+        elif section == "unknown" and _BULLET.match(raw):
+            unheaded_bullets += 1
+    return role_duties > 0 or unheaded_bullets >= 2
 
 
 def clean_html_to_text(raw_html_str: str) -> str:
@@ -177,9 +280,14 @@ class DetailExtractor:
             provider_config=provider_config,
         )
 
+        if family == "ashby" and parse_ashby_job_url(public_apply_url, provider_config) is None:
+            return DetailResult.empty(ERR_INVALID_DETAIL_URL)
+        if family == "eightfold" and parse_eightfold_job_url(public_apply_url, provider_config) is None:
+            return DetailResult.empty(ERR_INVALID_DETAIL_URL)
+
         close_client = False
         if client is None:
-            client = httpx.AsyncClient(timeout=10.0, follow_redirects=True)
+            client = httpx.AsyncClient(timeout=15.0, follow_redirects=False)
             close_client = True
 
         try:
@@ -189,6 +297,10 @@ class DetailExtractor:
                 return await fetch_phenom_detail(req, client)
             elif family == "talent500":
                 return await fetch_talent500_detail(req, client)
+            elif family == "ashby":
+                return await fetch_ashby_detail(req, client)
+            elif family == "eightfold":
+                return await fetch_eightfold_detail(req, client)
             elif family == "google_careers":
                 try:
                     raw_html = await self.browser_client.fetch_board_html(public_apply_url)
@@ -208,7 +320,7 @@ class DetailExtractor:
                     public_apply_url, wait_for_selector="div.cw-jobdescription"
                 )
                 return fetch_zoho_detail_from_html(raw_html, public_apply_url)
-            elif family == "greenhouse":
+            elif family in ("greenhouse", "custom") or "gh_jid" in public_apply_url:
                 result = await fetch_greenhouse_detail(req, client)
                 if result.error_code is None:
                     return result
@@ -225,7 +337,7 @@ class DetailExtractor:
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
             }
             try:
-                resp = await client.get(public_apply_url, headers=headers)
+                resp = await client.get(public_apply_url, headers=headers, follow_redirects=False)
                 if resp.status_code == 200 and len(resp.text) > 800:
                     parsed = self.parse_detail_html(resp.text, board_name, title, public_apply_url)
                     if parsed.get("description"):
@@ -296,6 +408,7 @@ class DetailExtractor:
                         "username": settings.JOBOPS_USERNAME,
                         "password": settings.JOBOPS_PASSWORD,
                     },
+                    timeout=15.0,
                 )
                 if login_resp.status_code == 200:
                     login_data = login_resp.json()
@@ -313,6 +426,7 @@ class DetailExtractor:
                 infer_url,
                 json={"jobDescription": stripped_text},
                 headers=headers,
+                timeout=45.0,
             )
         except Exception as e:
             logger.info(f"Job Ops infer fallback request failed: {e}")
@@ -411,9 +525,9 @@ class DetailExtractor:
 
         # Fallback to meta tags
         desc_meta = None
-        desc_match = re.search(r'<meta\b[^>]*?\bname=["\']description["\'][^>]*?\bcontent=["\'](.*?)["\']', raw_html_text, re.IGNORECASE)
+        desc_match = re.search(r'<meta\b[^>]*?\bname=[\"\']description[\"\'][^>]*?\bcontent=[\"\'](.*?)[\"\']', raw_html_text, re.IGNORECASE)
         if not desc_match:
-            desc_match = re.search(r'<meta\b[^>]*?\bproperty=["\']og:description["\'][^>]*?\bcontent=["\'](.*?)["\']', raw_html_text, re.IGNORECASE)
+            desc_match = re.search(r'<meta\b[^>]*?\bproperty=[\"\']og:description[\"\'][^>]*?\bcontent=[\"\'](.*?)[\"\']', raw_html_text, re.IGNORECASE)
 
         if desc_match:
             desc_meta = html.unescape(desc_match.group(1)).strip()

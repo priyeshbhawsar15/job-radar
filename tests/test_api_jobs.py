@@ -42,8 +42,8 @@ async def test_retry_enrichment_endpoint_success(client: AsyncClient, db_session
     success_result = DetailResult(
         description=(
             "About the role\n\n"
-            + "A" * 200
-            + "\n\nResponsibilities\n\nRequirements and qualifications for this role."
+            + "Build reliable services and resolve customer issues with the engineering team. " * 4
+            + "\n\nResponsibilities\n\nDesign and maintain APIs for production workloads."
         ),
         location="Remote",
         source="generic",
@@ -72,7 +72,7 @@ async def test_retry_enrichment_preserves_durable_foreign_country_decision(clien
         location_provider_evidence='{"provider_family":"greenhouse","countries":["Canada"]}',
     )
     success_result = DetailResult(
-        description="About the role\n\n" + "A" * 200 + "\n\nResponsibilities and qualifications for this role.",
+        description="About the role\n\n" + "Build reliable services and resolve customer issues with the engineering team. " * 4 + "\n\nResponsibilities: Design and maintain APIs for production workloads.",
         location="Remote",
         source="generic",
     )

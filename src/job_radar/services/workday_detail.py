@@ -38,8 +38,9 @@ def parse_workday_cxs_url(url: str) -> Optional[Tuple[str, str, str]]:
         return None
 
     parsed = urlparse(url)
-    host = parsed.netloc
-    if not host or "myworkdayjobs.com" not in host.lower():
+    host = parsed.hostname
+    if (parsed.scheme != "https" or not host or not host.endswith(".myworkdayjobs.com")
+            or parsed.username or parsed.password or parsed.port):
         return None
 
     tenant = host.split(".")[0]
@@ -66,7 +67,7 @@ def parse_workday_cxs_url(url: str) -> Optional[Tuple[str, str, str]]:
 def build_cxs_detail_url(url: str) -> Optional[str]:
     """Build the exact CXS detail endpoint URL for a canonical Workday job URL."""
     parsed_input = urlparse(url)
-    host = parsed_input.netloc
+    host = parsed_input.hostname
     parsed = parse_workday_cxs_url(url)
     if not parsed or not host:
         return None

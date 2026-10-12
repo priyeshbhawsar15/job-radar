@@ -185,7 +185,7 @@ async def test_normalization_persistence_for_each_decision(session_factory):
 
 
 @pytest.mark.asyncio
-async def test_automatic_enqueue_allows_unknown_conflict_blocks_non_india(session_factory):
+async def test_automatic_enqueue_allows_unknown_conflict_blocks_non_india(session_factory, valid_detail_description):
     processor = HandoffProcessor(session_factory=session_factory)
 
     async with session_factory() as session:
@@ -195,6 +195,9 @@ async def test_automatic_enqueue_allows_unknown_conflict_blocks_non_india(sessio
         c_unknown = CandidateJob(candidate_id="c-unknown", board_id="b-enq", identity_key="ik2", canonical_url_hash="h2", title="T2", company="C", location="2 Locations", public_apply_url="https://a.com/2", location_decision=LocationDecision.UNKNOWN, india_eligible=True)
         c_conflict = CandidateJob(candidate_id="c-conflict", board_id="b-enq", identity_key="ik3", canonical_url_hash="h3", title="T3", company="C", location="India / US", public_apply_url="https://a.com/3", location_decision=LocationDecision.CONFLICT, india_eligible=True)
         c_non_india = CandidateJob(candidate_id="c-non-india", board_id="b-enq", identity_key="ik4", canonical_url_hash="h4", title="T4", company="C", location="London, UK", public_apply_url="https://a.com/4", location_decision=LocationDecision.NON_INDIA, india_eligible=False, india_exclusion_reason="NON_INDIA_LOCATION: London, UK")
+        for candidate in (c_india, c_unknown, c_conflict, c_non_india):
+            candidate.description = valid_detail_description
+            candidate.detail_enrichment_status = "succeeded"
         session.add_all([c_india, c_unknown, c_conflict, c_non_india])
         await session.commit()
 
@@ -231,12 +234,15 @@ async def test_automatic_enqueue_allows_unknown_conflict_blocks_non_india(sessio
 
 
 @pytest.mark.asyncio
-async def test_manual_push_and_handoff_processor_same_policy(session_factory):
+async def test_manual_push_and_handoff_processor_same_policy(session_factory, valid_detail_description):
     async with session_factory() as session:
         b = Board(board_id="b-push", name="B", family="g", status="reviewed")
         session.add(b)
         c_unk = CandidateJob(candidate_id="c-push-unk", board_id="b-push", identity_key="ikp1", canonical_url_hash="hp1", title="T1", company="C", location="2 Locations", public_apply_url="https://a.com/p1", location_decision=LocationDecision.UNKNOWN, india_eligible=True, description="Valid detail description for push testing")
         c_ni = CandidateJob(candidate_id="c-push-ni", board_id="b-push", identity_key="ikp2", canonical_url_hash="hp2", title="T2", company="C", location="London, UK", public_apply_url="https://a.com/p2", location_decision=LocationDecision.NON_INDIA, india_eligible=False, india_exclusion_reason="NON_INDIA_LOCATION: London, UK", description="Valid detail description for push testing")
+        for candidate in (c_unk, c_ni):
+            candidate.description = valid_detail_description
+            candidate.detail_enrichment_status = "succeeded"
         session.add_all([c_unk, c_ni])
         await session.commit()
 

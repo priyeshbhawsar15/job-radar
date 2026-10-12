@@ -164,10 +164,15 @@ def test_extract_phenom_description():
 
 
 @pytest.mark.asyncio
-async def test_family_aware_dispatch_routing():
-    extractor = DetailExtractor()
+async def test_family_aware_dispatch_routing(monkeypatch, valid_detail_description):
+    from job_radar.services.detail_contracts import DetailResult
 
-    # Philips route with family="phenom" dispatches to Phenom detail logic
+    extractor = DetailExtractor()
+    native_result = DetailResult(description=valid_detail_description, source="phenom")
+    native = AsyncMock(return_value=native_result)
+    monkeypatch.setattr("job_radar.services.detail_extractor.fetch_phenom_detail", native)
+
+    # Verify dispatch without making an unbounded public HTTP request.
     philips_url = "https://www.careers.philips.com/in/en/job/581004/Senior-Software-Technologist-Rust"
     res = await extractor.fetch_and_enrich(
         philips_url,
@@ -176,7 +181,11 @@ async def test_family_aware_dispatch_routing():
         family="phenom",
         provider_config={"allowed_origins": ["www.careers.philips.com"]},
     )
-    assert res.error_code == ERR_BOUNDARY_VIOLATION or res.description is not None or res.error_code is not None
+    assert res is native_result
+    native.assert_awaited_once()
+    request = native.call_args.args[0]
+    assert request.family == "phenom"
+    assert request.public_url == philips_url
 
 
 @pytest.mark.asyncio

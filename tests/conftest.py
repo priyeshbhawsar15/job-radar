@@ -9,6 +9,20 @@ from job_radar.main import app
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
+
+@pytest.fixture
+def valid_detail_description():
+    """A captured complete public body, not dummy prose used to bypass enrichment."""
+    import json
+    from pathlib import Path
+    from job_radar.services.detail_extractor import clean_html_to_text, description_is_valid
+
+    fixture = Path(__file__).parent / "fixtures" / "detail_failure_20261011" / "twilio_second.json"
+    payload = json.loads(fixture.read_text())
+    description = clean_html_to_text(payload["content"])
+    assert description_is_valid(description, title=payload["title"])
+    return description
+
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 

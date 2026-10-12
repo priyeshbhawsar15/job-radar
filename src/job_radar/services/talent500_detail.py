@@ -16,6 +16,7 @@ from job_radar.services.detail_contracts import (
     ERR_RECORD_NOT_FOUND,
     ERR_DESCRIPTION_MISSING,
     ERR_DESCRIPTION_INVALID,
+    ERR_IDENTITY_MISMATCH,
 )
 
 logger = logging.getLogger(__name__)
@@ -71,7 +72,7 @@ def clean_html_to_text(html_str: str) -> str:
 
 async def fetch_talent500_detail(req: DetailRequest, client: httpx.AsyncClient) -> DetailResult:
     """Fetch job details directly from Talent500 public API endpoint."""
-    from job_radar.services.detail_extractor import description_is_valid
+    from job_radar.services.detail_extractor import description_is_valid, normalize_detail_sections
 
     slug = validate_talent500_url(req.public_url)
     if not slug:
@@ -107,11 +108,13 @@ async def fetch_talent500_detail(req: DetailRequest, client: httpx.AsyncClient) 
     if not raw_description or not isinstance(raw_description, str):
         return DetailResult.empty(ERR_DESCRIPTION_MISSING)
 
-    cleaned_desc = clean_html_to_text(raw_description)
+    title = (data.get("title") or data.get("title_alias_1") or "").strip() or None
+    if req.board_name == "TMUS" and title and re.sub(r"\W+", "", title).casefold() != re.sub(r"\W+", "", req.title).casefold():
+        return DetailResult.empty(ERR_IDENTITY_MISMATCH)
+
+    cleaned_desc = normalize_detail_sections(clean_html_to_text(raw_description), req.board_name)
     if not description_is_valid(cleaned_desc, title=req.title):
         return DetailResult.empty(ERR_DESCRIPTION_INVALID)
-
-    title = (data.get("title") or data.get("title_alias_1") or "").strip() or None
 
     city = data.get("location")
     if isinstance(city, str) and city.strip():

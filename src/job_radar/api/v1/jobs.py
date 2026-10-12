@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import json
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -11,6 +12,7 @@ from job_radar.db.models.board import Board
 from job_radar.db.models.candidate import CandidateJob
 from job_radar.db.models.handoff import HandoffOutbox
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
+from job_radar.services.detail_contracts import ERR_DESCRIPTION_INVALID, ERR_LOCATION_CONFLICT
 from job_radar.services.handoff import handoff_processor, current_location_decision
 from job_radar.services.location import evaluate_location
 
@@ -80,7 +82,11 @@ async def retry_enrichment(
     candidate_id: str,
     db: AsyncSession = Depends(get_db_session)
 ):
-    res = await db.execute(select(CandidateJob).where(CandidateJob.candidate_id == candidate_id))
+    res = await db.execute(
+        select(CandidateJob)
+        .options(selectinload(CandidateJob.handoff_outbox))
+        .where(CandidateJob.candidate_id == candidate_id)
+    )
     candidate = res.scalar_one_or_none()
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate job not found")
@@ -117,7 +123,8 @@ async def retry_enrichment(
 
     candidate.detail_enrichment_attempts = (candidate.detail_enrichment_attempts or 0) + 1
 
-    if result and result.description and description_is_valid(result.description, title=candidate.title):
+    if (result and not result.error_code and result.description
+            and description_is_valid(result.description, title=candidate.title, board_name=candidate.company)):
         candidate.description = result.description[:40000]
         if result.location and result.location.strip() not in ("India", "in", "pageData", ""):
             candidate.location = result.location.strip()[:200]
@@ -133,8 +140,22 @@ async def retry_enrichment(
         candidate.detail_enrichment_error_code = None
     else:
         raw_err = getattr(result, "error_code", None)
+        if raw_err == ERR_LOCATION_CONFLICT and result and result.location:
+            try:
+                evidence = json.loads(candidate.location_provider_evidence) if candidate.location_provider_evidence else {}
+                if not isinstance(evidence, dict):
+                    evidence = {}
+            except (TypeError, json.JSONDecodeError):
+                evidence = {}
+            evidence["detail_location_conflict"] = {
+                "listing": (candidate.location or "")[:200],
+                "body": result.location[:200],
+            }
+            candidate.location_provider_evidence = json.dumps(evidence, separators=(",", ":"))
         candidate.detail_enrichment_status = "failed"
-        candidate.detail_enrichment_error_code = raw_err if isinstance(raw_err, str) else err_code
+        candidate.detail_enrichment_error_code = raw_err if isinstance(raw_err, str) else (
+            ERR_DESCRIPTION_INVALID if result and result.description else err_code
+        )
 
     await db.commit()
     await db.refresh(candidate)

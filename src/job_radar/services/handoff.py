@@ -231,6 +231,20 @@ class HandoffProcessor:
                             await session.commit()
                             continue
 
+                        # Never dispatch failed/thin content or replace it with fabricated
+                        # position-details prose. Keep board-scoped validation consistent
+                        # with ingestion and manual retry (including multilingual roles).
+                        if (cand.detail_enrichment_status != "succeeded"
+                                or cand.detail_enrichment_error_code
+                                or not description_is_valid(cand.description, title=cand.title, board_name=cand.company)):
+                            record.state = "held"
+                            record.next_retry_at = None
+                            attempt.safe_outcome = "rejected"
+                            attempt.error_message = cand.detail_enrichment_error_code or "description_invalid"
+                            attempt.finished_at = datetime.now(timezone.utc)
+                            await session.commit()
+                            continue
+
                         payload = {
                             "skipTailoring": True,
                             "job": {
@@ -242,7 +256,7 @@ class HandoffProcessor:
                                 "applicationLink": (cand.public_apply_url if cand else "")[:2000],
                                 "location": ((cand.location if (cand and cand.location) else "India") or "India")[:200],
                                 "salary": (cand.salary_raw if (cand and cand.salary_raw) else "Competitive / Not specified")[:200],
-                                "jobDescription": (cand.description if (cand and cand.description and description_is_valid(cand.description, title=cand.title if cand else "")) else f"Full position details and responsibilities for {cand.title if cand else 'Role'} at {cand.company if cand else 'Company'}.")[:40000],
+                                "jobDescription": cand.description[:40000],
                                 "jobType": (cand.employment_type if (cand and cand.employment_type) else "Full-time")[:200],
                                 "jobFunction": (cand.department if (cand and cand.department) else "Engineering")[:200]
                             }

@@ -23,7 +23,7 @@ async def test_session_factory():
   await engine.dispose()
 
 @pytest.mark.asyncio
-async def test_transactional_outbox_processing(test_session_factory):
+async def test_transactional_outbox_processing(test_session_factory, valid_detail_description):
   mock_client = JobOpsClient(endpoint="http://mock-jobops.local/api")
 
   processor = HandoffProcessor(session_factory=test_session_factory, jobops_client=mock_client)
@@ -38,7 +38,9 @@ async def test_transactional_outbox_processing(test_session_factory):
       canonical_url_hash="hash_01",
       title="Senior Engineer",
       company="Stripe",
-      public_apply_url="https://stripe.com/jobs/1"
+      public_apply_url="https://stripe.com/jobs/1",
+      description=valid_detail_description,
+      detail_enrichment_status="succeeded",
     )
     session.add(board)
     session.add(cand)

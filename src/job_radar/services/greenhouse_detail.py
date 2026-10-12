@@ -9,6 +9,8 @@ import httpx
 from job_radar.services.detail_contracts import (
     DetailRequest, DetailResult, ERR_DESCRIPTION_INVALID, ERR_DESCRIPTION_MISSING,
     ERR_HTTP_STATUS, ERR_INVALID_DETAIL_URL, ERR_INVALID_PAYLOAD, ERR_RECORD_NOT_FOUND,
+    ERR_IDENTITY_MISMATCH,
+    ERR_FUTURE_POOL,
 )
 
 logger = logging.getLogger(__name__)
@@ -69,7 +71,7 @@ def build_greenhouse_detail_url(token: str, job_id: str) -> str:
 
 
 async def fetch_greenhouse_detail(req: DetailRequest, client: httpx.AsyncClient) -> DetailResult:
-    from job_radar.services.detail_extractor import clean_html_to_text, description_is_valid
+    from job_radar.services.detail_extractor import clean_html_to_text, description_is_valid, normalize_detail_sections
 
     parsed = parse_greenhouse_detail_url(req.public_url, req.provider_config)
     if not parsed:
@@ -90,11 +92,16 @@ async def fetch_greenhouse_detail(req: DetailRequest, client: httpx.AsyncClient)
         return DetailResult.empty(ERR_INVALID_PAYLOAD)
     if not isinstance(data, dict):
         return DetailResult.empty(ERR_INVALID_PAYLOAD)
+    if str(data.get("id")) != job_id:
+        return DetailResult.empty(ERR_IDENTITY_MISMATCH)
+    source_title = data.get("title")
+    if isinstance(source_title, str) and re.search(r"\b(?:future openings?|future opportunities|talent pool)\b", source_title, re.I):
+        return DetailResult.empty(ERR_FUTURE_POOL)
     content = data.get("content")
     if not isinstance(content, str) or not content.strip():
         return DetailResult.empty(ERR_DESCRIPTION_MISSING)
-    description = clean_html_to_text(content)[:40000]
-    if not description_is_valid(description, title=req.title):
+    description = normalize_detail_sections(clean_html_to_text(content), req.board_name)[:40000]
+    if not description_is_valid(description, title=req.title, board_name=req.board_name):
         return DetailResult.empty(ERR_DESCRIPTION_INVALID)
     location = data.get("location")
     location = location.get("name") if isinstance(location, dict) else None

@@ -38,7 +38,7 @@ def test_greenhouse_rejects_unapproved_hosts_and_unconfigured_gh_jid():
 @pytest.mark.asyncio
 async def test_greenhouse_custom_gh_jid_calls_fixed_api_endpoint():
     req = DetailRequest("greenhouse", "https://careers.godaddy/jobs?gh_jid=7823365003", "GoDaddy", "old", {"greenhouse_token": "godaddy"})
-    payload = {"title": "Engineer", "location": {"name": "India"}, "content": "<h2>Responsibilities</h2><p>Build reliable systems with a thoughtful engineering team, communicate clearly with stakeholders, and improve services used by customers.</p><h2>Qualifications</h2><p>Experience with distributed systems, Python, cloud infrastructure, debugging, and collaborative software development is required.</p>"}
+    payload = {"id": 7823365003, "title": "Engineer", "location": {"name": "India"}, "content": "<h2>Responsibilities</h2><p>Build reliable systems with a thoughtful engineering team, communicate clearly with stakeholders, and improve services used by customers.</p><h2>Qualifications</h2><p>Experience with distributed systems, Python, cloud infrastructure, debugging, and collaborative software development is required.</p>"}
 
     def handler(request):
         assert str(request.url) == "https://boards-api.greenhouse.io/v1/boards/godaddy/jobs/7823365003"
@@ -52,7 +52,7 @@ async def test_greenhouse_custom_gh_jid_calls_fixed_api_endpoint():
 @pytest.mark.asyncio
 async def test_greenhouse_detail_preserves_provider_title_and_location():
     req = DetailRequest("greenhouse", "https://job-boards.greenhouse.io/sourcegraph91/jobs/6103567004", "Sourcegraph", "old", {})
-    payload = {"title": "Agent Engineer [IC4]", "location": {"name": "Remote"}, "content": "<h2>Responsibilities</h2><p>Build reliable systems with a thoughtful engineering team.</p><h2>Qualifications</h2><p>Experience building distributed systems and strong communication skills.</p><h2>Skills</h2><p>Python, Go, and cloud infrastructure.</p>"}
+    payload = {"id": 6103567004, "title": "Agent Engineer [IC4]", "location": {"name": "Remote"}, "content": "<h2>Responsibilities</h2><p>Build reliable systems with a thoughtful engineering team.</p><h2>Qualifications</h2><p>Experience building distributed systems and strong communication skills.</p><h2>Skills</h2><p>Python, Go, and cloud infrastructure.</p>"}
     def handler(request):
         assert str(request.url) == build_greenhouse_detail_url("sourcegraph91", "6103567004")
         return httpx.Response(200, json=payload)

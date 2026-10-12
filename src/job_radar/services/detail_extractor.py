@@ -11,7 +11,10 @@ from typing import Optional, Dict, Any, Iterator, List, Mapping
 
 from job_radar.config import settings
 from job_radar.services.browser import BrowserServiceClient
-from job_radar.services.detail_contracts import DetailRequest, DetailResult, ERR_INVALID_DETAIL_URL
+from job_radar.services.detail_contracts import (
+    DetailRequest, DetailResult, ERR_INVALID_DETAIL_URL, ERR_DESCRIPTION_INVALID,
+    ERR_DESCRIPTION_MISSING, ERR_IDENTITY_MISMATCH, ERR_FUTURE_POOL,
+)
 from job_radar.services.oracle_detail import fetch_oracle_detail
 from job_radar.services.phenom_detail import fetch_phenom_detail
 from job_radar.services.workday_detail import fetch_workday_detail
@@ -22,6 +25,12 @@ from job_radar.services.smartrecruiters_detail import fetch_smartrecruiters_deta
 from job_radar.services.ashby_detail import fetch_ashby_detail
 from job_radar.services.ashby_detail import parse_ashby_job_url
 from job_radar.services.eightfold_detail import fetch_eightfold_detail, parse_eightfold_job_url
+from job_radar.services.apple_detail import fetch_apple_detail
+from job_radar.services.site_detail import fetch_site_detail
+from job_radar.services.google_detail import fetch_google_detail
+from job_radar.services.celonis_detail import fetch_celonis_detail
+from job_radar.services.mattel_detail import fetch_mattel_detail
+from job_radar.services.tesco_detail import fetch_tesco_detail
 
 logger = logging.getLogger(__name__)
 
@@ -74,12 +83,13 @@ CONTENT_INDICATORS = [
 ]
 
 _FUTURE_ONLY = re.compile(
-    r"\b(?:talent pool|talent community|future opportunities|future vacancies|"
+    r"\b(?:talent community|future opportunities|future vacancies|"
     r"upcoming vacancy|no current (?:vacanc(?:y|ies)|openings?|positions?)|"
     r"not tied to a specific (?:role|position)|"
     r"bolsa de (?:trabajo|talento)|futuras oportunidades|sin vacantes actuales)\b",
     re.IGNORECASE,
 )
+_FUTURE_TITLE = re.compile(r"\b(?:future openings?|future opportunities|talent pool)\b", re.I)
 _ROLE_SECTION = re.compile(
     r"^(?:about the role|about the job|job (?:description|summary|overview)|"
     r"role (?:summary|overview)|introduction|(?:core |key |position )?responsibilities(?: and duties)?|"
@@ -129,6 +139,95 @@ _DUTY_SUBJECT = re.compile(
 )
 _BULLET = re.compile(r"^(?:[•*–-]|\d+[.)])\s*")
 
+# Exact observed provider templates. Insert section boundaries while retaining every
+# line of source content, including the qualification section for consumers.
+_SCOPED_ROLE_HEADINGS = {
+    "Marriott Tech": (r"Job Responsibilities", r"Position Summary"),
+    "McD": (r"Position Summary", r"Primary Responsibilities"),
+    "Redis": (r"What type of work will you be doing",),
+    "Supabase": (r"What You['’]ll Own",),
+    "GoDaddy": (r"What you['’]ll get to do\.{0,3}",),
+    "HighRadius": (r"Job role\s*:\s*.+", r"Key Responsibilities"),
+    "BrowserStack": (r"Role in nutshell", r"What will you do\??"),
+    "Vanguard": (r"Responsibilites",),
+    "Amgen": (r"Roles and Responsibilities",),
+    "Salesforce": (r"What You['’]ll Actually Be Building",),
+    "JLL": (r"What this job involves",),
+    "Walmart": (r"What you['’]ll do\.{0,3}",),
+    "JioStar": (r"Key responsibilities",),
+    "Regal Rexnord": (r"SCOPE OF ROLE", r"Essential Duties and Responsibilities"),
+    "Oracle": (r"Job Responsibilities",),
+    "Celonis": (r"The Work You['’]ll Do",),
+    "Sourcegraph": (r"Here['’]s what you can expect in your first year",),
+    "Razorpay": (r"Roles and responsibilities",),
+    "Gitlab": (r"Associate Renewals Manager Responsibilities",),
+    "Coinbase": (r"What You['’]ll Be Doing",),
+    "Groww": (r"Reimagine Internal Audit with us \| What You['’]ll Do",),
+    "Cognite": (r"As an Account Executive, Manufacturing you will.*",),
+    "Mattel": (r"What Your Impact Will Be",),
+    "Airbnb": (r"The difference you will make", r"A typical day"),
+}
+_SCOPED_QUALIFICATION_HEADINGS = {
+    "Marriott Tech": (r"Skill and Experience",),
+    "McD": (r"Skills Required", r"Preferred Skills"),
+    "Redis": (r"What You['’]ll Bring to Redis", r"Your experience and strengths"),
+    "Supabase": (r"What You['’]ll Bring", r"What We Offer"),
+    "GoDaddy": (r"Your experience should include\.{0,3}",),
+    "HighRadius": (r"Desired Requirements", r"Skill & Experience Needed"),
+    "BrowserStack": (r"What do you bring", r"Requirements", r"Qualifications"),
+    "Vanguard": (r"Qualifications and Skills",),
+    "Amgen": (r"Basic Qualifications",),
+    "Salesforce": (r"You['’]re Our Forward Deployed Engineer If…?",),
+    "JLL": (r"Education and experience",),
+    "Walmart": (r"What You['’]ll Bring\.{0,4}",),
+    "JioStar": (r"Skills and attributes for success",),
+    "Regal Rexnord": (r"About Regal Rexnord", r"Education and Experience Requirements"),
+    "Oracle": (r"Mandatory Skills", r"Preferred Skills"),
+    "Celonis": (r"What You Bring", r"The Qualifications You Need"),
+    "Sourcegraph": (r"About you", r"Your Skills and Experience"),
+    "Razorpay": (r"Must haves",),
+    "Gitlab": (r"Associate Renewals Manager Requirements",),
+    "Coinbase": (r"What We Look For",),
+    "Groww": (r"What Makes You a Great Fit",),
+    "Cognite": (r"you bring to Cognite",),
+    "Mattel": (r"What We['’]re Looking For",),
+    "Airbnb": (r"Your expertise",),
+}
+
+
+def normalize_detail_sections(description: str, board_name: str) -> str:
+    """Expose only observed board-specific duty/qualification headings to the validator."""
+    if not isinstance(description, str) or not description:
+        return description
+    starts = _SCOPED_ROLE_HEADINGS.get(board_name, ())
+    stops = _SCOPED_QUALIFICATION_HEADINGS.get(board_name, ())
+    if not starts and not stops:
+        return description
+    if board_name in ("HighRadius", "Razorpay", "Airbnb"):
+        # This Greenhouse template double-encodes nonbreaking spaces and uses ●.
+        description = html.unescape(description)
+    if board_name == "HighRadius":
+        description = description.replace("●", "•")
+    description = description.replace("\xa0", " ")
+    if board_name == "JioStar":
+        # CXS places this template on one physical line, including the skills.
+        description = re.sub(r"\s*●\s*", "\n• ", description)
+        description = re.sub(r"\s+(Key responsibilities|Skills and attributes for success)\s*:?(?=\s|$)", r"\n\1:", description, flags=re.I)
+    lines = description.splitlines()
+    result = []
+    for line in lines:
+        candidate = line.strip()
+        if any(re.fullmatch(pattern + r"\s*:?(?:\.{0,3})?", candidate, re.I) for pattern in stops):
+            result.append("Qualifications")
+        elif any(re.fullmatch(pattern + r"\s*:?(?:\.{0,3})?", candidate, re.I) for pattern in starts):
+            result.append("Responsibilities")
+        elif board_name in ("Vanguard", "Regal Rexnord", "BrowserStack") and any(
+            re.match(pattern + r"\b", candidate, re.I) for pattern in starts
+        ):
+            result.append("Responsibilities")
+        result.append(line)
+    return "\n".join(result)
+
 
 def _is_job_posting_type(value: Any) -> bool:
     if isinstance(value, str):
@@ -168,7 +267,7 @@ def extract_job_posting(raw_html: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def description_is_valid(text: Optional[str], *, title: str = "") -> bool:
+def description_is_valid(text: Optional[str], *, title: str = "", board_name: str = "") -> bool:
     if not text or not isinstance(text, str):
         return False
     cleaned = text.strip()
@@ -180,8 +279,19 @@ def description_is_valid(text: Optional[str], *, title: str = "") -> bool:
             if len(cleaned) < 500 or 'window' in pat.pattern or 'sorry' in pat.pattern or 'page not found' in pat.pattern:
                 return False
 
-    if _FUTURE_ONLY.search(cleaned):
+    if _FUTURE_TITLE.search(title) or _FUTURE_ONLY.search(cleaned):
         return False
+
+    if board_name == "Databricks" and "あなたがもたらす影響" in cleaned:
+        # Observed Japanese template has full, unbulleted duties and a separate
+        # requirements section. Count only action sentences between those bounds.
+        before, sep, after = cleaned.partition("あなたがもたらす影響")
+        duties, stop, _ = after.partition("必要な条件/経験")
+        if not stop or len(before) < 100:
+            return False
+        action_lines = [line for line in duties.splitlines()
+                        if len(line.strip()) >= 18 and re.search(r"(?:定義|設計|構築|推進|連携|指導|確立|促進|貢献|リード)", line)]
+        return len(action_lines) >= 3
 
     plain = re.sub(r"<[^>]+>", "\n", html.unescape(cleaned))
     lines = [line.strip() for line in plain.splitlines() if line.strip()]
@@ -290,9 +400,17 @@ class DetailExtractor:
             client = httpx.AsyncClient(timeout=15.0, follow_redirects=False)
             close_client = True
 
+        native_failure: Optional[DetailResult] = None
+        observed_invalid_content = False
         try:
             if family == "oracle":
-                return await fetch_oracle_detail(req, client)
+                result = await fetch_oracle_detail(req, client)
+                if result.error_code is not None:
+                    return result
+                description = normalize_detail_sections(result.description or "", board_name)
+                if not description_is_valid(description, title=title):
+                    return DetailResult.empty(ERR_DESCRIPTION_INVALID)
+                return DetailResult(**{**result.__dict__, "description": description})
             elif family == "phenom":
                 return await fetch_phenom_detail(req, client)
             elif family == "talent500":
@@ -301,34 +419,49 @@ class DetailExtractor:
                 return await fetch_ashby_detail(req, client)
             elif family == "eightfold":
                 return await fetch_eightfold_detail(req, client)
+            elif family == "apple_jobs":
+                return await fetch_apple_detail(req, client)
+            elif family == "amazon_jobs" or (family == "custom" and public_apply_url.startswith("https://www.novartis.com/")):
+                return await fetch_site_detail(req, client)
             elif family == "google_careers":
-                try:
-                    raw_html = await self.browser_client.fetch_board_html(public_apply_url)
-                    infer_result = await self.fetch_jobops_infer_fallback(raw_html, client)
-                    if infer_result is not None:
-                        return infer_result
-                except Exception as e:
-                    logger.info(f"Google careers infer fallback failed: {e}")
-                return DetailResult.empty(ERR_INVALID_DETAIL_URL)
+                return await fetch_google_detail(req, client)
+            elif family == "celonis_dxp":
+                return await fetch_celonis_detail(req, client)
+            elif family == "custom" and public_apply_url.startswith("https://jobs.mattel.com/"):
+                return await fetch_mattel_detail(req, client)
+            elif family == "avature" and public_apply_url.startswith("https://careers.tesco.com/"):
+                return await fetch_tesco_detail(req, client)
             elif family == "workday":
                 result = await fetch_workday_detail(req, client)
                 if result.error_code is None:
+                    description = normalize_detail_sections(result.description or "", board_name)
+                    if not description_is_valid(description, title=title):
+                        return DetailResult.empty(ERR_DESCRIPTION_INVALID)
+                    return DetailResult(**{**result.__dict__, "description": description})
+                if result.error_code in (ERR_DESCRIPTION_MISSING, ERR_DESCRIPTION_INVALID, ERR_INVALID_DETAIL_URL, ERR_IDENTITY_MISMATCH, ERR_FUTURE_POOL):
                     return result
+                native_failure = result
                 # Fall through to generic HTML fallback below on CXS failure.
             elif family == "zoho":
                 raw_html = await self.browser_client.fetch_board_html(
                     public_apply_url, wait_for_selector="div.cw-jobdescription"
                 )
                 return fetch_zoho_detail_from_html(raw_html, public_apply_url)
-            elif family in ("greenhouse", "custom") or "gh_jid" in public_apply_url:
+            elif family == "greenhouse" or "gh_jid" in public_apply_url:
                 result = await fetch_greenhouse_detail(req, client)
                 if result.error_code is None:
                     return result
+                if result.error_code in (ERR_DESCRIPTION_MISSING, ERR_DESCRIPTION_INVALID, ERR_INVALID_DETAIL_URL, ERR_IDENTITY_MISMATCH, ERR_FUTURE_POOL):
+                    return result
+                native_failure = result
                 # A bounded provider-native failure may still have a usable public page.
             elif family == "smartrecruiters":
                 result = await fetch_smartrecruiters_detail(req, client)
                 if result.error_code is None:
                     return result
+                if result.error_code in (ERR_DESCRIPTION_MISSING, ERR_DESCRIPTION_INVALID, ERR_INVALID_DETAIL_URL):
+                    return result
+                native_failure = result
                 # A bounded provider-native failure may still have a usable public page.
 
             # Generic fallback logic
@@ -352,6 +485,7 @@ class DetailExtractor:
                             salary_currency=parsed.get("salary_currency"),
                             source="generic_static_html",
                         )
+                    observed_invalid_content = bool(extract_job_posting(resp.text))
             except Exception:
                 pass
 
@@ -371,14 +505,19 @@ class DetailExtractor:
                         salary_currency=parsed.get("salary_currency"),
                         source="generic_browser_html",
                     )
+                observed_invalid_content = observed_invalid_content or bool(extract_job_posting(raw_html))
             except Exception as e:
                 logger.info(f"Failed to fetch detail page for {public_apply_url}: {e}")
 
-            if raw_html:
+            if raw_html and not observed_invalid_content:
                 infer_result = await self.fetch_jobops_infer_fallback(raw_html, client)
                 if infer_result is not None:
                     return infer_result
 
+            if native_failure:
+                return native_failure
+            if observed_invalid_content:
+                return DetailResult.empty(ERR_DESCRIPTION_INVALID)
             return DetailResult.empty(ERR_INVALID_DETAIL_URL)
 
         finally:

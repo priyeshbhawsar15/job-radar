@@ -1,0 +1,95 @@
+About Us:
+
+Marriott International Inc.
+
+, headquartered in Bethesda, Maryland, USA, was founded in May 1927 by J. Willard Marriott and Alice S. Marriott with a modest nine-seat A&W root beer stand. Guided by the family's leadership and core principles, Marriott International today has grown into a global hospitality giant, operating approximately 9,000 properties and over 30 leading brands in more than 140 countries and territories.
+
+From such humble beginnings to becoming the world’s largest hotel company, Marriott International has never stopped searching for inventive ways to serve its customers, provide opportunities for its associates, and grow their business. At
+
+Marriott Tech Accelerator center
+
+(MTA), Hyderabad, India, Marriott is exploring the world we live in and all its possibilities. At Marriott Tech Accelerator, we are a team of passionate engineering minds dedicated to creating and building cutting-edge solutions that streamline operations and elevate guest experiences.
+
+Marriott Tech Accelerator center is fully owned and operated by ANSR. All associates at Marriott Tech Accelerator will be ANSR employees, delivering services exclusively to ANSR's client, Marriott International. .
+
+Role Title:
+
+Quality Engineer
+
+Job Responsibilities:
+
+Technical Leadership:
+
+Trains and / or mentors other team members, and peers as appropriate
+
+Ability to work liaising with multiple teams to steer projects from inception to successful delivery
+
+Provides financial input on department or project budgets, capital expenditures or other cost/resource estimates as requested
+
+Identifies opportunities to enhance the service delivery processes.
+
+Delivering Technology:
+
+Performs complex quantitative and qualitative analyses for service delivery processes and projects.
+
+Facilitates achievement of expected deliverables and obligations of Services Providers
+
+Validates completeness of requirements prior to Service Provider solutioning
+
+Ensures all projects follow the defined development and business case processes
+
+Ensures proper coordination with appropriate IT and vendor relations teams
+
+Provides consultation for routine and complex systems development
+
+Ensures early warning to the business stakeholder executives regarding degraded or missed service levels
+
+Coordinates with Application Delivery and Infrastructure teams for deployment and production support activities
+
+IT Governance:
+
+Follows all defined IT standards and processes (i.e. IT Governance, SM&G, Architecture, etc.), and provides input for improvements to the appropriate process owners as needed
+
+Maintains a proper balance between business and operational risk
+
+Ability to assess when risks need to be escalated to right channels.
+
+Follows the defined project management standards and processes
+
+Skill and Experience:
+
+Self-motivated and results-driven, with a passion for learning and growth
+
+Excellent written communication skills
+
+Experience with modern front-end or back-end web technologies and frameworks.
+
+Knowledge of build processes for node.js applications
+
+Understanding of the software development lifecycle and Agile (SCRUM) Process
+
+4+ years working automated testing frameworks such as Cucumber or Karate
+
+4+ years creating test cases for APIs, (GraphQL or REST)
+
+Experience with performance testing and load testing
+
+Knowledge of cloud services and deployments
+
+Technical writing experience for documenting test plans and strategies
+
+Familiarity with tools like Harness.io or Jenkins for automating testing pipelines
+
+Education and Certifications:
+
+Undergraduate degree or equivalent experience/certification
+
+Work location:
+
+Hyderabad, India.
+
+Work mode:
+
+Marriott’s core values:
+
+At Marriott, our core value makes us who we are. We believe that success is never final. As we change and grow, the beliefs that are most important to us stay the same—putting people first, pursuing excellence, embracing change, acting with integrity, and serving our world. Being part of Marriott Tech Accelerator means being part of a proud history and a thriving culture.

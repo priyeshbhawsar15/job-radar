@@ -1,0 +1,91 @@
+Who we are
+
+We're Redis. We built the product that runs the fast apps our world runs on. (If you checked the weather, used your credit card, or looked at your flight status online today, you’re welcome.) At Redis, you’ll work with the fastest, simplest technology in the business—whether you’re building it, telling its story, or selling it to our 10,000+ worldwide customers. We’re creating a faster world with simpler experiences. You in?
+
+About Redis
+
+Redis is the world’s fastest data platform. From its open source origins to becoming the #1 cited brand for caching solutions, Redis has helped more than 10,000 customers build, scale, and deploy the apps our world runs on. With cloud and on-prem databases for caching, GenAI, and more, Redis helps digital businesses set a new standard for app speed.
+
+We are looking for a Principal Product Manager  to join our Redis Cloud team in Vancouver, Canada.
+
+In this role, you will help shape the future of Redis Cloud for three of our most important customer segments: enterprise customers modernizing mission-critical applications, digital-native companies building and scaling fast-moving products, and teams developing AI-powered applications. You will work at the intersection of customer insight, product strategy, and technical execution to define capabilities that help customers move faster with confidence.
+
+This is a strong fit for someone who enjoys working closely with customers, translating complex problems into clear product direction, and partnering across engineering, go-to-market, and customer-facing teams to deliver meaningful business impact.
+
+What type of work will you be doing:
+
+Own product strategy and execution for Redis Cloud capabilities that serve enterprise customers, digital-native companies, and AI-native applications.
+
+Define detailed product requirements in close partnership with engineering and key stakeholders, and manage the lifecycle of one or more product areas end to end.
+
+Work directly with customers and internal stakeholders to understand pain points, validate priorities, and turn feedback into roadmap decisions.
+
+Partner closely with sales, solutions, marketing, enablement, and customer success to support successful launches, adoption, and business alignment.
+
+Collaborate across distributed teams and global stakeholders to prioritize work, communicate trade-offs, and drive high-quality execution.
+
+Act as a product evangelist internally and externally, helping teams tell a clear story about customer value, product direction, and use cases.
+
+Bring strong technical judgment to conversations spanning cloud infrastructure, modern application architectures, data platforms, and AI workloads.
+
+What You’ll Bring to Redis
+
+Your experience and strengths:
+
+Experience in product management for cloud platforms, data infrastructure, databases, developer platforms, or AI-related products.
+
+Strong technical depth in storage, networking, and modern software development processes, including Agile development practices and the effective use of AI tools to accelerate discovery, specification, iteration, and execution.
+
+Adaptability to the changing role of product management in an AI-enabled SDLC, including faster feedback loops, AI-assisted engineering workflows, and evolving cross-functional ways of working, with the ability to understand architecture trade-offs and translate them into product requirements.
+
+Solid understanding of cloud platform ecosystems across AWS, GCP, and Azure, including core infrastructure services, marketplace and procurement models, APIs, identity and access patterns, observability, and partner integrations.
+
+Familiarity with the lifecycle of cloud products and services, including provisioning, upgrades, maintenance windows, reliability, operational readiness, supportability, and end-of-life considerations.
+
+Strong product sense for enterprise and digital-native customers, with the ability to turn ambiguous customer, field, and market input into crisp requirements, prioritization decisions, and measurable outcomes.
+
+Bachelor’s degree in computer science, engineering, or a related technical field, or equivalent practical experience.
+
+Why You’ll Love This Role
+
+You will help define how Redis Cloud serves a broad and strategic set of customers, from large enterprises to digital-native innovators and AI builders.
+
+You will work on products that matter to developers, operators, and businesses building modern applications at scale.
+
+You will have the opportunity to influence product direction across customer needs, technical innovation, and commercial impact.
+
+You will work with highly capable cross-functional teams in a company known for respected technology and real customer reach.
+
+Benefits and Perks of Working at Redis in Canada
+
+Extended health coverage through Manulife, including prescription drug coverage and supplemental health benefits.
+
+Dental coverage, including basic services and major restorative support.
+
+Life and accidental death and dismemberment coverage, along with dependent life coverage.
+
+Short-term and long-term disability insurance.
+
+Virtual healthcare access and an employee and family assistance program.
+
+As a global company, we value a culture of curiosity, diversity of thought, and innovation from our employees, customers, and partners. Redis is committed to a diverse and inclusive work environment where all employees’ differences are celebrated and supported, and everyone feels safe to bring their authentic selves to work. Redis is dedicated to equal employment opportunities regardless of race, color, ancestry, religion, sex, national orientation, sexual orientation, age, marital status, disability, gender identity, gender expression, Veteran status, or any other classification protected by federal, state, or local law. We strive to create a workplace where every voice is heard, and every idea is respected.
+
+Redis is committed to working with and providing access and reasonable accommodation to applicants with mental and/or physical disabilities. If you think you may require accommodations for any part of the recruitment process, please send a request to
+
+recruiting@redis.com
+
+. All requests for accommodations are treated discreetly and confidentially, as practical and permitted by law. Any offer of employment at Redis is contingent upon the successful completion of a background check, consistent with applicable laws.
+
+As a global company, we value a culture of curiosity, diversity of thought, and innovation from our employees, customers, and partners. Redis is committed to a diverse and inclusive work environment where all employees’ differences are celebrated and supported, and everyone feels safe to bring their authentic selves to work. Redis is dedicated to equal employment opportunities regardless of race, color, ancestry, religion, sex, national orientation, sexual orientation, age, marital status, disability, gender identity, gender expression, Veteran status, or any other classification protected by federal, state, or local law. We strive to create a workplace where every voice is heard, and every idea is respected.
+
+Redis is committed to working with and providing access and reasonable accommodation to applicants with mental and/or physical disabilities. If you think you may require accommodations for any part of the recruitment process, please send a request to
+
+recruiting@redis.com
+
+. All requests for accommodations are treated discreetly and confidentially, as practical and permitted by law.
+
+Any offer of employment at Redis is contingent upon the successful completion of a background check, consistent with applicable laws.
+
+Redis reserves the right to retain data longer than stated in the
+
+in order to evaluate candidates.

@@ -49,9 +49,9 @@ async def test_execution_engine_consecutive_failure_hold(test_session_factory):
 
   engine = PipelineExecutionEngine(session_factory=test_session_factory)
 
-  # Mock browser client to raise error
-  with patch.object(engine.browser_client, "fetch_board_html", new_callable=AsyncMock) as mock_fetch:
-    mock_fetch.side_effect = RuntimeError("Mocked browser service crash")
+  # Fail the provider boundary directly; do not perform public HTTP retries.
+  with patch.object(engine, "fetch_greenhouse_candidates", new_callable=AsyncMock) as mock_fetch:
+    mock_fetch.side_effect = RuntimeError("Mocked listing service crash")
 
     board_run = await engine.execute_board_run("board-test-01")
     assert board_run.outcome == "provider_failure"

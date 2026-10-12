@@ -848,28 +848,6 @@ class PipelineExecutionEngine:
                             selector_config=selector_config
                         )
                         extracted_candidates = [c for c in extracted_candidates if "locationPicker" not in c.raw_url]
-                        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True, verify=False, headers={"User-Agent": "Mozilla/5.0"}) as client:
-                            for c in extracted_candidates:
-                                try:
-                                    dr = await client.get(c.raw_url)
-                                    if dr.status_code == 200:
-                                        m = re.search(r'window\.__staticRouterHydrationData\s*=\s*JSON\.parse\(("(?:[^"\\]|\\.)*")\)', dr.text)
-                                        if m:
-                                            raw_str = json.loads(m.group(1))
-                                            data = json.loads(raw_str)
-                                            loader = data.get("loaderData", {})
-                                            jd_block = loader.get("jobDetails", {})
-                                            jd = jd_block.get("jobsData", {})
-                                            if jd:
-                                                summary = html.unescape(re.sub(r'<[^>]+>', ' ', jd.get("jobSummary", ""))).strip()
-                                                desc = html.unescape(re.sub(r'<[^>]+>', ' ', jd.get("description", ""))).strip()
-                                                min_q = html.unescape(re.sub(r'<[^>]+>', ' ', jd.get("minimumQualifications", ""))).strip()
-                                                pref_q = html.unescape(re.sub(r'<[^>]+>', ' ', jd.get("preferredQualifications", ""))).strip()
-                                                full_text = f"{summary}\n\n=== MINIMUM QUALIFICATIONS ===\n{min_q}\n\n=== PREFERRED QUALIFICATIONS ===\n{pref_q}\n\n=== DESCRIPTION & RESPONSIBILITIES ===\n{desc}".strip()
-                                                if full_text and len(full_text) > 100:
-                                                    c.extra_payload = {"description": full_text[:40000]}
-                                except Exception as apple_err:
-                                    logger.info(f"Apple detail fetch failed for {c.raw_url}: {apple_err}")
                     elif family == "eightfold":
                         raw_payload = await self.browser_client.fetch_board_html(
                             target_url=target_url,
@@ -910,18 +888,6 @@ class PipelineExecutionEngine:
                             target_url=target_url,
                             selector_config=selector_config
                         )
-                        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True, verify=False, headers={"User-Agent": "Mozilla/5.0"}) as client:
-                            for c in extracted_candidates:
-                                try:
-                                    dr = await client.get(c.raw_url)
-                                    if dr.status_code == 200:
-                                        m_meta = re.search(r'meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']', dr.text, re.IGNORECASE)
-                                        if m_meta:
-                                            g_desc = html.unescape(m_meta.group(1)).strip()
-                                            if g_desc and len(g_desc) > 50:
-                                                c.extra_payload = {"description": g_desc[:40000]}
-                                except Exception as g_err:
-                                    logger.info(f"Google detail fetch failed for {c.raw_url}: {g_err}")
                     elif family == "oracle":
                         revision_config = (
                             revision.config_json

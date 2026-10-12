@@ -15,6 +15,8 @@ from job_radar.services.detail_contracts import (
     ERR_INVALID_DETAIL_URL,
     ERR_INVALID_PAYLOAD,
     ERR_RECORD_NOT_FOUND,
+    ERR_IDENTITY_MISMATCH,
+    ERR_FUTURE_POOL,
     DetailRequest,
     DetailResult,
 )
@@ -58,7 +60,7 @@ def parse_ashby_job_url(
 
 async def fetch_ashby_detail(req: DetailRequest, client: httpx.AsyncClient) -> DetailResult:
     """Fetch job details from Ashby's public posting API."""
-    from job_radar.services.detail_extractor import clean_html_to_text, description_is_valid
+    from job_radar.services.detail_extractor import clean_html_to_text, description_is_valid, normalize_detail_sections
 
     parsed = parse_ashby_job_url(req.public_url, req.provider_config)
     if not parsed:
@@ -111,11 +113,15 @@ async def fetch_ashby_detail(req: DetailRequest, client: httpx.AsyncClient) -> D
     if not raw_desc or not isinstance(raw_desc, str):
         return DetailResult.empty(ERR_DESCRIPTION_MISSING)
 
-    description = clean_html_to_text(raw_desc)[:40000]
+    title = target_job.get("title").strip() if isinstance(target_job.get("title"), str) else None
+    if title and re.search(r"\b(?:future openings?|future opportunities|talent pool)\b", title, re.I):
+        return DetailResult.empty(ERR_FUTURE_POOL)
+    if req.board_name == "Supabase" and title and title.casefold() != req.title.strip().casefold():
+        return DetailResult.empty(ERR_IDENTITY_MISMATCH)
+
+    description = normalize_detail_sections(clean_html_to_text(raw_desc), req.board_name)[:40000]
     if not description_is_valid(description, title=req.title):
         return DetailResult.empty(ERR_DESCRIPTION_INVALID)
-
-    title = target_job.get("title").strip() if isinstance(target_job.get("title"), str) else None
     location = target_job.get("location").strip() if isinstance(target_job.get("location"), str) else None
     department = target_job.get("department").strip() if isinstance(target_job.get("department"), str) else None
     employment_type = target_job.get("employmentType").strip() if isinstance(target_job.get("employmentType"), str) else None

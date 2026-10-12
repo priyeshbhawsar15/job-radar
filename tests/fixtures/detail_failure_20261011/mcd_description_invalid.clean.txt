@@ -1,0 +1,97 @@
+We are excited to announce an opening for
+
+Supervisor, Data Operations & Management
+
+at MCC India. Please find below the details of the role and its responsibilities.
+
+Skills Required:
+
+GCP, AWS, Terraform, Python, SQL, Kubernetes, Dataflow, Airflow, Cloud composer, Big Query, Redshift, Snowflake, CI/CD, Git, Git hub actions, MicroStrategy, Micro Strategy, Tableau, Alteryx, Power BI, Platform Administration, BI Administration
+
+Experience Range:
+
+4 - 7 years
+
+Position Summary:
+
+McDonald’s is in search of an experienced Data Application Architect with proficiency in Business Intelligence (BI) tools such as Tableau, MicroStrategy, and Power BI. The ideal candidate will exhibit proficiency in deploying and managing BI tools on AWS cloud (now GCP) and providing technical leadership across the full life cycle of BI solution development and deployment. In this role, you will provide BI tool administration, conduct solution reviews, recommend new BI tools, and effectively communicate with a diverse team – data architects, BI developers, data engineers, and product owners. Your dedication to continuous BI improvements will contribute significantly to the effectiveness of our data-driven initiatives.
+
+Skills Required:
+
+MicroStrategy
+
+Business Intelligence
+
+Snowflake
+
+Databricks
+
+Big Query
+
+PowerShell
+
+JavaScript
+
+Who we’re looking for:
+
+Primary Responsibilities:
+
+intelligence capabilities using Tableau, Alteryx. optimizations, and provide guidance to developers based on standards and best practices. enterprise security standards. non-Production environments across verticals areas, including sizing and capacity scoping when required. BI capabilities. business metrics.
+
+Play a pivotal role in designing, developing, and maintaining McDonald’s business
+
+Review dashboard and report design, evaluate and recommend performance
+
+Guide BI software upgrades, collaborate on testing new functionalities, and maintain
+
+Migrate content between environments. Administer both Production and
+
+Should have leadership and senior-level stakeholder management skills.
+
+Provide expertise and thought leadership for new BI tool evaluations and enabling new
+
+Create, deploy, and manage BI data source connectors, BI semantic layer, and
+
+Manage BI role-based data access security and SSO BI tool integration.
+
+analytical reports utilizing Alteryx & Tableau. Redshift, Snowflake, Databricks, or Big Query. Power BI.
+
+Bachelor's degree in information technology, or a related field.
+
+4+ years of experience building and deploying BI dashboards, visualizations, and analytical reports utilizing Tableau, MicroStrategy, or PowerBI. (Looker)
+
+4+ years of experience as a BI architect or administrator for Tableau, MicroStrategy, or Power BI.
+
+4+ years of experience with cloud services like GCP or AWS, – GCP preferred.
+
+AWS, GCP, Tableau, MicroStrategy, or Power BI certifications.
+
+Power BI certifications. Preferred Skills:
+
+on project requirements and best practices. translate business requirements into BI solutions. capabilities.
+
+Excellent written, verbal, and meeting facilitation skills. environment.
+
+Work location:
+
+Hyderabad, India
+
+Work pattern
+
+: Full time role.
+
+Work mode:
+
+Additional Information: McDonald’s is committed to providing qualified individuals with disabilities with reasonable accommodations to perform the essential functions of their jobs. McDonald’s provides equal employment opportunities to all employees and applicants for employment and prohibits discrimination and harassment of any type without regard to sex, sex stereotyping, pregnancy (including pregnancy, childbirth, and medical conditions related to pregnancy, childbirth, or breastfeeding), race, color, religion, ancestry or national origin, age, disability status, medical condition, marital status, sexual orientation, gender, gender identity, gender expression, transgender status, protected military or veteran status, citizenship status, genetic information, or any other characteristic protected by federal, state or local laws. This policy applies to all terms and conditions of employment, including recruiting, hiring, placement, promotion, termination, layoff, recall, transfer, leaves of absence, compensation and training. McDonald’s Capability Center India Private Limited (“McDonald’s in India”) is a proud equal opportunity employer and is committed to hiring a diverse workforce and sustaining an inclusive culture. At McDonald’s in India, employment decisions are based on merit, job requirements, and business needs, and all qualified candidates are considered for employment. McDonald’s in India does not discriminate based on race, religion, color, age, gender, marital status, nationality, ethnic origin, sexual orientation, political affiliation, veteran status, disability status, medical history, parental status, genetic information, or any other basis protected under state or local laws. Nothing in this job posting or description should be construed as an offer or guarantee of employment
+
+Preferred Skills:
+
+Ability to make the appropriate BI design and tools selection recommendations based
+
+Domain Knowledge: Understanding of the industry and business processes to
+
+Deep knowledge of Tableau Creator, Explorer, Viewer, and Tableau Server
+
+Strong analytical and critical thinking skills.
+
+Self-driven with ability to set priorities and mentor others in a performance driven

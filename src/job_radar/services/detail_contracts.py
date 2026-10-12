@@ -13,6 +13,9 @@ ERR_INVALID_PAYLOAD = "invalid_payload"
 ERR_RECORD_NOT_FOUND = "record_not_found"
 ERR_DESCRIPTION_MISSING = "description_missing"
 ERR_DESCRIPTION_INVALID = "description_invalid"
+ERR_IDENTITY_MISMATCH = "identity_mismatch"
+ERR_LOCATION_CONFLICT = "location_conflict"
+ERR_FUTURE_POOL = "future_pool"
 
 
 @dataclass(frozen=True)

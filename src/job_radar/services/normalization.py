@@ -14,7 +14,7 @@ from job_radar.db.models.candidate import CandidateJob, RunCandidate
 from job_radar.db.models.run import PipelineRun, BoardRun, ExecutionAttempt
 from job_radar.adapters.base import ExtractedCandidate
 from job_radar.services.detail_extractor import detail_extractor, description_is_valid
-from job_radar.services.detail_contracts import DetailResult
+from job_radar.services.detail_contracts import DetailResult, ERR_DESCRIPTION_INVALID, ERR_LOCATION_CONFLICT
 from job_radar.services.location import evaluate_location
 from job_radar.services.oracle_detail import extract_oracle_public_id
 from job_radar.services.handoff import HandoffProcessor, handoff_processor, current_location_decision
@@ -135,7 +135,7 @@ class NormalizationService:
                 emp_type = (item.employment_type.strip() if item.employment_type else "Full-time")[:200]
                 dept = (item.department.strip() if item.department else "Engineering")[:200]
                 raw_desc = item.extra_payload.get("description")
-                valid_extra_desc = raw_desc[:40000] if raw_desc and description_is_valid(raw_desc, title=title_capped) else None
+                valid_extra_desc = raw_desc[:40000] if raw_desc and description_is_valid(raw_desc, title=title_capped, board_name=company_capped) else None
                 provider_evidence = item.location_provider_evidence
                 if provider_evidence is not None or source_scope:
                     provider_evidence_data, provider_evidence_json = _serialize_provider_location_evidence(
@@ -167,14 +167,14 @@ class NormalizationService:
                     existing_job.india_eligible = eval_res.eligible
                     existing_job.india_exclusion_reason = eval_res.reason
                     if valid_extra_desc:
-                        if not existing_job.description or not description_is_valid(existing_job.description, title=existing_job.title) or len(valid_extra_desc) > len(existing_job.description or ""):
+                        if not existing_job.description or not description_is_valid(existing_job.description, title=existing_job.title, board_name=existing_job.company) or len(valid_extra_desc) > len(existing_job.description or ""):
                             existing_job.description = valid_extra_desc
                             existing_job.detail_enrichment_status = "succeeded"
                             existing_job.detail_enriched_at = datetime.now(timezone.utc)
                             existing_job.detail_enrichment_error_code = None
                     outcome = "re_observed"
 
-                    if not existing_job.description or not description_is_valid(existing_job.description, title=existing_job.title):
+                    if not existing_job.description or not description_is_valid(existing_job.description, title=existing_job.title, board_name=existing_job.company):
                         existing_job.detail_enrichment_status = "pending"
                         to_enrich[candidate_id] = (candidate_id, url_capped, company_capped, title_capped)
                     else:
@@ -276,7 +276,7 @@ class NormalizationService:
                         job = res.scalar_one_or_none()
                         if job:
                             job.detail_enrichment_attempts = (job.detail_enrichment_attempts or 0) + 1
-                            if result and hasattr(result, "description") and result.description and description_is_valid(result.description, title=title):
+                            if result and not getattr(result, "error_code", None) and hasattr(result, "description") and result.description and description_is_valid(result.description, title=title, board_name=company):
                                 job.description = result.description[:40000]
                                 if result.location and result.location.strip() not in ("India", "in", "pageData", ""):
                                     job.location = result.location.strip()[:200]
@@ -294,7 +294,7 @@ class NormalizationService:
                                     job.employment_type = result.employment_type[:200]
                                 if result.department:
                                     job.department = result.department[:200]
-                                if family in ("greenhouse", "smartrecruiters") and getattr(result, "title", None):
+                                if family in ("greenhouse", "smartrecruiters", "celonis_dxp") and getattr(result, "title", None):
                                     job.title = result.title.strip()[:500]
                                 if family == "oracle":
                                     new_title = oracle_detail_title_replacement(
@@ -324,7 +324,19 @@ class NormalizationService:
                                 return True
                             else:
                                 raw_err = getattr(result, "error_code", None)
-                                final_err_code = raw_err if isinstance(raw_err, str) else err_code
+                                final_err_code = raw_err if isinstance(raw_err, str) else (ERR_DESCRIPTION_INVALID if result and getattr(result, "description", None) else err_code)
+                                if final_err_code == ERR_LOCATION_CONFLICT and result and result.location:
+                                    try:
+                                        detail_evidence = json.loads(job.location_provider_evidence) if job.location_provider_evidence else {}
+                                        if not isinstance(detail_evidence, dict):
+                                            detail_evidence = {}
+                                    except (TypeError, json.JSONDecodeError):
+                                        detail_evidence = {}
+                                    detail_evidence["detail_location_conflict"] = {
+                                        "listing": (job.location or "")[:200],
+                                        "body": result.location[:200],
+                                    }
+                                    job.location_provider_evidence = json.dumps(detail_evidence, separators=(",", ":"))
                                 job.detail_enrichment_status = "failed"
                                 job.detail_enrichment_error_code = final_err_code
                                 logger.info(

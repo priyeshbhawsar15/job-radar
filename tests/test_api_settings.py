@@ -97,7 +97,7 @@ async def test_patch_settings_updates_and_persists(client: AsyncClient, isolated
             "scheduler_interval_hours": 12,
             "selected_board_ids": ["board-google", "board-meta"],
             "handoff_enabled": True,
-            "jobops_endpoint": "http://192.168.2.201:3005",
+            "jobops_endpoint": "http://jobops.test:3005",
         },
     )
     assert resp.status_code == 200
@@ -106,7 +106,7 @@ async def test_patch_settings_updates_and_persists(client: AsyncClient, isolated
     assert data["scheduler_interval_hours"] == 12
     assert data["selected_board_ids"] == ["board-google", "board-meta"]
     assert data["handoff_enabled"] is True
-    assert data["jobops_endpoint"] == "http://192.168.2.201:3005"
+    assert data["jobops_endpoint"] == "http://jobops.test:3005"
 
     assert isolated_settings_file.exists()
     persisted = json.loads(isolated_settings_file.read_text())

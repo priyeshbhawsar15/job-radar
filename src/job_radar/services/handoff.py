@@ -47,7 +47,7 @@ class JobOpsClient:
 
     def __init__(self, endpoint: Optional[str] = None, username: Optional[str] = None, password: Optional[str] = None):
         stored = load_settings()
-        raw_ep = endpoint or stored.jobops_endpoint or settings.JOBOPS_ENDPOINT or "http://192.168.2.201:3005"
+        raw_ep = endpoint or stored.jobops_endpoint or settings.JOBOPS_ENDPOINT or "http://localhost:3005"
         self.base_endpoint = raw_ep.rstrip("/")
         if self.base_endpoint.endswith("/api/manual-jobs/import-discovered"):
             self.import_endpoint = self.base_endpoint

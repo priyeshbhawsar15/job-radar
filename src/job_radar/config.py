@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:////home/priyesh/Work/job-radar/job_radar.db"
 
     SECRET_KEY: str = "dev-secret-key-change-in-production"
-    BROWSER_SERVICE_URL: str = "http://192.168.2.201:3013"
+    BROWSER_SERVICE_URL: str = "http://localhost:3013"
 
     JOBOPS_ENDPOINT: Optional[str] = None
     JOBOPS_USERNAME: Optional[str] = None

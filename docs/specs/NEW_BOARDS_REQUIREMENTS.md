@@ -23,7 +23,7 @@
 8. Implement tests first/alongside changes, including provider fixtures, pagination/filter preservation, India eligibility, missing-location behavior, non-India exclusion, and zero outbound handoff calls.
 9. Use explicit worktree imports for Python tests:
    `PYTHONPATH="$PWD/src" /home/priyesh/Work/job-radar/.venv/bin/pytest -q`
-10. The implementation branch is `feature/new-boards-india-filter` in `/home/priyesh/Work/job-radar/.claude/worktrees/new-boards-india-filter` on Gaming PC `pb-desk` (`192.168.2.90`).
+10. The implementation branch is `feature/new-boards-india-filter` in `/home/priyesh/Work/job-radar/.claude/worktrees/new-boards-india-filter` on Gaming PC `pb-desk`.
 
 ## Required planning output
 

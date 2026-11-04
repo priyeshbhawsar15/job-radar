@@ -21,7 +21,7 @@ Qualifications & Requirements:
 
 @pytest.mark.asyncio
 async def test_infer_fallback_success_merges_fields(monkeypatch):
-    monkeypatch.setattr(settings, "JOBOPS_ENDPOINT", "http://192.168.2.201:3005")
+    monkeypatch.setattr(settings, "JOBOPS_ENDPOINT", "http://jobops.test:3005")
     monkeypatch.setattr(settings, "JOBOPS_USERNAME", "priyesh")
     monkeypatch.setattr(settings, "JOBOPS_PASSWORD", "itwasmeDIO!")
 
@@ -63,7 +63,7 @@ async def test_infer_fallback_success_merges_fields(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_infer_fallback_auth_error_returns_empty_result(monkeypatch):
-    monkeypatch.setattr(settings, "JOBOPS_ENDPOINT", "http://192.168.2.201:3005")
+    monkeypatch.setattr(settings, "JOBOPS_ENDPOINT", "http://jobops.test:3005")
     monkeypatch.setattr(settings, "JOBOPS_USERNAME", "priyesh")
     monkeypatch.setattr(settings, "JOBOPS_PASSWORD", "wrongpass")
 

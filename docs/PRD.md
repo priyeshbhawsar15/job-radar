@@ -100,7 +100,7 @@ Approved board configuration
 
 ## Deployment constraint
 
-Production runs on The Shell (`192.168.2.201`); the Gaming PC is development-only. The planned `job-radar-browser` Playwright service is private, has no host port/Caddy route, and initially runs at 768 MiB RAM, 0.75 CPU, 128 PIDs, and one serialized board acquisition pending a capacity spike. See [[30 Homelab/Services/AI and Work/Job Radar|Homelab service note]].
+Production runs on The Shell; the Gaming PC is development-only. The planned `job-radar-browser` Playwright service is private, has no host port/Caddy route, and initially runs at 768 MiB RAM, 0.75 CPU, 128 PIDs, and one serialized board acquisition pending a capacity spike. See [[30 Homelab/Services/AI and Work/Job Radar|Homelab service note]].
 
 ## Delivery and acceptance gates
 

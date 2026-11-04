@@ -80,3 +80,6 @@ app_settings.json
 .vscode/
 .idea/
 src/job_radar.egg-info/
+
+# Runtime logs
+*.log

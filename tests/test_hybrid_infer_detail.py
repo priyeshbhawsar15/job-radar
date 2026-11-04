@@ -22,7 +22,7 @@ Qualifications & Requirements:
 @pytest.mark.asyncio
 async def test_infer_fallback_success_merges_fields(monkeypatch):
     monkeypatch.setattr(settings, "JOBOPS_ENDPOINT", "http://jobops.test:3005")
-    monkeypatch.setattr(settings, "JOBOPS_USERNAME", "priyesh")
+    monkeypatch.setattr(settings, "JOBOPS_USERNAME", "jobops-user")
     monkeypatch.setattr(settings, "JOBOPS_PASSWORD", "itwasmeDIO!")
 
     sample_html = f"<html><body><h1>Senior Developer</h1><p>{LONG_VALID_JD}</p></body></html>"
@@ -64,7 +64,7 @@ async def test_infer_fallback_success_merges_fields(monkeypatch):
 @pytest.mark.asyncio
 async def test_infer_fallback_auth_error_returns_empty_result(monkeypatch):
     monkeypatch.setattr(settings, "JOBOPS_ENDPOINT", "http://jobops.test:3005")
-    monkeypatch.setattr(settings, "JOBOPS_USERNAME", "priyesh")
+    monkeypatch.setattr(settings, "JOBOPS_USERNAME", "jobops-user")
     monkeypatch.setattr(settings, "JOBOPS_PASSWORD", "wrongpass")
 
     sample_html = "<html><body><p>Responsibilities include testing. Requirements: Python expertise.</p></body></html>"

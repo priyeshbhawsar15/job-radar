@@ -45,7 +45,7 @@ parent: "[[20 Projects/Job Radar/Project]]"
 **Reference specs:** Section 0; `tests/test_location_gate.py`; `tests/test_location_decision_system.py`.
 
 1. Confirm the exact worktree, branch, clean baseline, scheduler-disabled state, and handoff-disabled state.
-2. Do not run the persistent pipeline or modify `/home/priyesh/.local/share/job-radar-local/job-radar.db`.
+2. Do not run the persistent pipeline or modify `~/.local/share/job-radar-local/job-radar.db`.
 3. Add failing unit tests for all reported explicit foreign values:
    - UAE and aliases; Turkey; Serbia; Bulgaria; Colombia; Estonia; Saudi Arabia; Austria; Denmark; South Korea / Republic of Korea; Bermuda.
    - Ontario and Canadian provinces.

@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     VERSION: str = "0.1.0"
     API_V1_STR: str = "/api/v1"
 
-    DATABASE_URL: str = "sqlite+aiosqlite:////home/priyesh/Work/job-radar/job_radar.db"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./job_radar.db"
 
     SECRET_KEY: str = "dev-secret-key-change-in-production"
     BROWSER_SERVICE_URL: str = "http://localhost:3013"

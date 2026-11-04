@@ -32,7 +32,7 @@ The Gaming PC static artifact now models the requested operator information arch
 
 Board-run audit events intentionally expose only safe structured metadata: time, BoardRun capability/config revision, safe status/outcome, duration/counts, and bounded diagnostic code. The UI must not display raw Playwright request/response bodies, cookies, headers, tokens, internal endpoints, selectors, console text, or browser exception strings.
 
-Artifacts: `/home/priyesh/Work/job-radar/ui-prototype/index.html` and `/home/priyesh/Work/job-radar/ui-prototype/system-design.html`. These remain static mock data with no backend, source, scheduler, Playwright, or Job Ops connection.
+Artifacts: `ui-prototype/index.html` and `ui-prototype/system-design.html`. These remain static mock data with no backend, source, scheduler, Playwright, or Job Ops connection.
 
 Completed static operator-dashboard prototype only. It has no backend, database, scheduler, source run, Job Ops request, Discord action, or persisted state. Every visible run, job, failure, and delivery outcome is local sample data.
 
@@ -56,7 +56,7 @@ A calm operations interface: dark navy navigation, warm off-white working surfac
 
 ## Prototype artifact and verification
 
-- Source: `/home/priyesh/Projects/job-radar/ui-prototype/index.html`
+- Source: `ui-prototype/index.html`
 - Screenshots: `ui-prototype/artifacts/desktop.png` (1440 × 1337) and `mobile.png` (390 × 2755)
 - Browser check: both 1440 × 1000 and 390 × 844 viewports had no horizontal overflow; the Run Pipeline action opened only the inert static-prototype explanation.
 

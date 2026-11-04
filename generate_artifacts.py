@@ -117,15 +117,15 @@ Executed `verify_isolated_persistence.py` against isolated temporary SQLite data
 ### 4.2 Test Suite Execution Commands & Exit Codes
 ```bash
 # 1. India Gate Unit Tests
-PYTHONPATH="$PWD/src" /home/priyesh/Work/job-radar/.venv/bin/pytest tests/test_location_gate.py -v
+PYTHONPATH="$PWD/src" .venv/bin/pytest tests/test_location_gate.py -v
 # Exit Code: 0 (35 passed)
 
 # 2. 65 New Boards Ingestion & Fixture Tests
-PYTHONPATH="$PWD/src" /home/priyesh/Work/job-radar/.venv/bin/pytest tests/test_new_boards_ingestion.py -v
+PYTHONPATH="$PWD/src" .venv/bin/pytest tests/test_new_boards_ingestion.py -v
 # Exit Code: 0 (67 passed)
 
 # 3. Full Repository Test Suite
-PYTHONPATH="$PWD/src" /home/priyesh/Work/job-radar/.venv/bin/pytest -q
+PYTHONPATH="$PWD/src" .venv/bin/pytest -q
 # Exit Code: 0 (256 passed in 4.17s)
 ```
 

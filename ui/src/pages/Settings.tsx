@@ -415,7 +415,7 @@ export const Settings: React.FC = () => {
                 type="text"
                 value={jobopsUsername}
                 onChange={(e) => setJobopsUsername(e.target.value)}
-                placeholder="priyesh"
+                placeholder="username"
                 className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500"
               />
             </div>

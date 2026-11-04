@@ -54,7 +54,7 @@ The implementation is broken into **7 modular, testable phases**. Each phase pro
 * **Tech Stack:** Python 3.12, FastAPI 0.111+, Pydantic v2, SQLAlchemy 2.0 (async), asyncpg, Alembic 1.13+, PostgreSQL 16.
 * **Objective:** Establish the Python FastAPI application structure, PostgreSQL database connection pooling, SQLAlchemy 2.0 async models, and Alembic migrations.
 * **Tasks:**
-  1. Initialize Python project structure under `/home/priyesh/Work/job-radar` with `pyproject.toml` or `requirements.txt`.
+  1. Initialize Python project structure at the repository root with `pyproject.toml` or `requirements.txt`.
   2. Implement database models:
      - `boards`, `board_revisions`
      - `run_requests`, `execution_attempts`

@@ -2,7 +2,7 @@
 
 `live_description_validation.jsonl` contains the exact `description` values from the
 14 board rows in the supplied capture
-`/home/priyesh/.cache/hermes-remote-codex/jr-live-descriptions.jsonl` (October 2,
+`~/.cache/hermes-remote-codex/jr-live-descriptions.jsonl` (October 2,
 2026). The capture is a local record of live detail extraction; these tests make
 no network requests. BrowserStack contains only company narrative and benefits,
 so its expected result is false. The other 13 rows contain role duties and are

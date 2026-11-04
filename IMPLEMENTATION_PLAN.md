@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Work only in `/home/priyesh/Work/job-radar/.claude/worktrees/new-boards-india-filter` on `feature/new-boards-india-filter`.
+- Work only in `.claude/worktrees/new-boards-india-filter` on `feature/new-boards-india-filter`.
 - Do not use the source table’s family column as proof of a real provider contract. A board may be enabled only after its own live canary validates listing, detail, identifiers, location, filters, pagination, and allowed origin.
 - Preserve each inventory URL exactly, including query keys, duplicate keys, encoding, sorting, location, department, employment type, pagination, and technology/engineering intent. Store it as the immutable source target in `BoardRevision.config_json`; derive provider requests only from canary-confirmed mappings.
 - The India policy applies to all current and new boards. It is a handoff eligibility rule, not merely an upstream search filter.
@@ -22,7 +22,7 @@
 - All implementation verification is local and isolated. Force Job Ops handoff disabled in runtime/config/database tests and mechanically prove zero `httpx.AsyncClient.post` calls.
 - Run Python tests only with:
   ```bash
-  PYTHONPATH="$PWD/src" /home/priyesh/Work/job-radar/.venv/bin/pytest -q
+  PYTHONPATH="$PWD/src" .venv/bin/pytest -q
   ```
 - Do not run a live canary, pipeline, Job Ops operation, deployment, merge, push, or change canonical `main` under this plan without separate approval. Live canaries are an explicit later approval gate, not a test substitute.
 

@@ -51,10 +51,6 @@ RECORDED_CANDIDATES = {
 
 @pytest.mark.asyncio
 async def test_engine_terminal_board_outcomes_and_persisted_typed_errors(db_session: AsyncSession, monkeypatch):
-    assert engine_module.__file__.startswith("/home/priyesh/projects/job-radar-detail-fixes-20261011/src/")
-    assert __import__("job_radar.services.detail_extractor", fromlist=["__file__"]).__file__.startswith(
-        "/home/priyesh/projects/job-radar-detail-fixes-20261011/src/"
-    )
     session_factory = async_sessionmaker(db_session.bind, expire_on_commit=False)
     fixture_payload = json.loads((FIXTURES / "twilio.json").read_text())
     attempts = []
